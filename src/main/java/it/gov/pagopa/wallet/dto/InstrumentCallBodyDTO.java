@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class EnrollmentBodyDTO {
+public class InstrumentCallBodyDTO {
 
   String userId;
 
