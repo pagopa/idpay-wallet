@@ -1,56 +1,42 @@
 package it.gov.pagopa.wallet.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.EnrollmentBodyDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class WalletServiceImpl implements WalletService {
 
-  @Autowired WalletRepository walletRepository;
+  private static final String ENROLL_URI = "http://localhost:8080/idpay/instrument/enroll";
+
+  @Autowired
+  WalletRepository walletRepository;
+  @Autowired
+  ObjectMapper objectMapper;
 
   @Override
   public void checkInitiative(String initiativeId) {
     if (initiativeId.length() < 5) {
       throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO);
     }
-  }
-
-  @Override
-  public Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
-    return walletRepository
-        .findByInitiativeIdAndUserId(initiativeId, userId)
-        .orElseThrow(
-            () ->
-                new WalletException(
-                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
-  }
-
-  @Override
-  public void updateEnrollmentWithNewInstrument(Wallet wallet, int nInstr) {
-    if(nInstr == wallet.getNInstr()){
-      return;
-    }
-    wallet.setNInstr(nInstr);
-    String status = wallet.getStatus();
-    switch(status){
-      case WalletConstants.STATUS_NOT_REFUNDABLE:
-        wallet.setStatus(WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT);
-        break;
-      case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
-        wallet.setStatus(WalletConstants.STATUS_REFUNDABLE);
-        break;
-      case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT, WalletConstants.STATUS_REFUNDABLE:
-        break;
-      default:
-        return;
-    }
-    walletRepository.save(wallet);
   }
 
   @Override
@@ -63,5 +49,56 @@ public class WalletServiceImpl implements WalletService {
                     new WalletException(
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
     return new EnrollmentStatusDTO(wallet.getStatus());
+  }
+
+  @Override
+  public void enrollInstrument(String initiativeId, String userId, String hpan) {
+    Wallet wallet = walletRepository
+        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(
+            () ->
+                new WalletException(
+                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    EnrollmentBodyDTO dto =
+        new EnrollmentBodyDTO(
+            userId,
+            initiativeId,
+            hpan,
+            WalletConstants.CHANNEL_APP_IO,
+            LocalDateTime.now());
+    HttpEntity<String> requestEntity;
+    ResponseEntity<InstrumentResponseDTO> response;
+
+
+    try {
+      requestEntity = new HttpEntity<>(objectMapper.writeValueAsString(dto), headers);
+      response = restTemplate.exchange(ENROLL_URI, HttpMethod.PUT, requestEntity, InstrumentResponseDTO.class);
+
+    } catch (JsonProcessingException jpe) {
+      throw new WalletException(HttpStatus.BAD_REQUEST.value(), jpe.getMessage());
+    } catch (HttpClientErrorException e) {
+      throw new WalletException(e.getRawStatusCode(), e.getMessage());
+    }
+
+    wallet.setNInstr(Objects.requireNonNull(response.getBody()).getNinstr());
+
+    String newStatus =
+        switch(wallet.getStatus()){
+          case WalletConstants.STATUS_NOT_REFUNDABLE:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
+          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
+            yield WalletConstants.STATUS_REFUNDABLE;
+        };
+
+    wallet.setStatus(newStatus);
+
+    walletRepository.save(wallet);
+
   }
 }
