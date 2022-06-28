@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 public class WalletRestServiceImpl implements WalletRestService {
   private static final String ENROLL_URI = "http://localhost:8080/idpay/instrument/enroll";
 
-  private final RestTemplate restTemplate = new RestTemplate();
+  private RestTemplate restTemplate = new RestTemplate();
 
   @Override
   public InstrumentResponseDTO callPaymentInstrument(
