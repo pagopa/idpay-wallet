@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
@@ -9,7 +10,6 @@ import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -36,7 +36,6 @@ class WalletServiceTest {
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String INITIATIVE_ID_FAIL = "FAIL";
   private static final String HPAN = "TEST_HPAN";
-  private static final String CHANNEL = "TEST_CHANNEL";
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
   private static final String TEST_AMOUNT = "2.00";
   private static final int TEST_COUNT = 2;
@@ -61,7 +60,7 @@ class WalletServiceTest {
       new InstrumentResponseDTO(TEST_COUNT);
 
   @Test
-  void enrollInstrument_ok() {
+  void enrollInstrument_ok() throws Exception{
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
@@ -79,7 +78,7 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollInstrument_ok_with_iban() {
+  void enrollInstrument_ok_with_iban() throws Exception {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET_WITH_IBAN));
 
@@ -97,7 +96,7 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollInstrument_ok_with_instrument() {
+  void enrollInstrument_ok_with_instrument() throws Exception {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET_WITH_INSTRUMENT));
 
@@ -117,7 +116,7 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollInstrument_ko_httpclienterrorexception() {
+  void enrollInstrument_ko_httpclienterrorexception() throws Exception {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
@@ -130,6 +129,23 @@ class WalletServiceTest {
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
+    }
+  }
+
+  @Test
+  void enrollInstrument_ko_jsonprocessingexception() throws Exception {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.doThrow(new JsonProcessingException(""){})
+        .when(walletRestServiceMock)
+        .callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class));
+
+    try {
+      walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
     }
   }
 

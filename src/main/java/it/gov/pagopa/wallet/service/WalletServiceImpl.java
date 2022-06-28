@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
@@ -66,6 +67,8 @@ public class WalletServiceImpl implements WalletService {
       responseDTO = walletRestService.callPaymentInstrument(dto);
     } catch (HttpClientErrorException e) {
       throw new WalletException(e.getRawStatusCode(), e.getMessage());
+    } catch (JsonProcessingException jpe) {
+      throw new WalletException(HttpStatus.BAD_REQUEST.value(), jpe.getMessage());
     }
 
     wallet.setNInstr(Objects.requireNonNull(responseDTO).getNinstr());
