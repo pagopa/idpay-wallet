@@ -1,9 +1,9 @@
 package it.gov.pagopa.wallet.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.IbanCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
@@ -23,8 +23,6 @@ public class WalletServiceImpl implements WalletService {
   WalletRepository walletRepository;
   @Autowired
   WalletRestService walletRestService;
-  @Autowired
-  ObjectMapper objectMapper;
 
   @Override
   public void checkInitiative(String initiativeId) {
@@ -48,19 +46,19 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrument(String initiativeId, String userId, String hpan) {
     Wallet wallet = walletRepository
-        .findByInitiativeIdAndUserId(initiativeId, userId)
-        .orElseThrow(
-            () ->
-                new WalletException(
-                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+            .findByInitiativeIdAndUserId(initiativeId, userId)
+            .orElseThrow(
+                    () ->
+                            new WalletException(
+                                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
     InstrumentCallBodyDTO dto =
-        new InstrumentCallBodyDTO(
-            userId,
-            initiativeId,
-            hpan,
-            WalletConstants.CHANNEL_APP_IO,
-            LocalDateTime.now());
+            new InstrumentCallBodyDTO(
+                    userId,
+                    initiativeId,
+                    hpan,
+                    WalletConstants.CHANNEL_APP_IO,
+                    LocalDateTime.now());
 
     InstrumentResponseDTO responseDTO;
     try {
@@ -74,14 +72,54 @@ public class WalletServiceImpl implements WalletService {
     wallet.setNInstr(Objects.requireNonNull(responseDTO).getNinstr());
 
     String newStatus =
-        switch(wallet.getStatus()){
-          case WalletConstants.STATUS_NOT_REFUNDABLE:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
-          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
-            yield WalletConstants.STATUS_REFUNDABLE;
-          default:
-            yield wallet.getStatus();
-        };
+            switch(wallet.getStatus()){
+              case WalletConstants.STATUS_NOT_REFUNDABLE:
+                yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
+              case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
+                yield WalletConstants.STATUS_REFUNDABLE;
+              default:
+                yield wallet.getStatus();
+            };
+
+    wallet.setStatus(newStatus);
+
+    walletRepository.save(wallet);
+
+  }
+
+  @Override
+  public void enrollIban(String initiativeId, String userId, String iban, String description) {
+    Wallet wallet = walletRepository
+            .findByInitiativeIdAndUserId(initiativeId, userId)
+            .orElseThrow(
+                    () ->
+                            new WalletException(
+                                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+
+    IbanCallBodyDTO dto =
+            new IbanCallBodyDTO(
+                    userId,
+                    initiativeId,
+                    iban,
+                    description);
+
+    try {
+      walletRestService.callIban(dto);
+    } catch (HttpClientErrorException e) {
+      throw new WalletException(e.getRawStatusCode(), e.getMessage());
+    } catch (JsonProcessingException jpe) {
+      throw new WalletException(HttpStatus.BAD_REQUEST.value(), jpe.getMessage());
+    }
+
+    String newStatus =
+            switch(wallet.getStatus()){
+              case WalletConstants.STATUS_NOT_REFUNDABLE:
+                yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN;
+              case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT:
+                yield WalletConstants.STATUS_REFUNDABLE;
+              default:
+                yield wallet.getStatus();
+            };
 
     wallet.setStatus(newStatus);
 
