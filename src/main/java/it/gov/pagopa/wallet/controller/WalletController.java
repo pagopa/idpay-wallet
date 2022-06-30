@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ public interface WalletController {
   /**
    * Enrollment of a Payment Instrument
    *
+   * @param userId
    * @param body
    * @return
    */
@@ -33,5 +35,17 @@ public interface WalletController {
    */
   @GetMapping("/{initiativeId}/{userId}/status")
   ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(
-      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+          @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
+
+  /**
+   * Enrollment of a Iban
+   *
+   * @param userId
+   * @param body
+   * @return
+   */
+  @PutMapping("/iban/{userId}")
+  ResponseEntity<Void> enrollIban(@Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
+
 }

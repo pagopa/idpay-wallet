@@ -8,4 +8,5 @@ public interface WalletService {
   EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId);
 
   void enrollInstrument(String initiativeId, String userId, String hpan);
+  void enrollIban(String initiativeId, String userId, String iban, String description);
 }
