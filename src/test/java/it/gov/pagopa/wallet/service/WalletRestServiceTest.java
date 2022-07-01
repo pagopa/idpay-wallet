@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -44,11 +45,15 @@ class WalletRestServiceTest {
       INITIATIVE_ID, IBAN_OK, DESCRIPTION_OK);
   @Mock
   RestTemplate restTemplate;
+
+  @Mock
+  Environment env;
   @InjectMocks
   WalletRestServiceImpl walletRestService;
 
   @Test
   void callPaymentInstrument_ok() throws Exception {
+    Mockito.when(env.getProperty("payment.instrument.uri")).thenReturn("http://localhost:8080");
     Mockito.when(
             restTemplate.exchange(
                 Mockito.eq(ENROLL_INSTRUMENT_URI),
@@ -66,6 +71,7 @@ class WalletRestServiceTest {
 
   @Test
   void callIban_ok() {
+    Mockito.when(env.getProperty("iban.uri")).thenReturn("http://localhost:8080");
     Mockito.when(
             restTemplate.exchange(
                 Mockito.eq(ENROLL_IBAN_URI),
