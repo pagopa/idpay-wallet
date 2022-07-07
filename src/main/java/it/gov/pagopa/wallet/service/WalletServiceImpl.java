@@ -4,13 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,19 +51,18 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrument(String initiativeId, String userId, String hpan) {
     Wallet wallet = walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                    () ->
-                            new WalletException(
-                                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(
+            () ->
+                new WalletException(
+                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
-    InstrumentCallBodyDTO dto =
-            new InstrumentCallBodyDTO(
-                    userId,
-                    initiativeId,
-                    hpan,
-                    WalletConstants.CHANNEL_APP_IO,
-                    LocalDateTime.now());
+    InstrumentCallBodyDTO dto = new InstrumentCallBodyDTO(
+        userId,
+        initiativeId,
+        hpan,
+        WalletConstants.CHANNEL_APP_IO,
+        LocalDateTime.now());
 
     InstrumentResponseDTO responseDTO;
     try {
@@ -72,14 +76,14 @@ public class WalletServiceImpl implements WalletService {
     wallet.setNInstr(Objects.requireNonNull(responseDTO).getNinstr());
 
     String newStatus =
-            switch(wallet.getStatus()){
-              case WalletConstants.STATUS_NOT_REFUNDABLE:
-                yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
-              case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
-                yield WalletConstants.STATUS_REFUNDABLE;
-              default:
-                yield wallet.getStatus();
-            };
+        switch (wallet.getStatus()) {
+          case WalletConstants.STATUS_NOT_REFUNDABLE:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
+          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
+            yield WalletConstants.STATUS_REFUNDABLE;
+          default:
+            yield wallet.getStatus();
+        };
 
     wallet.setStatus(newStatus);
 
@@ -90,18 +94,18 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollIban(String initiativeId, String userId, String iban, String description) {
     Wallet wallet = walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                    () ->
-                            new WalletException(
-                                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(
+            () ->
+                new WalletException(
+                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
     IbanCallBodyDTO dto =
-            new IbanCallBodyDTO(
-                    userId,
-                    initiativeId,
-                    iban,
-                    description);
+        new IbanCallBodyDTO(
+            userId,
+            initiativeId,
+            iban,
+            description);
 
     try {
       walletRestService.callIban(dto);
@@ -112,18 +116,37 @@ public class WalletServiceImpl implements WalletService {
     }
 
     String newStatus =
-            switch(wallet.getStatus()){
-              case WalletConstants.STATUS_NOT_REFUNDABLE:
-                yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN;
-              case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT:
-                yield WalletConstants.STATUS_REFUNDABLE;
-              default:
-                yield wallet.getStatus();
-            };
+        switch (wallet.getStatus()) {
+          case WalletConstants.STATUS_NOT_REFUNDABLE:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN;
+          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT:
+            yield WalletConstants.STATUS_REFUNDABLE;
+          default:
+            yield wallet.getStatus();
+        };
 
     wallet.setStatus(newStatus);
 
     walletRepository.save(wallet);
+
+  }
+
+  private InitiativeDTO walletToDto(Wallet wallet) {
+    ModelMapper modelmapper = new ModelMapper();
+    return wallet != null ? modelmapper.map(wallet, InitiativeDTO.class) : null;
+  }
+
+  public InitiativeListDTO getInitiativeList(String userId) {
+    List<Wallet> walletList = walletRepository.findByUserId(userId);
+    InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
+    List<InitiativeDTO> initiativeDTOList = new ArrayList<>();
+
+    for (Wallet wallet : walletList) {
+      initiativeDTOList.add(walletToDto(wallet));
+
+    }
+    initiativeListDTO.setInitiativeDTOList(initiativeDTOList);
+    return initiativeListDTO;
 
   }
 }

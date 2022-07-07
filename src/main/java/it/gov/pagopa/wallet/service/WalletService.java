@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 
 public interface WalletService {
   void checkInitiative(String initiativeId);
@@ -9,4 +10,6 @@ public interface WalletService {
 
   void enrollInstrument(String initiativeId, String userId, String hpan);
   void enrollIban(String initiativeId, String userId, String iban, String description);
+
+  InitiativeListDTO getInitiativeList(String userId);
 }
