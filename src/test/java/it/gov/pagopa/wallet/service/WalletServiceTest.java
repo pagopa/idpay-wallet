@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
@@ -54,20 +55,15 @@ class WalletServiceTest {
   private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
   private static final int TEST_COUNT = 2;
 
-  private static final Wallet TEST_WALLET =
-
-  private static final InitiativeDTO INITIATIVE_DTO_TEST = new InitiativeDTO(INITIATIVE_ID,
+  private static final Wallet TEST_WALLET = new Wallet(
+      USER_ID,
       INITIATIVE_ID,
-      WalletConstants.STATUS_NOT_REFUNDABLE, null, "TEST_DATE", null, "TEST_AMOUNT", null, null);
+      INITIATIVE_ID,
+      WalletConstants.STATUS_NOT_REFUNDABLE,
+      TEST_DATE,
+      TEST_DATE,
+      TEST_AMOUNT);
 
-      new Wallet(
-          USER_ID,
-          INITIATIVE_ID,
-          INITIATIVE_ID,
-          WalletConstants.STATUS_NOT_REFUNDABLE,
-          TEST_DATE,
-          TEST_DATE,
-          TEST_AMOUNT);
   private static final InstrumentResponseDTO INSTRUMENT_RESPONSE_DTO =
       new InstrumentResponseDTO(TEST_COUNT);
 
@@ -165,7 +161,8 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.doThrow(new JsonProcessingException("") {})
+    Mockito.doThrow(new JsonProcessingException("") {
+        })
         .when(walletRestServiceMock)
         .callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class));
 
@@ -270,7 +267,8 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.doThrow(new JsonProcessingException("") {})
+    Mockito.doThrow(new JsonProcessingException("") {
+        })
         .when(walletRestServiceMock)
         .callIban(Mockito.any(IbanCallBodyDTO.class));
 
@@ -355,27 +353,6 @@ class WalletServiceTest {
   }
 
   @Test
-  void getInitiativeList_ok() {
-    List<Wallet> walletList = new ArrayList<>();
-    walletList.add(TEST_WALLET);
-
-    InitiativeListDTO initiativeListDto = new InitiativeListDTO();
-    List<InitiativeDTO> initiativeDTOList = new ArrayList<>();
-
-    Mockito.when(walletRepositoryMock.findByUserId(USER_ID))
-        .thenReturn(walletList);
-
-    initiativeDTOList.add(INITIATIVE_DTO_TEST);
-    initiativeListDto.setInitiativeDTOList(initiativeDTOList);
-    walletService.getInitiativeList(USER_ID);
-
-    assertEquals(INITIATIVE_DTO_TEST.getInitiativeId(), TEST_WALLET.getInitiativeId());
-    assertEquals(INITIATIVE_DTO_TEST.getInitiativeName(), TEST_WALLET.getInitiativeName());
-    assertEquals(INITIATIVE_DTO_TEST.getIban(), TEST_WALLET.getIban());
-    assertEquals(INITIATIVE_DTO_TEST.getStatus(), TEST_WALLET.getStatus());
-
-  }
-
   void getWalletDetail_ko() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.empty());
@@ -386,5 +363,26 @@ class WalletServiceTest {
       assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
       assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
     }
+  }
+
+  @Test
+  void getInitiativeList_ok() {
+    TEST_WALLET.setIban(IBAN_OK);
+    List<Wallet> walletList = new ArrayList<>();
+    walletList.add(TEST_WALLET);
+
+    Mockito.when(walletRepositoryMock.findByUserId(USER_ID))
+        .thenReturn(walletList);
+
+    InitiativeListDTO initiativeListDto = walletService.getInitiativeList(USER_ID);
+
+    assertFalse(initiativeListDto.getInitiativeDTOList().isEmpty());
+
+    InitiativeDTO actual = initiativeListDto.getInitiativeDTOList().get(0);
+    assertEquals(INITIATIVE_DTO.getInitiativeId(), actual.getInitiativeId());
+    assertEquals(INITIATIVE_DTO.getInitiativeName(), actual.getInitiativeName());
+    assertEquals(INITIATIVE_DTO.getIban(), actual.getIban());
+    assertEquals(INITIATIVE_DTO.getStatus(), actual.getStatus());
+
   }
 }
