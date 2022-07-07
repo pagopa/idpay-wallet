@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -18,7 +19,7 @@ public class Wallet {
       String status,
       LocalDateTime acceptanceDate,
       LocalDateTime endDate,
-      double amount) {
+      BigDecimal amount) {
     this.userId = userId;
     this.initiativeId = initiativeId;
     this.initiativeName = initiativeName;
@@ -26,10 +27,11 @@ public class Wallet {
     this.acceptanceDate = acceptanceDate;
     this.endDate = endDate;
     this.amount = amount;
+    this.accrued = BigDecimal.valueOf(0.00);
+    this.refunded = BigDecimal.valueOf(0.00);
   }
 
-  @Id
-  private String id;
+  @Id private String id;
 
   private String userId;
 
@@ -49,9 +51,9 @@ public class Wallet {
 
   private int nInstr;
 
-  private double amount;
+  private BigDecimal amount;
 
-  private double accrued;
+  private BigDecimal accrued;
 
-  private double refunded;
+  private BigDecimal refunded;
 }

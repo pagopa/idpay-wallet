@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Autowired
   WalletRepository walletRepository;
+
   @Autowired
   WalletRestService walletRestService;
 
@@ -46,6 +48,15 @@ public class WalletServiceImpl implements WalletService {
                     new WalletException(
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
     return new EnrollmentStatusDTO(wallet.getStatus());
+  }
+
+  @Override
+  public InitiativeDTO getWalletDetail(String initiativeId, String userId) {
+    Optional<Wallet> wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId);
+    return wallet.map(this::walletToDto).orElseThrow(
+        () ->
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
   }
 
   @Override
@@ -131,11 +142,7 @@ public class WalletServiceImpl implements WalletService {
 
   }
 
-  private InitiativeDTO walletToDto(Wallet wallet) {
-    ModelMapper modelmapper = new ModelMapper();
-    return wallet != null ? modelmapper.map(wallet, InitiativeDTO.class) : null;
-  }
-
+  @Override
   public InitiativeListDTO getInitiativeList(String userId) {
     List<Wallet> walletList = walletRepository.findByUserId(userId);
     InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
@@ -148,5 +155,10 @@ public class WalletServiceImpl implements WalletService {
     initiativeListDTO.setInitiativeDTOList(initiativeDTOList);
     return initiativeListDTO;
 
+  }
+  
+  private InitiativeDTO walletToDto(Wallet wallet){
+    ModelMapper modelmapper = new ModelMapper();
+    return wallet != null ? modelmapper.map(wallet, InitiativeDTO.class) : null;
   }
 }

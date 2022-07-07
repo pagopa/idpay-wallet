@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.controller;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,12 @@ public class WalletControllerImpl implements WalletController {
     EnrollmentStatusDTO enrollmentStatusDTO =
         walletService.getEnrollmentStatus(initiativeId, userId);
     return new ResponseEntity<>(enrollmentStatusDTO, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<InitiativeDTO> walletDetail(String initiativeId, String userId) {
+    InitiativeDTO initiativeDTO = walletService.getWalletDetail(initiativeId, userId);
+    return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
   }
 
   @Override
