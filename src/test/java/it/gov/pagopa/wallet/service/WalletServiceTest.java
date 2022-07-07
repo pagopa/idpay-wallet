@@ -57,6 +57,10 @@ class WalletServiceTest {
   private static final InstrumentResponseDTO INSTRUMENT_RESPONSE_DTO =
       new InstrumentResponseDTO(TEST_COUNT);
 
+  private static final InitiativeDTO INITIATIVE_DTO_TEST = new InitiativeDTO(INITIATIVE_ID,
+      INITIATIVE_ID,
+      WalletConstants.STATUS_NOT_REFUNDABLE, null, "TEST_DATE", null, "TEST_AMOUNT", null, null);
+
   @Test
   void enrollInstrument_ok() throws Exception {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
@@ -331,16 +335,14 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByUserId(USER_ID))
         .thenReturn(walletList);
 
-    InitiativeDTO initiativeDTO = new InitiativeDTO(INITIATIVE_ID, INITIATIVE_ID,
-        WalletConstants.STATUS_NOT_REFUNDABLE, null, "TEST_DATE", null, "TEST_AMOUNT", null, null);
-    initiativeDTOList.add(initiativeDTO);
+    initiativeDTOList.add(INITIATIVE_DTO_TEST);
     initiativeListDto.setInitiativeDTOList(initiativeDTOList);
     walletService.getInitiativeList(USER_ID);
 
-    assertEquals(initiativeDTO.getInitiativeId(), TEST_WALLET.getInitiativeId());
-    assertEquals(initiativeDTO.getInitiativeName(), TEST_WALLET.getInitiativeName());
-    assertEquals(initiativeDTO.getIban(), TEST_WALLET.getIban());
-    assertEquals(initiativeDTO.getStatus(), TEST_WALLET.getStatus());
+    assertEquals(INITIATIVE_DTO_TEST.getInitiativeId(), TEST_WALLET.getInitiativeId());
+    assertEquals(INITIATIVE_DTO_TEST.getInitiativeName(), TEST_WALLET.getInitiativeName());
+    assertEquals(INITIATIVE_DTO_TEST.getIban(), TEST_WALLET.getIban());
+    assertEquals(INITIATIVE_DTO_TEST.getStatus(), TEST_WALLET.getStatus());
 
   }
 }
