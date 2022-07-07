@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
@@ -11,6 +12,8 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Autowired
   WalletRepository walletRepository;
+
   @Autowired
   WalletRestService walletRestService;
 
@@ -41,6 +45,15 @@ public class WalletServiceImpl implements WalletService {
                     new WalletException(
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
     return new EnrollmentStatusDTO(wallet.getStatus());
+  }
+
+  @Override
+  public InitiativeDTO getWalletDetail(String initiativeId, String userId) {
+    Optional<Wallet> wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId);
+    return wallet.map(this::walletToDto).orElseThrow(
+        () ->
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
   }
 
   @Override
@@ -125,5 +138,10 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
 
+  }
+
+  private InitiativeDTO walletToDto(Wallet wallet){
+    ModelMapper modelmapper = new ModelMapper();
+    return wallet != null ? modelmapper.map(wallet, InitiativeDTO.class) : null;
   }
 }
