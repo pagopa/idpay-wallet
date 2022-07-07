@@ -11,29 +11,30 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndex(name = "wallet_unique_idx", def = "{'userId': 1, 'initiativeId': 1}", unique = true)
 public class Wallet {
 
-  public Wallet(String userId, String initiativeId, String status, LocalDateTime acceptanceDate, String amount){
+  public Wallet(String userId, String initiativeId, String status, LocalDateTime acceptanceDate, String amount, String iban, String description){
     this.userId = userId;
     this.initiativeId = initiativeId;
     this.status = status;
     this.acceptanceDate = acceptanceDate;
     this.amount = amount;
+    this.iban = iban;
+    this.channel = "APP_IO";
+    this.description = description;
+    this.holderBank = "Unicredit";
   }
 
   @Id
   private String id;
-
   private String userId;
-
   private String initiativeId;
-
   private String status;
-
   private LocalDateTime acceptanceDate;
-
   private int nTrx;
-
   private int nInstr;
-
   private String amount;
+  private String iban;
+  private String description;
+  private String holderBank;
+  private String channel;
 
 }

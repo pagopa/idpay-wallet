@@ -12,6 +12,7 @@ public class WalletConstants {
   public static final String STATUS_REFUNDABLE = "REFUNDABLE";
 
   public static final String CHANNEL_APP_IO = "APP_IO";
+  public static final String HOLDER_BANK = "Unicredit";
 
   private WalletConstants(){}
 }
