@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
@@ -14,6 +15,8 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,11 +32,15 @@ import org.springframework.web.client.HttpClientErrorException;
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(value = {WalletService.class})
 class WalletServiceTest {
-  @MockBean WalletRepository walletRepositoryMock;
 
-  @MockBean WalletRestService walletRestServiceMock;
+  @MockBean
+  WalletRepository walletRepositoryMock;
 
-  @Autowired WalletService walletService;
+  @MockBean
+  WalletRestService walletRestServiceMock;
+
+  @Autowired
+  WalletService walletService;
 
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
@@ -46,7 +53,13 @@ class WalletServiceTest {
   private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(0.00);
   private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
   private static final int TEST_COUNT = 2;
+
   private static final Wallet TEST_WALLET =
+
+  private static final InitiativeDTO INITIATIVE_DTO_TEST = new InitiativeDTO(INITIATIVE_ID,
+      INITIATIVE_ID,
+      WalletConstants.STATUS_NOT_REFUNDABLE, null, "TEST_DATE", null, "TEST_AMOUNT", null, null);
+
       new Wallet(
           USER_ID,
           INITIATIVE_ID,
@@ -342,6 +355,27 @@ class WalletServiceTest {
   }
 
   @Test
+  void getInitiativeList_ok() {
+    List<Wallet> walletList = new ArrayList<>();
+    walletList.add(TEST_WALLET);
+
+    InitiativeListDTO initiativeListDto = new InitiativeListDTO();
+    List<InitiativeDTO> initiativeDTOList = new ArrayList<>();
+
+    Mockito.when(walletRepositoryMock.findByUserId(USER_ID))
+        .thenReturn(walletList);
+
+    initiativeDTOList.add(INITIATIVE_DTO_TEST);
+    initiativeListDto.setInitiativeDTOList(initiativeDTOList);
+    walletService.getInitiativeList(USER_ID);
+
+    assertEquals(INITIATIVE_DTO_TEST.getInitiativeId(), TEST_WALLET.getInitiativeId());
+    assertEquals(INITIATIVE_DTO_TEST.getInitiativeName(), TEST_WALLET.getInitiativeName());
+    assertEquals(INITIATIVE_DTO_TEST.getIban(), TEST_WALLET.getIban());
+    assertEquals(INITIATIVE_DTO_TEST.getStatus(), TEST_WALLET.getStatus());
+
+  }
+
   void getWalletDetail_ko() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.empty());
@@ -353,5 +387,4 @@ class WalletServiceTest {
       assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
     }
   }
-
 }
