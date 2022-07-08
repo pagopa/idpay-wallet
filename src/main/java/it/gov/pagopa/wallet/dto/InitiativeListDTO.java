@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InitiativeListDTO {
 
-  List<InitiativeDTO> initiativeDTOList;
+  List<InitiativeDTO> initiativeList;
 
 }

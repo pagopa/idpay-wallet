@@ -152,7 +152,7 @@ public class WalletServiceImpl implements WalletService {
       initiativeDTOList.add(walletToDto(wallet));
 
     }
-    initiativeListDTO.setInitiativeDTOList(initiativeDTOList);
+    initiativeListDTO.setInitiativeList(initiativeDTOList);
     return initiativeListDTO;
 
   }
