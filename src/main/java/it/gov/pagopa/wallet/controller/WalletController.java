@@ -77,7 +77,7 @@ public interface WalletController {
    * @param userId
    * @return
    */
-  @GetMapping("/initiative/{userId}")
+  @GetMapping("/{userId}")
   ResponseEntity<InitiativeListDTO> initiativeList(@Valid @PathVariable("userId") String userId);
 
 }
