@@ -3,6 +3,8 @@ package it.gov.pagopa.wallet.controller;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.IbanDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,16 @@ public interface WalletController {
   ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(
           @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
+  /**
+   * Returns the detail of an active initiative for a citizen
+   *
+   * @param initiativeId
+   * @param userId
+   * @return
+   */
+  @GetMapping("/{initiativeId}/{userId}")
+  ResponseEntity<InitiativeDTO> walletDetail(
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   /**
    * Enrollment of a Iban
@@ -49,7 +61,6 @@ public interface WalletController {
   @PutMapping("/iban/{userId}")
   ResponseEntity<Void> enrollIban(@Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
 
-
   /**
    * Get IbanDTO
    *
@@ -59,5 +70,14 @@ public interface WalletController {
    */
   @GetMapping("/{userId}/{initiativeId}/iban")
   ResponseEntity<IbanDTO> getIban(@PathVariable("userId") String userId, @PathVariable("initiativeId") String initiativeId);
+
+  /**
+   * Returns the active initiative lists
+   *
+   * @param userId
+   * @return
+   */
+  @GetMapping("/initiative/{userId}")
+  ResponseEntity<InitiativeListDTO> initiativeList(@Valid @PathVariable("userId") String userId);
 
 }
