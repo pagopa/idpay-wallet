@@ -3,7 +3,6 @@ package it.gov.pagopa.wallet.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.IbanCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
@@ -15,6 +14,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.iban4j.CountryCode;
+import org.iban4j.Iban;
+import org.iban4j.IbanUtil;
+import org.iban4j.UnsupportedCountryException;
 import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,19 +114,14 @@ public class WalletServiceImpl implements WalletService {
                 new WalletException(
                     HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
-    IbanCallBodyDTO dto =
-        new IbanCallBodyDTO(
-            userId,
-            initiativeId,
-            iban,
-            description);
-
-    try {
-      walletRestService.callIban(dto);
-    } catch (HttpClientErrorException e) {
-      throw new WalletException(e.getRawStatusCode(), e.getMessage());
-    } catch (JsonProcessingException jpe) {
-      throw new WalletException(HttpStatus.BAD_REQUEST.value(), jpe.getMessage());
+    iban = iban.toUpperCase();
+    this.formalControl(iban);
+    if(wallet.getIban()==null || !(wallet.getIban().equals(iban))) {
+      //pub su coda
+      wallet.setIban(iban);
+      wallet.setDescription(description);
+      wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
+      wallet.setHolderBank(WalletConstants.HOLDER_BANK);
     }
 
     String newStatus =
@@ -160,5 +158,13 @@ public class WalletServiceImpl implements WalletService {
   private InitiativeDTO walletToDto(Wallet wallet){
     ModelMapper modelmapper = new ModelMapper();
     return wallet != null ? modelmapper.map(wallet, InitiativeDTO.class) : null;
+  }
+  
+  private void formalControl(String iban){
+    Iban ibanValidator = Iban.valueOf(iban);
+    IbanUtil.validate(iban);
+    if(!ibanValidator.getCountryCode().equals(CountryCode.IT)){
+      throw new UnsupportedCountryException(iban+" Iban is not italian");
+    }
   }
 }
