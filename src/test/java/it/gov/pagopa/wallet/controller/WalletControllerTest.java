@@ -40,11 +40,8 @@ class WalletControllerTest {
   private static final String USER_ID = "TEST_USER_ID";
   private static final String ENROLL_INSTRUMENT_URL = "/instrument/";
   private static final String ENROLL_IBAN_URL = "/iban/";
-
-  private static final String INITIATIVE_LIST = "/initiative/";
   private static final String STATUS_URL = "/status";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
-
   private static final String INITIATIVE_KO = "TEST_INITIATIVE_KO";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
@@ -286,7 +283,7 @@ class WalletControllerTest {
 
     Mockito.when(walletServiceMock.getInitiativeList(USER_ID)).thenReturn(initiativeListDTO);
 
-    mvc.perform(MockMvcRequestBuilders.get(BASE_URL + INITIATIVE_LIST + USER_ID)
+    mvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/" + USER_ID)
             .contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
   }
