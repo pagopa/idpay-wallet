@@ -279,7 +279,7 @@ class WalletControllerTest {
 
     List<InitiativeDTO> initiativeDTOList = new ArrayList<>();
     initiativeDTOList.add(INITIATIVE_DTO_TEST);
-    initiativeListDTO.setInitiativeDTOList(initiativeDTOList);
+    initiativeListDTO.setInitiativeList(initiativeDTOList);
 
     Mockito.when(walletServiceMock.getInitiativeList(USER_ID)).thenReturn(initiativeListDTO);
 
