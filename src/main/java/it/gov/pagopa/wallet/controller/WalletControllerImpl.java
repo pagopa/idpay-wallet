@@ -2,6 +2,8 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WalletControllerImpl implements WalletController {
 
-  @Autowired WalletService walletService;
+  @Autowired
+  WalletService walletService;
 
   @Override
   public ResponseEntity<Void> enrollInstrument(InstrumentBodyDTO body, String userId) {
@@ -29,9 +32,21 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  public ResponseEntity<InitiativeDTO> walletDetail(String initiativeId, String userId) {
+    InitiativeDTO initiativeDTO = walletService.getWalletDetail(initiativeId, userId);
+    return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
+  }
+
+  @Override
   public ResponseEntity<Void> enrollIban(IbanBodyDTO body, String userId) {
     walletService.checkInitiative(body.getInitiativeId());
     walletService.enrollIban(body.getInitiativeId(), userId, body.getIban(), body.getDescription());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<InitiativeListDTO> initiativeList(String userId) {
+    InitiativeListDTO initiativeDTO = walletService.getInitiativeList(userId);
+    return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
   }
 }

@@ -2,16 +2,22 @@ package it.gov.pagopa.wallet.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
@@ -52,19 +58,47 @@ class WalletServiceTest {
   private static final String CHANNEL_OK = "APP_IO";
   private static final String HOLDER_BANK_OK = "Unicredit";
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
-  private static final String TEST_AMOUNT = "2.00";
+  private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
+  private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(0.00);
+  private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
   private static final int TEST_COUNT = 2;
-  private static final Wallet TEST_WALLET =
-      new Wallet(
-          USER_ID, INITIATIVE_ID, WalletConstants.STATUS_NOT_REFUNDABLE, TEST_DATE, TEST_AMOUNT,
-          IBAN_OK, DESCRIPTION_OK);
 
   private static final Wallet TEST_WALLET_INSTRUMENT =
       new Wallet(
-          USER_ID, INITIATIVE_ID, WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT, TEST_DATE,
-          TEST_AMOUNT, null, null);
+          USER_ID,
+          INITIATIVE_ID,
+          WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT,
+          TEST_DATE,
+          TEST_DATE,
+          TEST_AMOUNT,
+          null,
+          null);
+
+  private static final Wallet TEST_WALLET = new Wallet(
+      USER_ID,
+      INITIATIVE_ID,
+      INITIATIVE_ID,
+      WalletConstants.STATUS_NOT_REFUNDABLE,
+      TEST_DATE,
+      TEST_DATE,
+      TEST_AMOUNT,
+      IBAN_OK, 
+      DESCRIPTION_OK);
+      
   private static final InstrumentResponseDTO INSTRUMENT_RESPONSE_DTO =
       new InstrumentResponseDTO(TEST_COUNT);
+
+  private static final InitiativeDTO INITIATIVE_DTO =
+      new InitiativeDTO(
+          INITIATIVE_ID,
+          INITIATIVE_ID,
+          WalletConstants.STATUS_NOT_REFUNDABLE,
+          IBAN_OK,
+          TEST_DATE.toString(),
+          "0",
+          String.valueOf(TEST_AMOUNT),
+          String.valueOf(TEST_ACCRUED),
+          String.valueOf(TEST_REFUNDED));
 
   @Test
   void enrollInstrument_ok() throws Exception {
@@ -122,9 +156,7 @@ class WalletServiceTest {
     } catch (WalletException e) {
       Assertions.fail();
     }
-    assertEquals(
-        WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT,
-        TEST_WALLET.getStatus());
+    assertEquals(WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT, TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
   }
 
@@ -368,6 +400,61 @@ class WalletServiceTest {
     walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
 
     assertEquals(WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN, wallet.getStatus());
+
+  }
+
+  @Test
+  void getWalletDetail_ok() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+    TEST_WALLET.setIban(IBAN_OK);
+    try {
+      InitiativeDTO actual = walletService.getWalletDetail(INITIATIVE_ID, USER_ID);
+      assertEquals(INITIATIVE_DTO.getInitiativeId(), actual.getInitiativeId());
+      assertEquals(INITIATIVE_DTO.getInitiativeName(), actual.getInitiativeName());
+      assertEquals(INITIATIVE_DTO.getStatus(), actual.getStatus());
+      assertEquals(INITIATIVE_DTO.getEndDate(), actual.getEndDate());
+      assertEquals(INITIATIVE_DTO.getIban(), actual.getIban());
+      assertEquals(INITIATIVE_DTO.getNInstr(), actual.getNInstr());
+      assertEquals(INITIATIVE_DTO.getAmount(), actual.getAmount());
+      assertEquals(INITIATIVE_DTO.getAccrued(), actual.getAccrued());
+      assertEquals(INITIATIVE_DTO.getRefunded(), actual.getRefunded());
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void getWalletDetail_ko() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+    try {
+      walletService.getWalletDetail(INITIATIVE_ID, USER_ID);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
+      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
+    }
+  }
+
+  @Test
+  void getInitiativeList_ok() {
+    TEST_WALLET.setIban(IBAN_OK);
+    List<Wallet> walletList = new ArrayList<>();
+    walletList.add(TEST_WALLET);
+
+    Mockito.when(walletRepositoryMock.findByUserId(USER_ID))
+        .thenReturn(walletList);
+
+    InitiativeListDTO initiativeListDto = walletService.getInitiativeList(USER_ID);
+
+    assertFalse(initiativeListDto.getInitiativeDTOList().isEmpty());
+
+    InitiativeDTO actual = initiativeListDto.getInitiativeDTOList().get(0);
+    assertEquals(INITIATIVE_DTO.getInitiativeId(), actual.getInitiativeId());
+    assertEquals(INITIATIVE_DTO.getInitiativeName(), actual.getInitiativeName());
+    assertEquals(INITIATIVE_DTO.getIban(), actual.getIban());
+    assertEquals(INITIATIVE_DTO.getStatus(), actual.getStatus());
 
   }
 
