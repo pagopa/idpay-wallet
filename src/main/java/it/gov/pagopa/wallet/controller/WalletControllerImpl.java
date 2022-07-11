@@ -49,6 +49,7 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<IbanDTO> getIban(String userId, String initiativeId) {
     IbanDTO ibanDTO = walletService.getIban(userId, initiativeId);
     return new ResponseEntity<>(ibanDTO, HttpStatus.OK);
+  }
 
   @Override
   public ResponseEntity<InitiativeListDTO> initiativeList(String userId) {
