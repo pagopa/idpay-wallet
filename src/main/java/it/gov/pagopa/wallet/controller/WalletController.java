@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
+import it.gov.pagopa.wallet.dto.IbanDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
@@ -61,7 +62,17 @@ public interface WalletController {
   ResponseEntity<Void> enrollIban(@Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
 
   /**
-   * Returns all the iban associated with the initiative
+   * Get IbanDTO
+   *
+   * @param userId
+   * @param initiativeId
+   * @return
+   */
+  @GetMapping("/{userId}/{initiativeId}/iban")
+  ResponseEntity<IbanDTO> getIban(@PathVariable("userId") String userId, @PathVariable("initiativeId") String initiativeId);
+
+  /**
+   * Returns the active initiative lists
    *
    * @param userId
    * @return

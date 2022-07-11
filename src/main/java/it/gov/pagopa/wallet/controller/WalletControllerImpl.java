@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
+import it.gov.pagopa.wallet.dto.IbanDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
@@ -43,6 +44,11 @@ public class WalletControllerImpl implements WalletController {
     walletService.enrollIban(body.getInitiativeId(), userId, body.getIban(), body.getDescription());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+  @Override
+  public ResponseEntity<IbanDTO> getIban(String userId, String initiativeId) {
+    IbanDTO ibanDTO = walletService.getIban(userId, initiativeId);
+    return new ResponseEntity<>(ibanDTO, HttpStatus.OK);
 
   @Override
   public ResponseEntity<InitiativeListDTO> initiativeList(String userId) {
