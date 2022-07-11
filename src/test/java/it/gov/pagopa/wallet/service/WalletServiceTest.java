@@ -8,10 +8,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.event.IbanProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
@@ -41,6 +43,9 @@ import org.springframework.web.client.HttpClientErrorException;
 @WebMvcTest(value = {WalletService.class})
 class WalletServiceTest {
 
+  @MockBean
+  IbanProducer ibanProducer;
+  
   @MockBean
   WalletRepository walletRepositoryMock;
 
@@ -277,7 +282,9 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollIban_ok() {
+  void enrollIban_ok_with_instrument(){
+    Mockito.doNothing().when(ibanProducer).sendIban(Mockito.any(IbanQueueDTO.class));
+
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET_INSTRUMENT));
 
@@ -301,7 +308,8 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollIban_ok_imdep() {
+  void enrollIban_ok_idemp() {
+    Mockito.doNothing().when(ibanProducer).sendIban(Mockito.any(IbanQueueDTO.class));
     final Wallet wallet =
         new Wallet(
             USER_ID, INITIATIVE_ID,INITIATIVE_ID, WalletConstants.STATUS_REFUNDABLE,
@@ -398,7 +406,8 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollIban_status() {
+  void enrollIban_ok() {
+    Mockito.doNothing().when(ibanProducer).sendIban(Mockito.any(IbanQueueDTO.class));
     final Wallet wallet = new Wallet(
         USER_ID, INITIATIVE_ID, INITIATIVE_ID, WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN,TEST_DATE, TEST_DATE,
         TEST_AMOUNT);
