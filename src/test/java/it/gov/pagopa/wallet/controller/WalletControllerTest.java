@@ -15,6 +15,9 @@ import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
 import java.util.ArrayList;
 import java.util.List;
+import org.iban4j.IbanFormatException;
+import org.iban4j.InvalidCheckDigitException;
+import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -39,12 +42,14 @@ class WalletControllerTest {
   private static final String USER_ID = "TEST_USER_ID";
   private static final String ENROLL_INSTRUMENT_URL = "/instrument/";
   private static final String ENROLL_IBAN_URL = "/iban/";
-
   private static final String INITIATIVE_LIST = "/initiative/";
   private static final String STATUS_URL = "/status";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
+  private static final String IBAN_WRONG = "it99C1234567890123456789012222";
+  private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
+  private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String DESCRIPTION_OK = "conto cointestato";
 
   private static final InitiativeDTO INITIATIVE_DTO_TEST = new InitiativeDTO(INITIATIVE_ID,
@@ -214,6 +219,78 @@ class WalletControllerTest {
 
     assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
     assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+  }
+
+  @Test
+  void enroll_iban_wallet_format() throws Exception {
+    final IbanBodyDTO iban =
+        new IbanBodyDTO(INITIATIVE_ID, IBAN_WRONG, DESCRIPTION_OK);
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
+    Mockito.doThrow(
+            new IbanFormatException())
+        .when(walletServiceMock)
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, DESCRIPTION_OK);
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.put(BASE_URL + ENROLL_IBAN_URL + USER_ID)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsString(iban))
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+  }
+
+  @Test
+  void enroll_iban_invalid_digit() throws Exception {
+    final IbanBodyDTO iban =
+        new IbanBodyDTO(INITIATIVE_ID, IBAN_KO_NOT_IT, DESCRIPTION_OK);
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
+    Mockito.doThrow(
+            new InvalidCheckDigitException())
+        .when(walletServiceMock)
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, DESCRIPTION_OK);
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.put(BASE_URL + ENROLL_IBAN_URL + USER_ID)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsString(iban))
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+  }
+
+  @Test
+  void enroll_iban_not_it() throws Exception {
+    final IbanBodyDTO iban =
+        new IbanBodyDTO(INITIATIVE_ID, IBAN_WRONG_DIGIT, DESCRIPTION_OK);
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
+    Mockito.doThrow(
+            new UnsupportedCountryException())
+        .when(walletServiceMock)
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, DESCRIPTION_OK);
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.put(BASE_URL + ENROLL_IBAN_URL + USER_ID)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsString(iban))
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
   }
 
   @Test
