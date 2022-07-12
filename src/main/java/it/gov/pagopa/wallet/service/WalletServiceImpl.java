@@ -3,10 +3,13 @@ package it.gov.pagopa.wallet.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.IbanDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.event.IbanProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
@@ -33,6 +36,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Autowired
   WalletRestService walletRestService;
+  @Autowired
+  IbanProducer ibanProducer;
 
   @Override
   public void checkInitiative(String initiativeId) {
@@ -117,11 +122,11 @@ public class WalletServiceImpl implements WalletService {
     iban = iban.toUpperCase();
     this.formalControl(iban);
     if(wallet.getIban()==null || !(wallet.getIban().equals(iban))) {
-      //pub su coda
       wallet.setIban(iban);
       wallet.setDescription(description);
       wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
       wallet.setHolderBank(WalletConstants.HOLDER_BANK);
+      ibanProducer.sendIban(new IbanQueueDTO(wallet.getUserId(), wallet.getIban()));
     }
 
     String newStatus =
@@ -138,6 +143,13 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
 
+  }
+
+  @Override
+  public IbanDTO getIban(String initiativeId, String userId) {
+    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,userId).orElseThrow(() -> new WalletException(HttpStatus.NOT_FOUND.value(),
+        String.format("Iban for initiativeId %s and userId %s not found.", initiativeId, userId)));
+    return new IbanDTO(wallet.getIban(), wallet.getDescription(), wallet.getHolderBank(), wallet.getChannel());
   }
 
   @Override
