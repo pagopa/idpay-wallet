@@ -85,9 +85,22 @@ microservice-chart:
     APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL: "OFF"
     APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED: "false"
 
+  envConfigMapExternals:
+    idpay-common:
+      TZ: TZ
+      JAVA_TOOL_OPTIONS: JAVA_TOOL_OPTIONS
+    rest-client:
+      PAYMENT_INSTRUMENT_URI: idpay_payment_instrument_host
+    idpay-eventhub-00:
+      KAFKA_BINDER_BROKER_ENDPOINT_LIST: kafka_broker
+      KAFKA_IBAN_SASL_MECHANISM: kafka_sasl_mechanism
+      KAFKA_IBAN_SECURITY_PROTOCOL: kafka_security_protocol
+      KAFKA_TOPIC_IBAN: idpay_checkiban_evaluation_topic
+
   envSecret:
     aks-api-url: cstar-d-weu-dev01-aks-apiserver-url
     MONGODB_URI: mongodb-connection-string
+    KAFKA_IBAN_SASL_JAAS_CONFIG: evh-idpay-checkiban-evaluation-idpay-checkiban-evaluation-producer-jaas-config-idpay-00
 
   keyvault:
     name: "cstar-d-idpay-kv"
