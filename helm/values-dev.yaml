@@ -102,6 +102,7 @@ microservice-chart:
     MONGODB_URI: mongodb-connection-string
     KAFKA_IBAN_SASL_JAAS_CONFIG: evh-idpay-checkiban-evaluation-idpay-checkiban-evaluation-producer-jaas-config-idpay-00
     APPLICATIONINSIGHTS_CONNECTION_STRING: appinsights-instrumentation-key
+
   keyvault:
     name: "cstar-d-idpay-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
