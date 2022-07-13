@@ -169,7 +169,7 @@ public class WalletServiceImpl implements WalletService {
   
   private InitiativeDTO walletToDto(Wallet wallet){
     ModelMapper modelmapper = new ModelMapper();
-    return wallet != null ? modelmapper.map(wallet, InitiativeDTO.class) : null;
+    return modelmapper.map(wallet, InitiativeDTO.class);
   }
   
   private void formalControl(String iban){

@@ -57,6 +57,7 @@ class WalletServiceTest {
   private static final String INITIATIVE_ID_FAIL = "FAIL";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "IT09P3608105138205493205495";
+  private static final String IBAN_OK_OTHER = "IT09P3608105138205493205494";
   private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String IBAN_WRONG = "it99C1234567890123456789012222";
   private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
@@ -408,7 +409,32 @@ class WalletServiceTest {
     final Wallet wallet = new Wallet(
         USER_ID, INITIATIVE_ID, INITIATIVE_ID, WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN,TEST_DATE, TEST_DATE,
         TEST_AMOUNT);
-    wallet.setIban(IBAN_OK);
+    wallet.setIban(null);
+    wallet.setDescription(DESCRIPTION_OK);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(wallet));
+
+    Mockito.doAnswer(invocationOnMock -> {
+      wallet.setIban(IBAN_OK);
+      wallet.setDescription(DESCRIPTION_OK);
+      wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
+      wallet.setHolderBank(WalletConstants.HOLDER_BANK);
+      return null;
+    }).when(walletRepositoryMock).save(Mockito.any(Wallet.class));
+
+    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+
+    assertEquals(WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN, wallet.getStatus());
+
+  }
+
+  @Test
+  void enrollIban_update_ok() {
+    Mockito.doNothing().when(ibanProducer).sendIban(Mockito.any(IbanQueueDTO.class));
+    final Wallet wallet = new Wallet(
+        USER_ID, INITIATIVE_ID, INITIATIVE_ID, WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN,TEST_DATE, TEST_DATE,
+        TEST_AMOUNT);
+    wallet.setIban(IBAN_OK_OTHER);
     wallet.setDescription(DESCRIPTION_OK);
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(wallet));
