@@ -87,8 +87,8 @@ microservice-chart:
 
   envConfigMapExternals:
     idpay-common:
-      TZ: TZ
-      JAVA_TOOL_OPTIONS: JAVA_TOOL_OPTIONS
+      TZ: tz
+      JAVA_TOOL_OPTIONS: java_tool_options
     rest-client:
       PAYMENT_INSTRUMENT_URI: idpay_payment_instrument_host
     idpay-eventhub-00:
