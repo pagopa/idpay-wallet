@@ -126,7 +126,8 @@ public class WalletServiceImpl implements WalletService {
       wallet.setDescription(description);
       wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
       wallet.setHolderBank(WalletConstants.HOLDER_BANK);
-      ibanProducer.sendIban(new IbanQueueDTO(wallet.getUserId(), wallet.getIban(), LocalDateTime.now()));
+      wallet.setQueueDate(LocalDateTime.now());
+      ibanProducer.sendIban(new IbanQueueDTO(wallet.getUserId(), wallet.getIban(), wallet.getQueueDate()));
     }
 
     String newStatus =

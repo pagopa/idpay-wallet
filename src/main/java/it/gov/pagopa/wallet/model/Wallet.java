@@ -43,4 +43,6 @@ public class Wallet {
   private BigDecimal amount;
   private BigDecimal accrued;
   private BigDecimal refunded;
+
+  private LocalDateTime queueDate;
 }
