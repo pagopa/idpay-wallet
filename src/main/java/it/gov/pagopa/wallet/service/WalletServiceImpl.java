@@ -17,11 +17,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
-import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -126,7 +126,7 @@ public class WalletServiceImpl implements WalletService {
       wallet.setDescription(description);
       wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
       wallet.setHolderBank(WalletConstants.HOLDER_BANK);
-      ibanProducer.sendIban(new IbanQueueDTO(wallet.getUserId(), wallet.getIban()));
+      ibanProducer.sendIban(new IbanQueueDTO(wallet.getUserId(), wallet.getIban(), LocalDateTime.now()));
     }
 
     String newStatus =
