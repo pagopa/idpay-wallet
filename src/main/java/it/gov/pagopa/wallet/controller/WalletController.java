@@ -68,8 +68,8 @@ public interface WalletController {
    * @param initiativeId
    * @return
    */
-  @GetMapping("/{userId}/{initiativeId}/iban")
-  ResponseEntity<IbanDTO> getIban(@PathVariable("userId") String userId, @PathVariable("initiativeId") String initiativeId);
+  @GetMapping("/iban/{initiativeId}/{userId}")
+  ResponseEntity<IbanDTO> getIban(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   /**
    * Returns the active initiative lists
