@@ -424,7 +424,7 @@ class WalletControllerTest {
         .thenReturn(ibanDTO);
 
     mvc.perform(
-            MockMvcRequestBuilders.get(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID+ "/iban")
+            MockMvcRequestBuilders.get(BASE_URL+ "/iban" + "/" + INITIATIVE_ID + "/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
   }
@@ -438,7 +438,7 @@ class WalletControllerTest {
         .when(walletServiceMock).getIban(INITIATIVE_KO, USER_ID);
 
     mvc.perform(
-            MockMvcRequestBuilders.get(BASE_URL + "/" + INITIATIVE_KO + "/" + USER_ID+ "/iban")
+            MockMvcRequestBuilders.get(BASE_URL+ "/iban" + "/" + INITIATIVE_KO + "/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isNotFound()).andReturn();
   }
