@@ -13,7 +13,9 @@ import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.event.IbanProducer;
+import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
@@ -42,6 +44,9 @@ class WalletServiceTest {
 
   @MockBean
   IbanProducer ibanProducer;
+
+  @MockBean
+  TimelineProducer timelineProducer;
   
   @MockBean
   WalletRepository walletRepositoryMock;
@@ -147,6 +152,9 @@ class WalletServiceTest {
     } catch (WalletException e) {
       Assertions.fail();
     }
+
+    Mockito.doNothing().when(timelineProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
+
     assertEquals(WalletConstants.STATUS_REFUNDABLE, TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
   }
@@ -161,6 +169,8 @@ class WalletServiceTest {
     Mockito.when(
             walletRestServiceMock.callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class)))
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
+
+    Mockito.doNothing().when(timelineProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);

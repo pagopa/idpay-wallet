@@ -8,8 +8,10 @@ import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.event.IbanProducer;
+import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
@@ -38,6 +40,9 @@ public class WalletServiceImpl implements WalletService {
   WalletRestService walletRestService;
   @Autowired
   IbanProducer ibanProducer;
+
+  @Autowired
+  TimelineProducer timelineProducer;
 
   @Override
   public void checkInitiative(String initiativeId) {
@@ -107,7 +112,15 @@ public class WalletServiceImpl implements WalletService {
     wallet.setStatus(newStatus);
 
     walletRepository.save(wallet);
-
+    QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
+        .initiativeId(wallet.getInitiativeId())
+        .userId(wallet.getUserId())
+        .channel(wallet.getChannel())
+        .hpan(wallet.getIban())
+        .operationType("ADD_INSTRUMENT")
+        .operationDate(LocalDateTime.now())
+        .build();
+    timelineProducer.sendInstrument(queueOperationDTO);
   }
 
   @Override
@@ -168,7 +181,7 @@ public class WalletServiceImpl implements WalletService {
     return initiativeListDTO;
 
   }
-  
+
   private InitiativeDTO walletToDto(Wallet wallet){
     ModelMapper modelmapper = new ModelMapper();
     return modelmapper.map(wallet, InitiativeDTO.class);
