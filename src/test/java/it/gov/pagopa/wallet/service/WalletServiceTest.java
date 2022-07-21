@@ -153,7 +153,7 @@ class WalletServiceTest {
       Assertions.fail();
     }
 
-    Mockito.doNothing().when(timelineProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
 
     assertEquals(WalletConstants.STATUS_REFUNDABLE, TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
@@ -170,7 +170,7 @@ class WalletServiceTest {
             walletRestServiceMock.callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class)))
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
 
-    Mockito.doNothing().when(timelineProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
 
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
@@ -303,6 +303,8 @@ class WalletServiceTest {
       TEST_WALLET_INSTRUMENT.setHolderBank(WalletConstants.HOLDER_BANK);
       return null;
     }).when(walletRepositoryMock).save(Mockito.any(Wallet.class));
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+
     walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
 
     assertEquals(INITIATIVE_ID, TEST_WALLET_INSTRUMENT.getInitiativeId());
