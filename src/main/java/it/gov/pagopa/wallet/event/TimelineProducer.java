@@ -9,11 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class TimelineProducer {
   @Value("${spring.cloud.stream.bindings.walletQueue-out-1.binder}")
-  private String binderInstrument;
+  private String binderTimeline;
   @Autowired
   StreamBridge streamBridge;
 
-  public void sendInstrument(QueueOperationDTO queueOperationDTO){
-    streamBridge.send("walletQueue-out-1",binderInstrument, queueOperationDTO);
+  public void sendEvent(QueueOperationDTO queueOperationDTO){
+    streamBridge.send("walletQueue-out-1",binderTimeline, queueOperationDTO);
   }
+
 }

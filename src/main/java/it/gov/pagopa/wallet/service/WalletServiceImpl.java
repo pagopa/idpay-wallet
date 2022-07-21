@@ -116,11 +116,11 @@ public class WalletServiceImpl implements WalletService {
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel(dto.getChannel())
-        .hpan(dto.getHpan())
+        .iban(dto.getHpan())
         .operationType("ADD_INSTRUMENT")
         .operationDate(LocalDateTime.now())
         .build();
-    timelineProducer.sendInstrument(queueOperationDTO);
+    timelineProducer.sendEvent(queueOperationDTO);
   }
 
   @Override
@@ -157,6 +157,16 @@ public class WalletServiceImpl implements WalletService {
     wallet.setStatus(newStatus);
 
     walletRepository.save(wallet);
+
+    QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
+        .initiativeId(wallet.getInitiativeId())
+        .userId(wallet.getUserId())
+        .channel(wallet.getChannel())
+        .iban(wallet.getIban())
+        .operationType("ADD_IBAN")
+        .operationDate(LocalDateTime.now())
+        .build();
+    timelineProducer.sendEvent(queueOperationDTO);
 
   }
 
