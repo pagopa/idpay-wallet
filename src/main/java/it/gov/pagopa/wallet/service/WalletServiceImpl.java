@@ -116,7 +116,7 @@ public class WalletServiceImpl implements WalletService {
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel(dto.getChannel())
-        .iban(dto.getHpan())
+        .hpan(dto.getHpan())
         .operationType("ADD_INSTRUMENT")
         .operationDate(LocalDateTime.now())
         .build();
