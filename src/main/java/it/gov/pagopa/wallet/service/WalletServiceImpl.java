@@ -113,10 +113,10 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
     QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
-        .initiativeId(wallet.getInitiativeId())
-        .userId(wallet.getUserId())
-        .channel(wallet.getChannel())
-        .hpan(wallet.getIban())
+        .initiativeId(dto.getInitiativeId())
+        .userId(dto.getUserId())
+        .channel(dto.getChannel())
+        .hpan(dto.getHpan())
         .operationType("ADD_INSTRUMENT")
         .operationDate(LocalDateTime.now())
         .build();
