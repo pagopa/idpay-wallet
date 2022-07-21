@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class IbanProducer {
-  @Value("${kafka.topic.iban}")
-  private String topicIban;
+  @Value("${spring.cloud.stream.bindings.walletQueue-out-0.binder}")
+  private String binderIban;
   @Autowired
   StreamBridge streamBridge;
 
   public void sendIban(IbanQueueDTO ibanQueueDTO){
-    streamBridge.send(topicIban, ibanQueueDTO);
+    streamBridge.send("walletQueue-out-0",binderIban, ibanQueueDTO);
   }
 }
