@@ -9,7 +9,6 @@ import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
@@ -48,9 +47,6 @@ public class WalletServiceImpl implements WalletService {
 
   @Autowired
   WalletMapper walletMapper;
-
-  @Autowired
-  TimelineProducer timelineProducer;
 
   @Override
   public void checkInitiative(String initiativeId) {

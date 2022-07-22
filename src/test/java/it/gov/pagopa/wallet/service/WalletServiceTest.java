@@ -542,13 +542,13 @@ class WalletServiceTest {
   void createWallet() {
     walletService.createWallet(OUTCOME_OK);
     Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(Mockito.any());
-    Mockito.verify(timelineProducer, Mockito.times(1)).sendTimelineEvent(Mockito.any());
+    Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
   }
 
   @Test
   void createWallet_doNoting() {
     walletService.createWallet(OUTCOME_KO);
     Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
-    Mockito.verify(timelineProducer, Mockito.times(0)).sendTimelineEvent(Mockito.any());
+    Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 }
