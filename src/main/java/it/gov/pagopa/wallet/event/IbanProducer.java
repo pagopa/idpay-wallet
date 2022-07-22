@@ -14,6 +14,6 @@ public class IbanProducer {
   StreamBridge streamBridge;
 
   public void sendIban(IbanQueueDTO ibanQueueDTO){
-    streamBridge.send("walletQueue-out-0",binderIban, ibanQueueDTO);
+    streamBridge.send("walletQueue-out-0", binderIban, ibanQueueDTO);
   }
 }

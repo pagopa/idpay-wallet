@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
@@ -10,6 +11,8 @@ import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.event.IbanProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
@@ -40,6 +43,11 @@ public class WalletServiceImpl implements WalletService {
   WalletRestService walletRestService;
   @Autowired
   IbanProducer ibanProducer;
+  @Autowired
+  TimelineProducer timelineProducer;
+
+  @Autowired
+  WalletMapper walletMapper;
 
   @Autowired
   TimelineProducer timelineProducer;
@@ -190,6 +198,23 @@ public class WalletServiceImpl implements WalletService {
     initiativeListDTO.setInitiativeList(initiativeDTOList);
     return initiativeListDTO;
 
+  }
+
+  @Override
+  public void createWallet(EvaluationDTO evaluationDTO) {
+    if(evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)){
+      Wallet wallet = walletMapper.map(evaluationDTO);
+      walletRepository.save(wallet);
+
+      QueueOperationDTO dto = QueueOperationDTO.builder()
+          .initiativeId(evaluationDTO.getInitiativeId())
+          .userId(evaluationDTO.getUserId())
+          .operationType(WalletConstants.ONBOARDING_OPERATION)
+          .operationDate(LocalDateTime.now())
+          .build();
+
+      timelineProducer.sendEvent(dto);
+    }
   }
 
   private InitiativeDTO walletToDto(Wallet wallet){

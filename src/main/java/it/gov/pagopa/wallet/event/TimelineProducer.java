@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TimelineProducer {
+
   @Value("${spring.cloud.stream.bindings.walletQueue-out-1.binder}")
   private String binderTimeline;
+  
   @Autowired
   StreamBridge streamBridge;
 
