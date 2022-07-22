@@ -16,7 +16,12 @@ public class QueueOperationDTO {
 
   private String operationType;
 
-  private LocalDateTime operationDate;
+  private String hpan;
 
+  private String iban;
+
+  private String channel;
+
+  private LocalDateTime operationDate;
 }
 

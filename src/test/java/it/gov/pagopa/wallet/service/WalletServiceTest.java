@@ -15,6 +15,7 @@ import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.event.IbanProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
@@ -158,6 +159,9 @@ class WalletServiceTest {
     } catch (WalletException e) {
       Assertions.fail();
     }
+
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+
     assertEquals(WalletConstants.STATUS_REFUNDABLE, TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
   }
@@ -172,6 +176,8 @@ class WalletServiceTest {
     Mockito.when(
             walletRestServiceMock.callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class)))
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
+
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
 
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
@@ -295,16 +301,15 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET_INSTRUMENT));
 
-    Mockito.doAnswer(
-            invocationOnMock -> {
-              TEST_WALLET_INSTRUMENT.setIban(IBAN_OK);
-              TEST_WALLET_INSTRUMENT.setDescription(DESCRIPTION_OK);
-              TEST_WALLET_INSTRUMENT.setChannel(WalletConstants.CHANNEL_APP_IO);
-              TEST_WALLET_INSTRUMENT.setHolderBank(WalletConstants.HOLDER_BANK);
-              return null;
-            })
-        .when(walletRepositoryMock)
-        .save(Mockito.any(Wallet.class));
+    Mockito.doAnswer(invocationOnMock -> {
+      TEST_WALLET_INSTRUMENT.setIban(IBAN_OK);
+      TEST_WALLET_INSTRUMENT.setDescription(DESCRIPTION_OK);
+      TEST_WALLET_INSTRUMENT.setChannel(WalletConstants.CHANNEL_APP_IO);
+      TEST_WALLET_INSTRUMENT.setHolderBank(WalletConstants.HOLDER_BANK);
+      return null;
+    }).when(walletRepositoryMock).save(Mockito.any(Wallet.class));
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+
     walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
 
     assertEquals(INITIATIVE_ID, TEST_WALLET_INSTRUMENT.getInitiativeId());
