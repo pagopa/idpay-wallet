@@ -10,22 +10,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class RTDProducer {
+
   @Value("${spring.cloud.stream.bindings.walletQueue-out-2.binder}")
   private String binderInstrument;
   @Autowired
   StreamBridge streamBridge;
 
-  public void sendInstrument(QueueOperationDTO queueOperationDTO){
+  public void sendInstrument(QueueOperationDTO queueOperationDTO) {
     streamBridge.send("walletQueue-out-2", binderInstrument, queueOperationDTO);
   }
-
-//  @Value("${kafka.topic.rtd}")
-//  private String topicName;
-//  @Autowired
-//  KafkaTemplate<String, QueueOperationDTO> kafkaTemplate;
-//
-//  public void sendInstrument(QueueOperationDTO queueOperationDTO){
-//    kafkaTemplate.send(topicName, queueOperationDTO);
-//  }
 
 }

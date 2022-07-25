@@ -45,20 +45,21 @@ import org.springframework.web.client.HttpClientErrorException;
 @WebMvcTest(value = {WalletService.class})
 class WalletServiceTest {
 
-  @MockBean IbanProducer ibanProducer;
-
-  @MockBean TimelineProducer timelineProducer;
-
-  @MockBean WalletRepository walletRepositoryMock;
-
-  @MockBean WalletRestService walletRestServiceMock;
-
-  @MockBean WalletMapper walletMapper;
-
+  @MockBean
+  IbanProducer ibanProducer;
+  @MockBean
+  TimelineProducer timelineProducer;
   @MockBean
   RTDProducer rtdProducer;
+  @MockBean
+  WalletRepository walletRepositoryMock;
+  @MockBean
+  WalletRestService walletRestServiceMock;
 
-  @Autowired WalletService walletService;
+  @MockBean
+  WalletMapper walletMapper;
+  @Autowired
+  WalletService walletService;
 
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
@@ -216,7 +217,8 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.doThrow(new JsonProcessingException("") {})
+    Mockito.doThrow(new JsonProcessingException("") {
+        })
         .when(walletRestServiceMock)
         .callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class));
 
