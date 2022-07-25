@@ -18,5 +18,4 @@ public class TimelineProducer {
   public void sendEvent(QueueOperationDTO queueOperationDTO){
     streamBridge.send("walletQueue-out-1",binderTimeline, queueOperationDTO);
   }
-
 }

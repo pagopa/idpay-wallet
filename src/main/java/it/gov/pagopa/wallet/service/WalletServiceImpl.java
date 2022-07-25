@@ -13,6 +13,7 @@ import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.event.IbanProducer;
+import it.gov.pagopa.wallet.event.RTDProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -44,7 +45,8 @@ public class WalletServiceImpl implements WalletService {
   IbanProducer ibanProducer;
   @Autowired
   TimelineProducer timelineProducer;
-
+  @Autowired
+  RTDProducer rtdProducer;
   @Autowired
   WalletMapper walletMapper;
 
@@ -125,6 +127,7 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
+    rtdProducer.sendInstrument(queueOperationDTO);
   }
 
   @Override
@@ -171,7 +174,6 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
-
   }
 
   @Override
