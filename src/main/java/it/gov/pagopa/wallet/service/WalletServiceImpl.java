@@ -13,6 +13,7 @@ import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.event.IbanProducer;
+import it.gov.pagopa.wallet.event.RTDProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -44,7 +45,8 @@ public class WalletServiceImpl implements WalletService {
   IbanProducer ibanProducer;
   @Autowired
   TimelineProducer timelineProducer;
-
+  @Autowired
+  RTDProducer rtdProducer;
   @Autowired
   WalletMapper walletMapper;
 
@@ -125,6 +127,13 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
+    QueueOperationDTO queueOperationDTO1 = QueueOperationDTO.builder()
+        .hpan(dto.getHpan())
+        .operationType("ADD_INSTRUMENT")
+        .application("IDPAY")
+        .operationDate(LocalDateTime.now())
+        .build();
+    rtdProducer.sendInstrument(queueOperationDTO1);
   }
 
   @Override
@@ -138,12 +147,13 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     this.formalControl(iban);
-    if(wallet.getIban()==null || !(wallet.getIban().equals(iban))) {
+    if (wallet.getIban() == null || !(wallet.getIban().equals(iban))) {
       wallet.setIban(iban);
       wallet.setDescription(description);
       wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
       wallet.setHolderBank(WalletConstants.HOLDER_BANK);
-      IbanQueueDTO ibanQueueDTO = new IbanQueueDTO(wallet.getUserId(), wallet.getIban(), LocalDateTime.now());
+      IbanQueueDTO ibanQueueDTO = new IbanQueueDTO(wallet.getUserId(), wallet.getIban(),
+          LocalDateTime.now());
       ibanProducer.sendIban(ibanQueueDTO);
 
     }
@@ -171,14 +181,16 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
-
   }
 
   @Override
   public IbanDTO getIban(String initiativeId, String userId) {
-    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,userId).orElseThrow(() -> new WalletException(HttpStatus.NOT_FOUND.value(),
-        String.format("Iban for initiativeId %s and userId %s not found.", initiativeId, userId)));
-    return new IbanDTO(wallet.getIban(), wallet.getDescription(), wallet.getHolderBank(), wallet.getChannel());
+    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(() -> new WalletException(HttpStatus.NOT_FOUND.value(),
+            String.format("Iban for initiativeId %s and userId %s not found.", initiativeId,
+                userId)));
+    return new IbanDTO(wallet.getIban(), wallet.getDescription(), wallet.getHolderBank(),
+        wallet.getChannel());
   }
 
   @Override
@@ -198,7 +210,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
-    if(evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)){
+    if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       walletRepository.save(wallet);
 
@@ -213,16 +225,16 @@ public class WalletServiceImpl implements WalletService {
     }
   }
 
-  private InitiativeDTO walletToDto(Wallet wallet){
+  private InitiativeDTO walletToDto(Wallet wallet) {
     ModelMapper modelmapper = new ModelMapper();
     return modelmapper.map(wallet, InitiativeDTO.class);
   }
-  
-  private void formalControl(String iban){
+
+  private void formalControl(String iban) {
     Iban ibanValidator = Iban.valueOf(iban);
     IbanUtil.validate(iban);
-    if(!ibanValidator.getCountryCode().equals(CountryCode.IT)){
-      throw new UnsupportedCountryException(iban+" Iban is not italian");
+    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
+      throw new UnsupportedCountryException(iban + " Iban is not italian");
     }
   }
 }

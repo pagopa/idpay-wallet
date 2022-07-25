@@ -23,5 +23,7 @@ public class QueueOperationDTO {
   private String channel;
 
   private LocalDateTime operationDate;
+
+  private String application;
 }
 
