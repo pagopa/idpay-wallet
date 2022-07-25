@@ -3,13 +3,18 @@ package it.gov.pagopa.wallet.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.event.IbanProducer;
+import it.gov.pagopa.wallet.event.RTDProducer;
+import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
@@ -38,6 +43,12 @@ public class WalletServiceImpl implements WalletService {
   WalletRestService walletRestService;
   @Autowired
   IbanProducer ibanProducer;
+  @Autowired
+  TimelineProducer timelineProducer;
+  @Autowired
+  RTDProducer rtdProducer;
+  @Autowired
+  WalletMapper walletMapper;
 
   @Override
   public void checkInitiative(String initiativeId) {
@@ -107,7 +118,22 @@ public class WalletServiceImpl implements WalletService {
     wallet.setStatus(newStatus);
 
     walletRepository.save(wallet);
-
+    QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
+        .initiativeId(dto.getInitiativeId())
+        .userId(dto.getUserId())
+        .channel(dto.getChannel())
+        .hpan(dto.getHpan())
+        .operationType("ADD_INSTRUMENT")
+        .operationDate(LocalDateTime.now())
+        .build();
+    timelineProducer.sendEvent(queueOperationDTO);
+    QueueOperationDTO queueOperationDTO1 = QueueOperationDTO.builder()
+        .hpan(dto.getHpan())
+        .operationType("ADD_INSTRUMENT")
+        .application("IDPAY")
+        .operationDate(LocalDateTime.now())
+        .build();
+    rtdProducer.sendInstrument(queueOperationDTO1);
   }
 
   @Override
@@ -121,12 +147,13 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     this.formalControl(iban);
-    if(wallet.getIban()==null || !(wallet.getIban().equals(iban))) {
+    if (wallet.getIban() == null || !(wallet.getIban().equals(iban))) {
       wallet.setIban(iban);
       wallet.setDescription(description);
       wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
       wallet.setHolderBank(WalletConstants.HOLDER_BANK);
-      IbanQueueDTO ibanQueueDTO = new IbanQueueDTO(wallet.getUserId(), wallet.getIban(), LocalDateTime.now());
+      IbanQueueDTO ibanQueueDTO = new IbanQueueDTO(wallet.getUserId(), wallet.getIban(),
+          LocalDateTime.now());
       ibanProducer.sendIban(ibanQueueDTO);
 
     }
@@ -145,13 +172,25 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
 
+    QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
+        .initiativeId(wallet.getInitiativeId())
+        .userId(wallet.getUserId())
+        .channel(wallet.getChannel())
+        .iban(wallet.getIban())
+        .operationType("ADD_IBAN")
+        .operationDate(LocalDateTime.now())
+        .build();
+    timelineProducer.sendEvent(queueOperationDTO);
   }
 
   @Override
   public IbanDTO getIban(String initiativeId, String userId) {
-    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,userId).orElseThrow(() -> new WalletException(HttpStatus.NOT_FOUND.value(),
-        String.format("Iban for initiativeId %s and userId %s not found.", initiativeId, userId)));
-    return new IbanDTO(wallet.getIban(), wallet.getDescription(), wallet.getHolderBank(), wallet.getChannel());
+    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(() -> new WalletException(HttpStatus.NOT_FOUND.value(),
+            String.format("Iban for initiativeId %s and userId %s not found.", initiativeId,
+                userId)));
+    return new IbanDTO(wallet.getIban(), wallet.getDescription(), wallet.getHolderBank(),
+        wallet.getChannel());
   }
 
   @Override
@@ -168,17 +207,34 @@ public class WalletServiceImpl implements WalletService {
     return initiativeListDTO;
 
   }
-  
-  private InitiativeDTO walletToDto(Wallet wallet){
+
+  @Override
+  public void createWallet(EvaluationDTO evaluationDTO) {
+    if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
+      Wallet wallet = walletMapper.map(evaluationDTO);
+      walletRepository.save(wallet);
+
+      QueueOperationDTO dto = QueueOperationDTO.builder()
+          .initiativeId(evaluationDTO.getInitiativeId())
+          .userId(evaluationDTO.getUserId())
+          .operationType(WalletConstants.ONBOARDING_OPERATION)
+          .operationDate(LocalDateTime.now())
+          .build();
+
+      timelineProducer.sendEvent(dto);
+    }
+  }
+
+  private InitiativeDTO walletToDto(Wallet wallet) {
     ModelMapper modelmapper = new ModelMapper();
     return modelmapper.map(wallet, InitiativeDTO.class);
   }
-  
-  private void formalControl(String iban){
+
+  private void formalControl(String iban) {
     Iban ibanValidator = Iban.valueOf(iban);
     IbanUtil.validate(iban);
-    if(!ibanValidator.getCountryCode().equals(CountryCode.IT)){
-      throw new UnsupportedCountryException(iban+" Iban is not italian");
+    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
+      throw new UnsupportedCountryException(iban + " Iban is not italian");
     }
   }
 }

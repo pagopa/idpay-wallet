@@ -50,10 +50,6 @@
       <artifactId>iban4j</artifactId>
       <version>3.2.3-RELEASE</version>
     </dependency>
-    <!-- <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-stream-kafka</artifactId>
-    </dependency> -->
 
     <!--3rd party library-->
     <dependency>
