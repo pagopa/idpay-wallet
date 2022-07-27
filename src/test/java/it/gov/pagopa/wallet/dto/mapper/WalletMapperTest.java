@@ -9,15 +9,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(MockitoExtension.class)
-@WebMvcTest(
-    value = {WalletMapper.class},
-    excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = WalletMapper.class)
 class WalletMapperTest {
   private static final String USER_ID = "test_user";
   private static final String INITIATIVE_ID = "test_initiative";
