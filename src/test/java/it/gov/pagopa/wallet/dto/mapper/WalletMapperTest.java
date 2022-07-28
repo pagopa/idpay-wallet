@@ -30,7 +30,7 @@ class WalletMapperTest {
           .build();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
-          USER_ID, INITIATIVE_ID, "TEST_AUTHORITY", WalletConstants.STATUS_ONBOARDING_OK, OPERATION_DATE, null);
+          USER_ID, INITIATIVE_ID,  WalletConstants.STATUS_ONBOARDING_OK, OPERATION_DATE, null);
 
   @Autowired WalletMapper walletMapper;
 
