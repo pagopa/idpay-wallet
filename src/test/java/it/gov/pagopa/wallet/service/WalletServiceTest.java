@@ -120,9 +120,9 @@ class WalletServiceTest {
           String.valueOf(TEST_REFUNDED));
 
   private static final EvaluationDTO OUTCOME_KO =
-      new EvaluationDTO(USER_ID, INITIATIVE_ID, "TEST_AUTHORITY", "ONBOARDING_KO", TEST_DATE, null);
+      new EvaluationDTO(USER_ID, INITIATIVE_ID,  "ONBOARDING_KO", TEST_DATE, null);
   private static final EvaluationDTO OUTCOME_OK =
-      new EvaluationDTO(USER_ID, INITIATIVE_ID, "TEST_AUTHORITY", "ONBOARDING_OK", TEST_DATE, null);
+      new EvaluationDTO(USER_ID, INITIATIVE_ID,  "ONBOARDING_OK", TEST_DATE, null);
 
   static {
     TEST_WALLET.setIban(IBAN_OK);
