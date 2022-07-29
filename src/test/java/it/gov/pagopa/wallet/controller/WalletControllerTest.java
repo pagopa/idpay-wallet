@@ -347,7 +347,7 @@ class WalletControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(IBAN_BODY_DTO))
                 .accept(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(MockMvcResultMatchers.status().isNoContent())
+        .andExpect(MockMvcResultMatchers.status().isOk())
         .andReturn();
   }
   
