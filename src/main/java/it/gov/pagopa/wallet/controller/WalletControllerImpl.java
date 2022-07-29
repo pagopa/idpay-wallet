@@ -42,7 +42,7 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<Void> enrollIban(IbanBodyDTO body, String userId) {
     walletService.checkInitiative(body.getInitiativeId());
     walletService.enrollIban(body.getInitiativeId(), userId, body.getIban(), body.getDescription());
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @Override
