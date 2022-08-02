@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
@@ -489,29 +488,6 @@ class WalletServiceTest {
       assertEquals(INITIATIVE_DTO.getRefunded(), actual.getRefunded());
     } catch (WalletException e) {
       Assertions.fail();
-    }
-  }
-
-  @Test
-  void getIban_ok() {
-
-    IbanDTO ibanDTO = new IbanDTO(IBAN_OK, DESCRIPTION_OK, HOLDER_BANK_OK, CHANNEL_OK);
-
-    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-        .thenReturn(Optional.of(TEST_WALLET));
-    walletService.getIban(INITIATIVE_ID, USER_ID);
-
-    assertEquals(ibanDTO.getIban(), TEST_WALLET.getIban());
-  }
-
-  @Test
-  void getIban_ko() {
-    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-        .thenReturn(Optional.empty());
-    try {
-      walletService.getIban(INITIATIVE_ID, USER_ID);
-    } catch (WalletException e) {
-      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
     }
   }
 

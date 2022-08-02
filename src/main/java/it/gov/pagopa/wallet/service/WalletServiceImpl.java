@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
@@ -181,16 +180,6 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
-  }
-
-  @Override
-  public IbanDTO getIban(String initiativeId, String userId) {
-    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId)
-        .orElseThrow(() -> new WalletException(HttpStatus.NOT_FOUND.value(),
-            String.format("Iban for initiativeId %s and userId %s not found.", initiativeId,
-                userId)));
-    return new IbanDTO(wallet.getIban(), wallet.getDescription(), wallet.getHolderBank(),
-        wallet.getChannel());
   }
 
   @Override
