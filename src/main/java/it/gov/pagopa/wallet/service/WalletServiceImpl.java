@@ -148,11 +148,8 @@ public class WalletServiceImpl implements WalletService {
     this.formalControl(iban);
     if (wallet.getIban() == null || !(wallet.getIban().equals(iban))) {
       wallet.setIban(iban);
-      wallet.setDescription(description);
-      wallet.setChannel(WalletConstants.CHANNEL_APP_IO);
-      wallet.setHolderBank(WalletConstants.HOLDER_BANK);
       IbanQueueDTO ibanQueueDTO = new IbanQueueDTO(wallet.getUserId(), wallet.getIban(),
-          LocalDateTime.now());
+          description, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
       ibanProducer.sendIban(ibanQueueDTO);
 
     }
@@ -174,7 +171,7 @@ public class WalletServiceImpl implements WalletService {
     QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
         .initiativeId(wallet.getInitiativeId())
         .userId(wallet.getUserId())
-        .channel(wallet.getChannel())
+        .channel(WalletConstants.CHANNEL_APP_IO)
         .iban(wallet.getIban())
         .operationType("ADD_IBAN")
         .operationDate(LocalDateTime.now())
