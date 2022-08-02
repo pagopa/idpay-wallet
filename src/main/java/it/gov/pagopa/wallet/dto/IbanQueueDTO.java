@@ -12,5 +12,9 @@ public class IbanQueueDTO {
 
   String iban;
 
+  String description;
+
+  String channel;
+
   LocalDateTime queueDate;
 }

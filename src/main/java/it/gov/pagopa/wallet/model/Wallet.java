@@ -22,9 +22,6 @@ public class Wallet {
   private LocalDateTime acceptanceDate;
   private LocalDateTime endDate;
   private String iban;
-  private String description;
-  private String holderBank;
-  private String channel;
   private BigDecimal amount;
   private BigDecimal accrued;
   private BigDecimal refunded;
