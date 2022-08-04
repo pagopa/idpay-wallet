@@ -1,0 +1,319 @@
+{
+	"info": {
+		"_postman_id": "0ff9dcb6-cb43-4276-a33c-7b73095c7240",
+		"name": "Wallet - e2e",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21721440"
+	},
+	"item": [
+		{
+			"name": "Get Detail",
+			"item": [
+				{
+					"name": "Generate Token IO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Retrieve Token', () => {\r",
+									"    //verify response HTTP status \r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "",
+								"type": "default"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode=AAAAAA00A00A000A",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bpd",
+								"pagopa",
+								"api",
+								"v1",
+								"login"
+							],
+							"query": [
+								{
+									"key": "fiscalCode",
+									"value": "AAAAAA00A00A000A"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Detail\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/test_get_wallet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"test_get_wallet"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail - Ko [Initiative Checks Failed]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    let jsonStatus = pm.response.json()\r",
+									"    pm.expect(jsonStatus.code).equals(404);\r",
+									"    pm.expect(jsonStatus.message).equals(\"The requested initiative is not active for the current user!\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/test_initiative*",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"test_initiative*"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get InitiativeList",
+			"item": [
+				{
+					"name": "Generate Token IO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Retrieve Token', () => {\r",
+									"    //verify response HTTP status \r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "",
+								"type": "default"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode=TRNFNC96R02H501I",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bpd",
+								"pagopa",
+								"api",
+								"v1",
+								"login"
+							],
+							"query": [
+								{
+									"key": "fiscalCode",
+									"value": "TRNFNC96R02H501I"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get InitiativeList",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get InitiativeList\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "tokenIO",
+			"value": ""
+		},
+		{
+			"key": "Ocp-Apim-Trace",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

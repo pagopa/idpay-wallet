@@ -1,10 +1,9 @@
 package it.gov.pagopa.wallet.dto;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @AllArgsConstructor

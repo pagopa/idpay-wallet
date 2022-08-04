@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
+import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
@@ -24,6 +27,7 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import org.iban4j.IbanFormatException;
@@ -39,27 +43,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
 class WalletServiceTest {
 
-  @MockBean
-  IbanProducer ibanProducer;
-  @MockBean
-  TimelineProducer timelineProducer;
-  @MockBean
-  RTDProducer rtdProducer;
-  @MockBean
-  WalletRepository walletRepositoryMock;
-  @MockBean
-  WalletRestService walletRestServiceMock;
-
-  @MockBean
-  WalletMapper walletMapper;
-  @Autowired
-  WalletService walletService;
+  @MockBean IbanProducer ibanProducer;
+  @MockBean TimelineProducer timelineProducer;
+  @MockBean RTDProducer rtdProducer;
+  @MockBean WalletRepository walletRepositoryMock;
+  @MockBean PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  @MockBean WalletMapper walletMapper;
+  @Autowired WalletService walletService;
 
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
@@ -119,23 +114,24 @@ class WalletServiceTest {
           String.valueOf(TEST_REFUNDED));
 
   private static final EvaluationDTO OUTCOME_KO =
-      new EvaluationDTO(USER_ID, INITIATIVE_ID,  "ONBOARDING_KO", TEST_DATE, null);
+      new EvaluationDTO(USER_ID, INITIATIVE_ID, "ONBOARDING_KO", TEST_DATE, null);
   private static final EvaluationDTO OUTCOME_OK =
-      new EvaluationDTO(USER_ID, INITIATIVE_ID,  "ONBOARDING_OK", TEST_DATE, null);
+      new EvaluationDTO(USER_ID, INITIATIVE_ID, "ONBOARDING_OK", TEST_DATE, null);
 
   static {
     TEST_WALLET.setIban(IBAN_OK);
   }
 
   @Test
-  void enrollInstrument_ok() throws Exception {
+  void enrollInstrument_ok() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
     TEST_WALLET.setStatus(WalletConstants.STATUS_NOT_REFUNDABLE);
 
     Mockito.when(
-            walletRestServiceMock.callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class)))
+            paymentInstrumentRestConnector.enrollInstrument(
+                Mockito.any(InstrumentCallBodyDTO.class)))
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
 
     try {
@@ -148,14 +144,15 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollInstrument_ok_with_iban() throws Exception {
+  void enrollInstrument_ok_with_iban() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
     TEST_WALLET.setStatus(WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN);
 
     Mockito.when(
-            walletRestServiceMock.callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class)))
+            paymentInstrumentRestConnector.enrollInstrument(
+                Mockito.any(InstrumentCallBodyDTO.class)))
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
 
     try {
@@ -172,14 +169,15 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollInstrument_ok_with_instrument() throws Exception {
+  void enrollInstrument_ok_with_instrument() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
     TEST_WALLET.setStatus(WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT);
 
     Mockito.when(
-            walletRestServiceMock.callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class)))
+            paymentInstrumentRestConnector.enrollInstrument(
+                Mockito.any(InstrumentCallBodyDTO.class)))
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
@@ -195,31 +193,17 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollInstrument_ko_httpclienterrorexception() throws Exception {
+  void enrollInstrument_ko_feignexception() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.doThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN))
-        .when(walletRestServiceMock)
-        .callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class));
+    Request request =
+        Request.create(
+            Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
 
-    try {
-      walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
-      Assertions.fail();
-    } catch (WalletException e) {
-      assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
-    }
-  }
-
-  @Test
-  void enrollInstrument_ko_jsonprocessingexception() throws Exception {
-    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-        .thenReturn(Optional.of(TEST_WALLET));
-
-    Mockito.doThrow(new JsonProcessingException("") {
-        })
-        .when(walletRestServiceMock)
-        .callPaymentInstrument(Mockito.any(InstrumentCallBodyDTO.class));
+    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+        .when(paymentInstrumentRestConnector)
+        .enrollInstrument(Mockito.any(InstrumentCallBodyDTO.class));
 
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);

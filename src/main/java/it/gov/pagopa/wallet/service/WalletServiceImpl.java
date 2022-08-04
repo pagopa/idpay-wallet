@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import feign.FeignException;
+import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
@@ -20,7 +21,6 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
@@ -30,7 +30,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 public class WalletServiceImpl implements WalletService {
@@ -39,7 +38,7 @@ public class WalletServiceImpl implements WalletService {
   WalletRepository walletRepository;
 
   @Autowired
-  WalletRestService walletRestService;
+  PaymentInstrumentRestConnector paymentInstrumentRestConnector;
   @Autowired
   IbanProducer ibanProducer;
   @Autowired
@@ -95,14 +94,12 @@ public class WalletServiceImpl implements WalletService {
 
     InstrumentResponseDTO responseDTO;
     try {
-      responseDTO = walletRestService.callPaymentInstrument(dto);
-    } catch (HttpClientErrorException e) {
-      throw new WalletException(e.getRawStatusCode(), e.getMessage());
-    } catch (JsonProcessingException jpe) {
-      throw new WalletException(HttpStatus.BAD_REQUEST.value(), jpe.getMessage());
+      responseDTO = paymentInstrumentRestConnector.enrollInstrument(dto);
+    } catch (FeignException e) {
+      throw new WalletException(e.status(), e.getMessage());
     }
 
-    wallet.setNInstr(Objects.requireNonNull(responseDTO).getNinstr());
+    wallet.setNInstr(responseDTO.getNinstr());
 
     String newStatus =
         switch (wallet.getStatus()) {
@@ -126,13 +123,13 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
-    QueueOperationDTO queueOperationDTO1 = QueueOperationDTO.builder()
+    QueueOperationDTO queueOperationDTOToRTD = QueueOperationDTO.builder()
         .hpan(dto.getHpan())
         .operationType("ADD_INSTRUMENT")
         .application("IDPAY")
         .operationDate(LocalDateTime.now())
         .build();
-    rtdProducer.sendInstrument(queueOperationDTO1);
+    rtdProducer.sendInstrument(queueOperationDTOToRTD);
   }
 
   @Override
