@@ -11,6 +11,7 @@ import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
 import java.util.ArrayList;
@@ -51,10 +52,8 @@ class WalletControllerTest {
   private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
   private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String DESCRIPTION_OK = "conto cointestato";
-  private static final String CHANNEL_OK = "APP-IO";
-  private static final String HOLDER_BANK_OK = "Unicredit";
   private static final InitiativeDTO INITIATIVE_DTO_TEST = new InitiativeDTO(INITIATIVE_ID,
-      INITIATIVE_ID, WalletConstants.STATUS_NOT_REFUNDABLE, null, "TEST_DATE", null, "TEST_AMOUNT",
+      INITIATIVE_ID, WalletStatus.NOT_REFUNDABLE.name(), null, "TEST_DATE", null, "TEST_AMOUNT",
       null, null);
   private static final InstrumentBodyDTO INSTRUMENT_BODY_DTO =
       new InstrumentBodyDTO(INITIATIVE_ID, HPAN);
@@ -64,12 +63,12 @@ class WalletControllerTest {
   private static final IbanBodyDTO IBAN_BODY_DTO_EMPTY = new IbanBodyDTO("", "", "");
   private static final InstrumentBodyDTO INSTRUMENT_BODY_DTO_EMPTY = new InstrumentBodyDTO("", "");
   private static final EnrollmentStatusDTO ENROLLMENT_STATUS_DTO =
-      new EnrollmentStatusDTO(WalletConstants.STATUS_NOT_REFUNDABLE);
+      new EnrollmentStatusDTO(WalletStatus.NOT_REFUNDABLE.name());
   private static final InitiativeDTO INITIATIVE_DTO =
       new InitiativeDTO(
           INITIATIVE_ID,
           INITIATIVE_ID,
-          WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN,
+          WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
           IBAN_OK,
           "",
           "1",
@@ -172,7 +171,7 @@ class WalletControllerTest {
 
     EnrollmentStatusDTO statusDTO = objectMapper.readValue(res.getResponse().getContentAsString(),
         EnrollmentStatusDTO.class);
-    assertEquals(WalletConstants.STATUS_NOT_REFUNDABLE, statusDTO.getStatus());
+    assertEquals(WalletStatus.NOT_REFUNDABLE.name(), statusDTO.getStatus());
   }
 
   @Test

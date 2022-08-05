@@ -12,6 +12,7 @@ import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.IbanProducer;
 import it.gov.pagopa.wallet.event.RTDProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
@@ -101,17 +102,7 @@ public class WalletServiceImpl implements WalletService {
 
     wallet.setNInstr(responseDTO.getNinstr());
 
-    String newStatus =
-        switch (wallet.getStatus()) {
-          case WalletConstants.STATUS_NOT_REFUNDABLE:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
-          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
-            yield WalletConstants.STATUS_REFUNDABLE;
-          default:
-            yield wallet.getStatus();
-        };
-
-    wallet.setStatus(newStatus);
+    setStatus(wallet);
 
     walletRepository.save(wallet);
     QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
@@ -151,17 +142,7 @@ public class WalletServiceImpl implements WalletService {
 
     }
 
-    String newStatus =
-        switch (wallet.getStatus()) {
-          case WalletConstants.STATUS_NOT_REFUNDABLE:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN;
-          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT:
-            yield WalletConstants.STATUS_REFUNDABLE;
-          default:
-            yield wallet.getStatus();
-        };
-
-    wallet.setStatus(newStatus);
+    setStatus(wallet);
 
     walletRepository.save(wallet);
 
@@ -206,6 +187,14 @@ public class WalletServiceImpl implements WalletService {
 
       timelineProducer.sendEvent(dto);
     }
+  }
+
+  private void setStatus(Wallet wallet){
+    boolean hasIban = wallet.getIban() != null;
+    boolean hasInstrument = wallet.getNInstr() > 0;
+    boolean hasEmail = wallet.getEmail() != null;
+    String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
+    wallet.setStatus(status);
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {

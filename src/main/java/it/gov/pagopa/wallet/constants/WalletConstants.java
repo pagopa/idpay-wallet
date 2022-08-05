@@ -6,11 +6,6 @@ public class WalletConstants {
   public static final String ERROR_INITIATIVE_KO = "The requested initiative is not active!";
   public static final String ERROR_WALLET_NOT_FOUND = "The requested initiative is not active for the current user!";
 
-  public static final String STATUS_NOT_REFUNDABLE = "NOT_REFUNDABLE";
-  public static final String STATUS_NOT_REFUNDABLE_ONLY_IBAN = "NOT_REFUNDABLE_ONLY_IBAN";
-  public static final String STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT = "NOT_REFUNDABLE_ONLY_INSTRUMENT";
-  public static final String STATUS_REFUNDABLE = "REFUNDABLE";
-
   public static final String STATUS_ONBOARDING_OK = "ONBOARDING_OK";
 
   public static final String ONBOARDING_OPERATION = "ONBOARDING";
