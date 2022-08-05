@@ -13,5 +13,6 @@ public interface WalletService {
   void enrollIban(String initiativeId, String userId, String iban, String description);
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
+  void updateEmail(String initiativeId, String userId, String email);
 
 }

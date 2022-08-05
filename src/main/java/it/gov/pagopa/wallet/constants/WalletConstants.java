@@ -10,7 +10,7 @@ public class WalletConstants {
 
   public static final String ONBOARDING_OPERATION = "ONBOARDING";
   public static final String CHANNEL_APP_IO = "APP_IO";
-  public static final String HOLDER_BANK = "Unicredit";
+  public static final String ERROR_EMAIL_NOT_VALID = "Please provide a valid email address!";
 
   private WalletConstants(){}
 }

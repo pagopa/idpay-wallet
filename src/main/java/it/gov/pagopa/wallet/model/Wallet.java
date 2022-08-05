@@ -23,6 +23,7 @@ public class Wallet {
   private LocalDateTime endDate;
   private String iban;
   private String email;
+  private LocalDateTime emailUpdate;
   private BigDecimal amount;
   private BigDecimal accrued;
   private BigDecimal refunded;
