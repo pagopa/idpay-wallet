@@ -9,6 +9,7 @@ import feign.Request;
 import feign.RequestTemplate;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
@@ -83,6 +84,7 @@ class WalletServiceTest {
           .acceptanceDate(TEST_DATE)
           .status(WalletStatus.NOT_REFUNDABLE.name())
           .endDate(TEST_DATE)
+          .emailUpdateDate(TEST_DATE)
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
@@ -592,6 +594,31 @@ class WalletServiceTest {
         .thenReturn(Optional.empty());
     try {
       walletService.updateEmail(INITIATIVE_ID, USER_ID, EMAIL);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
+      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
+    }
+  }
+
+  @Test
+  void getEmail_ok() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+    try {
+      EmailDTO actual = walletService.getEmail(INITIATIVE_ID, USER_ID);
+      assertEquals(TEST_WALLET.getEmail(), actual.getEmail());
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void getEmail_ko() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+    try {
+      walletService.getEmail(INITIATIVE_ID, USER_ID);
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());

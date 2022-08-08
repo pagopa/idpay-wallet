@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.service;
 import feign.FeignException;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
@@ -52,13 +53,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     return new EnrollmentStatusDTO(wallet.getStatus());
   }
 
@@ -75,13 +70,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void enrollInstrument(String initiativeId, String userId, String hpan) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     InstrumentCallBodyDTO dto =
         new InstrumentCallBodyDTO(
@@ -121,13 +110,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void enrollIban(String initiativeId, String userId, String iban, String description) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     iban = iban.toUpperCase();
     this.formalControl(iban);
@@ -192,18 +175,12 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void updateEmail(String initiativeId, String userId, String email) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (wallet.getEmail() == null || !wallet.getEmail().equals(email)) {
 
       wallet.setEmail(email);
-      wallet.setEmailUpdate(LocalDateTime.now());
+      wallet.setEmailUpdateDate(LocalDateTime.now());
       setStatus(wallet);
       walletRepository.save(wallet);
 
@@ -212,12 +189,27 @@ public class WalletServiceImpl implements WalletService {
               .initiativeId(initiativeId)
               .userId(userId)
               .email(email)
-              .operationDate(wallet.getEmailUpdate())
+              .operationDate(wallet.getEmailUpdateDate())
               .operationType("ADD_EMAIL")
               .build();
 
       timelineProducer.sendEvent(event);
     }
+  }
+
+  @Override
+  public EmailDTO getEmail(String initiativeId, String userId) {
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    return new EmailDTO(wallet.getEmail(), wallet.getEmailUpdateDate().toString());
+  }
+
+  private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
+    return walletRepository
+        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(
+            () ->
+                new WalletException(
+                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
   }
 
   private void setStatus(Wallet wallet) {

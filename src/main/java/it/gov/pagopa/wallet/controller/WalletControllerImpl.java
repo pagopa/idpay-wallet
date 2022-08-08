@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.controller;
 
+import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
@@ -55,5 +56,11 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<Void> updateEmail(EmailRequestDTO body, String userId) {
     walletService.updateEmail(body.getInitiativeId(), userId, body.getEmail());
     return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<EmailDTO> getEmail(String initiativeId, String userId) {
+    EmailDTO emailDTO = walletService.getEmail(initiativeId, userId);
+    return new ResponseEntity<>(emailDTO, HttpStatus.OK);
   }
 }

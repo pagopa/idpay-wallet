@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.ErrorDTO;
@@ -15,6 +16,7 @@ import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.iban4j.IbanFormatException;
@@ -46,9 +48,9 @@ class WalletControllerTest {
   private static final String ENROLL_INSTRUMENT_URL = "/instrument/";
   private static final String ENROLL_IBAN_URL = "/iban/";
   private static final String UPDATE_EMAIL_URL = "/email/";
+  private static final String EMAIL_URL = "/email";
   private static final String STATUS_URL = "/status";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
-  private static final String INITIATIVE_KO = "TEST_INITIATIVE_KO";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
   private static final String IBAN_WRONG = "it99C1234567890123456789012222";
@@ -57,6 +59,7 @@ class WalletControllerTest {
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final String EMAIL_OK = "test@email.com";
   private static final String EMAIL_KO = "This is not an email";
+  private static final LocalDateTime DATE = LocalDateTime.now();
   private static final InitiativeDTO INITIATIVE_DTO_TEST =
       new InitiativeDTO(
           INITIATIVE_ID,
@@ -93,6 +96,7 @@ class WalletControllerTest {
   private static final EmailRequestDTO EMAIL_BODY_DTO_EMPTY = new EmailRequestDTO("", "");
   private static final EmailRequestDTO EMAIL_BODY_DTO_NOT_VALID =
       new EmailRequestDTO(INITIATIVE_ID, EMAIL_KO);
+  private static final EmailDTO EMAIL_DTO = new EmailDTO("test@example.com", DATE.toString());
 
   @MockBean WalletService walletServiceMock;
 
@@ -487,5 +491,51 @@ class WalletControllerTest {
 
     assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
     assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
+  }
+
+  @Test
+  void email_ok() throws Exception {
+
+    Mockito.when(walletServiceMock.getEmail(INITIATIVE_ID, USER_ID))
+        .thenReturn(EMAIL_DTO);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + EMAIL_URL)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsString(INSTRUMENT_BODY_DTO))
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andReturn();
+
+    EmailDTO emailDTO =
+        objectMapper.readValue(res.getResponse().getContentAsString(), EmailDTO.class);
+    assertEquals(EMAIL_DTO.getEmail(), emailDTO.getEmail());
+  }
+
+  @Test
+  void email_not_found() throws Exception {
+
+    Mockito.doThrow(
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        .when(walletServiceMock)
+        .getEmail(INITIATIVE_ID, USER_ID);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.get(
+                        BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + EMAIL_URL)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsString(INSTRUMENT_BODY_DTO))
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
+    assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
   }
 }
