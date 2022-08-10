@@ -6,6 +6,7 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
@@ -174,6 +175,7 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
+
   }
 
   @Override
@@ -206,6 +208,29 @@ public class WalletServiceImpl implements WalletService {
 
       timelineProducer.sendEvent(dto);
     }
+  }
+
+  @Override
+  public void deleteOperation(IbanQueueWalletDTO iban) {
+    Wallet wallet = walletRepository.findByUserIdAndIban(iban.getUserId(), iban.getIban())
+        .orElseThrow(
+        () ->
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+
+    wallet.setIban(null);
+    String newStatus =
+        switch (wallet.getStatus()) {
+          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE;
+          case WalletConstants.STATUS_REFUNDABLE:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
+          default:
+            yield wallet.getStatus();
+        };
+    wallet.setStatus(newStatus);
+
+    walletRepository.save(wallet);
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {

@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.service;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 
@@ -13,5 +14,6 @@ public interface WalletService {
   void enrollIban(String initiativeId, String userId, String iban, String description);
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
+  void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
 
 }
