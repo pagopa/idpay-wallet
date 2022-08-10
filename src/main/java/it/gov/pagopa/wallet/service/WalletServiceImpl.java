@@ -176,8 +176,6 @@ public class WalletServiceImpl implements WalletService {
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
 
-
-    this.deleteOperation(new IbanQueueWalletDTO());
   }
 
   @Override
