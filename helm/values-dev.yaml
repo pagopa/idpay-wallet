@@ -99,8 +99,6 @@ microservice-chart:
       KAFKA_TOPIC_OUTCOME: idpay_onboarding_outcome_topic
       KAFKA_TOPIC_CHECKIBAN_OUTCOME: idpay_checkiban_outcome_topic
       KAFKA_TOPIC_TIMELINE: idpay_timeline_topic
-      KAFKA_OUTCOME_CHECKIBAN_GROUP_IN: idpay_checkiban_outcome_iban_consumer-group
-      KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
     rtd-eventhub:
       KAFKA_BINDER_BROKER_ENDPOINT_RTD: kafka_broker_rtd
       KAFKA_TOPIC_RTD: rtd_enrolled_pi_topic
