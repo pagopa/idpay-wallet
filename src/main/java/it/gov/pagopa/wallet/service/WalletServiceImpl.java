@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class WalletServiceImpl implements WalletService {
 
@@ -217,6 +219,7 @@ public class WalletServiceImpl implements WalletService {
         () ->
             new WalletException(
                 HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    log.debug("Entry consumer: " + wallet.toString());
 
     wallet.setIban(null);
     String newStatus =
@@ -231,6 +234,7 @@ public class WalletServiceImpl implements WalletService {
     wallet.setStatus(newStatus);
 
     walletRepository.save(wallet);
+    log.debug("Finished consumer: " +wallet.toString());
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {
