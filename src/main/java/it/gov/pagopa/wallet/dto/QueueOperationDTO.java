@@ -20,6 +20,8 @@ public class QueueOperationDTO {
 
   private String iban;
 
+  private String email;
+
   private String channel;
 
   private LocalDateTime operationDate;

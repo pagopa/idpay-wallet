@@ -13,6 +13,7 @@ import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.IbanProducer;
 import it.gov.pagopa.wallet.event.RTDProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
@@ -177,7 +178,6 @@ public class WalletServiceImpl implements WalletService {
         .operationDate(LocalDateTime.now())
         .build();
     timelineProducer.sendEvent(queueOperationDTO);
-
   }
 
   @Override
@@ -210,6 +210,44 @@ public class WalletServiceImpl implements WalletService {
 
       timelineProducer.sendEvent(dto);
     }
+  }
+
+  @Override
+  public void updateEmail(String initiativeId, String userId, String email) {
+    Wallet wallet =
+        walletRepository
+            .findByInitiativeIdAndUserId(initiativeId, userId)
+            .orElseThrow(
+                () ->
+                    new WalletException(
+                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+
+    if (wallet.getEmail() == null || !wallet.getEmail().equals(email)) {
+
+      wallet.setEmail(email);
+      wallet.setEmailUpdate(LocalDateTime.now());
+      setStatus(wallet);
+      walletRepository.save(wallet);
+
+      QueueOperationDTO event =
+          QueueOperationDTO.builder()
+              .initiativeId(initiativeId)
+              .userId(userId)
+              .email(email)
+              .operationDate(wallet.getEmailUpdate())
+              .operationType("ADD_EMAIL")
+              .build();
+
+      timelineProducer.sendEvent(event);
+    }
+  }
+
+  private void setStatus(Wallet wallet) {
+    boolean hasIban = wallet.getIban() != null;
+    boolean hasInstrument = wallet.getNInstr() > 0;
+    boolean hasEmail = wallet.getEmail() != null;
+    String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
+    wallet.setStatus(status);
   }
 
   @Override

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ class WalletMapperTest {
           .initiativeId(INITIATIVE_ID)
           .userId(USER_ID)
           .acceptanceDate(OPERATION_DATE)
-          .status(WalletConstants.STATUS_NOT_REFUNDABLE)
+          .status(WalletStatus.NOT_REFUNDABLE.name())
           .accrued(BigDecimal.valueOf(0.00))
           .refunded(BigDecimal.valueOf(0.00))
           .build();
