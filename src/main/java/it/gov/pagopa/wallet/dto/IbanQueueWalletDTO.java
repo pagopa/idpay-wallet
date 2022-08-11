@@ -13,8 +13,6 @@ public class IbanQueueWalletDTO {
   private String userId;
   private String iban;
   private String status;
-  private String errorCode;
-  private String errorDescription;
   private String queueDate;
 
 }
