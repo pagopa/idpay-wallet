@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/idpay/instrument/enroll"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "ninstr": 3
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

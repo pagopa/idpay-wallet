@@ -57,7 +57,7 @@ microservice-chart:
       cpu: "40m"
     limits:
       memory: "2Gi"
-      cpu: "200m"
+      cpu: "300m"
 
 #  autoscaling:
 #    enable: true
@@ -87,20 +87,32 @@ microservice-chart:
 
   envConfigMapExternals:
     idpay-common:
-      TZ: tz
-      JAVA_TOOL_OPTIONS: java_tool_options
+      TZ: TZ
+      JAVA_TOOL_OPTIONS: JAVA_TOOL_OPTIONS
     rest-client:
       PAYMENT_INSTRUMENT_URI: idpay_payment_instrument_host
     idpay-eventhub-00:
       KAFKA_BINDER_BROKER_ENDPOINT_LIST: kafka_broker
-      KAFKA_IBAN_SASL_MECHANISM: kafka_sasl_mechanism
-      KAFKA_IBAN_SECURITY_PROTOCOL: kafka_security_protocol
+      KAFKA_SASL_MECHANISM: kafka_sasl_mechanism
+      KAFKA_SECURITY_PROTOCOL: kafka_security_protocol
       KAFKA_TOPIC_IBAN: idpay_checkiban_evaluation_topic
+      KAFKA_TOPIC_OUTCOME: idpay_onboarding_outcome_topic
+      KAFKA_TOPIC_CHECKIBAN_OUTCOME: idpay_checkiban_outcome_topic
+      KAFKA_TOPIC_TIMELINE: idpay_timeline_topic
+      KAFKA_CHECKIBAN_OUTCOME_GROUP_IN: idpay-checkiban-outcome-consumer-group
+      KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
+    rtd-eventhub:
+      KAFKA_BINDER_BROKER_ENDPOINT_RTD: kafka_broker_rtd
+      KAFKA_TOPIC_RTD: rtd_enrolled_pi_topic
 
   envSecret:
     aks-api-url: cstar-d-weu-dev01-aks-apiserver-url
     MONGODB_URI: mongodb-connection-string
+    KAFKA_CHECKIBAN_OUTCOME_SASL_JAAS_CONFIG: evh-idpay-checkiban-outcome-idpay-checkiban-outcome-consumer-jaas-config-idpay-00
     KAFKA_IBAN_SASL_JAAS_CONFIG: evh-idpay-checkiban-evaluation-idpay-checkiban-evaluation-producer-jaas-config-idpay-00
+    KAFKA_TIMELINE_SASL_JAAS_CONFIG: evh-idpay-timeline-idpay-timeline-producer-jaas-config-idpay-00
+    KAFKA_OUTCOME_SASL_JAAS_CONFIG: evh-idpay-onboarding-outcome-idpay-onboarding-outcome-consumer-jaas-config-idpay-00
+    KAFKA_RTD_SASL_JAAS_CONFIG: idpay-enrolled-pi-producer-connection-uri
 #    APPLICATIONINSIGHTS_CONNECTION_STRING: appinsights-instrumentation-key
 
   keyvault:

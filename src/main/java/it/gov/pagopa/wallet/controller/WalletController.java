@@ -1,10 +1,11 @@
 package it.gov.pagopa.wallet.controller;
 
+import it.gov.pagopa.wallet.dto.EmailDTO;
+import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.IbanDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -62,22 +63,33 @@ public interface WalletController {
   ResponseEntity<Void> enrollIban(@Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
 
   /**
-   * Get IbanDTO
-   *
-   * @param userId
-   * @param initiativeId
-   * @return
-   */
-  @GetMapping("/iban/{initiativeId}/{userId}")
-  ResponseEntity<IbanDTO> getIban(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
-
-  /**
    * Returns the active initiative lists
    *
    * @param userId
    * @return
    */
   @GetMapping("/{userId}")
-  ResponseEntity<InitiativeListDTO> initiativeList(@Valid @PathVariable("userId") String userId);
+  ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
+
+  /**
+   * Update the email
+   *
+   * @param body
+   * @param userId
+   * @return
+   */
+  @PutMapping("/email/{userId}")
+  ResponseEntity<Void> updateEmail(@Valid @RequestBody EmailRequestDTO body, @PathVariable("userId") String userId);
+
+  /**
+   * Returns the actual enrollment status
+   *
+   * @param initiativeId
+   * @param userId
+   * @return
+   */
+  @GetMapping("/{initiativeId}/{userId}/email")
+  ResponseEntity<EmailDTO> getEmail(
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
 }
