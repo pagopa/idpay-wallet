@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
+import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
@@ -15,6 +16,7 @@ public interface WalletService {
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
   void updateEmail(String initiativeId, String userId, String email);
+  EmailDTO getEmail(String initiativeId, String userId);
   void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
 
 }

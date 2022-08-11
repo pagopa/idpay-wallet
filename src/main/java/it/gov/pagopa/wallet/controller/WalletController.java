@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.controller;
 
+import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
@@ -79,5 +80,16 @@ public interface WalletController {
    */
   @PutMapping("/email/{userId}")
   ResponseEntity<Void> updateEmail(@Valid @RequestBody EmailRequestDTO body, @PathVariable("userId") String userId);
+
+  /**
+   * Returns the actual enrollment status
+   *
+   * @param initiativeId
+   * @param userId
+   * @return
+   */
+  @GetMapping("/{initiativeId}/{userId}/email")
+  ResponseEntity<EmailDTO> getEmail(
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
 }
