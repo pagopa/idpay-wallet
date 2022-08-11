@@ -6,6 +6,7 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
@@ -32,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class WalletServiceImpl implements WalletService {
 
@@ -157,6 +160,7 @@ public class WalletServiceImpl implements WalletService {
             .operationDate(LocalDateTime.now())
             .build();
     timelineProducer.sendEvent(queueOperationDTO);
+
   }
 
   @Override
@@ -226,6 +230,29 @@ public class WalletServiceImpl implements WalletService {
     boolean hasEmail = wallet.getEmail() != null;
     String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
     wallet.setStatus(status);
+
+public void deleteOperation(IbanQueueWalletDTO iban) {
+    Wallet wallet = walletRepository.findByUserIdAndIban(iban.getUserId(), iban.getIban())
+        .orElseThrow(
+        () ->
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    log.debug("Entry consumer: " + wallet.toString());
+
+    wallet.setIban(null);
+    String newStatus =
+        switch (wallet.getStatus()) {
+          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE;
+          case WalletConstants.STATUS_REFUNDABLE:
+            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
+          default:
+            yield wallet.getStatus();
+        };
+    wallet.setStatus(newStatus);
+
+    walletRepository.save(wallet);
+    log.debug("Finished consumer: " +wallet.toString());
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {
