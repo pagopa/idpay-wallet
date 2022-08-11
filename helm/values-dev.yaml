@@ -97,7 +97,9 @@ microservice-chart:
       KAFKA_SECURITY_PROTOCOL: kafka_security_protocol
       KAFKA_TOPIC_IBAN: idpay_checkiban_evaluation_topic
       KAFKA_TOPIC_OUTCOME: idpay_onboarding_outcome_topic
+      KAFKA_TOPIC_CHECKIBAN_OUTCOME: idpay_checkiban_outcome_topic
       KAFKA_TOPIC_TIMELINE: idpay_timeline_topic
+      KAFKA_CHECKIBAN_OUTCOME_GROUP_IN: idpay-checkiban-outcome-consumer-group
       KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
     rtd-eventhub:
       KAFKA_BINDER_BROKER_ENDPOINT_RTD: kafka_broker_rtd
@@ -106,6 +108,7 @@ microservice-chart:
   envSecret:
     aks-api-url: cstar-d-weu-dev01-aks-apiserver-url
     MONGODB_URI: mongodb-connection-string
+    KAFKA_CHECKIBAN_OUTCOME_SASL_JAAS_CONFIG: evh-idpay-checkiban-outcome-idpay-checkiban-outcome-consumer-jaas-config-idpay-00
     KAFKA_IBAN_SASL_JAAS_CONFIG: evh-idpay-checkiban-evaluation-idpay-checkiban-evaluation-producer-jaas-config-idpay-00
     KAFKA_TIMELINE_SASL_JAAS_CONFIG: evh-idpay-timeline-idpay-timeline-producer-jaas-config-idpay-00
     KAFKA_OUTCOME_SASL_JAAS_CONFIG: evh-idpay-onboarding-outcome-idpay-onboarding-outcome-consumer-jaas-config-idpay-00
