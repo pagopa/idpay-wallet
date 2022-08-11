@@ -103,7 +103,6 @@ public class WalletServiceImpl implements WalletService {
     }
 
     wallet.setNInstr(responseDTO.getNinstr());
-
     String newStatus =
         switch (wallet.getStatus()) {
           case WalletConstants.STATUS_NOT_REFUNDABLE:
@@ -165,7 +164,6 @@ public class WalletServiceImpl implements WalletService {
         };
 
     wallet.setStatus(newStatus);
-
     walletRepository.save(wallet);
 
     QueueOperationDTO queueOperationDTO = QueueOperationDTO.builder()
