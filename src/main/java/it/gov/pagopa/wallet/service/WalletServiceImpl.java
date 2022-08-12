@@ -87,17 +87,8 @@ public class WalletServiceImpl implements WalletService {
     }
 
     wallet.setNInstr(responseDTO.getNinstr());
-    String newStatus =
-        switch (wallet.getStatus()) {
-          case WalletConstants.STATUS_NOT_REFUNDABLE:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
-          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
-            yield WalletConstants.STATUS_REFUNDABLE;
-          default:
-            yield wallet.getStatus();
-        };
 
-    wallet.setStatus(newStatus);
+    setStatus(wallet);
 
     walletRepository.save(wallet);
     QueueOperationDTO queueOperationDTO =
@@ -133,17 +124,8 @@ public class WalletServiceImpl implements WalletService {
       ibanProducer.sendIban(ibanQueueDTO);
     }
 
-    String newStatus =
-        switch (wallet.getStatus()) {
-          case WalletConstants.STATUS_NOT_REFUNDABLE:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN;
-          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT:
-            yield WalletConstants.STATUS_REFUNDABLE;
-          default:
-            yield wallet.getStatus();
-        };
+    setStatus(wallet);
 
-    wallet.setStatus(newStatus);
     walletRepository.save(wallet);
 
     QueueOperationDTO queueOperationDTO =
