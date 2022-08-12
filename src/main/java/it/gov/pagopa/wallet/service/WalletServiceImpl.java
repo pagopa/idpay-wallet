@@ -228,16 +228,7 @@ public class WalletServiceImpl implements WalletService {
     log.debug("Entry consumer: " + wallet.toString());
 
     wallet.setIban(null);
-    String newStatus =
-        switch (wallet.getStatus()) {
-          case WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_IBAN:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE;
-          case WalletConstants.STATUS_REFUNDABLE:
-            yield WalletConstants.STATUS_NOT_REFUNDABLE_ONLY_INSTRUMENT;
-          default:
-            yield wallet.getStatus();
-        };
-    wallet.setStatus(newStatus);
+    setStatus(wallet);
 
     walletRepository.save(wallet);
     log.debug("Finished consumer: " +wallet.toString());
