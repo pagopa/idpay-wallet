@@ -158,7 +158,7 @@ class WalletServiceTest {
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
     Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
-    assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET.getStatus());
+    assertEquals(WalletStatus.NOT_REFUNDABLE_NO_EMAIL.name(), TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
   }
 
@@ -308,7 +308,7 @@ class WalletServiceTest {
     assertEquals(INITIATIVE_ID, TEST_WALLET.getInitiativeId());
     assertEquals(USER_ID, TEST_WALLET.getUserId());
 
-    assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET.getStatus());
+    assertEquals(WalletStatus.NOT_REFUNDABLE_NO_EMAIL.name(), TEST_WALLET.getStatus());
   }
 
   @Test
