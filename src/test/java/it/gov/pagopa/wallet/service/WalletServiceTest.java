@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import feign.FeignException;
 import feign.Request;
@@ -13,6 +14,7 @@ import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
@@ -624,5 +626,44 @@ class WalletServiceTest {
       assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
       assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
     }
+  }
+
+  @Test
+  void deleteOperation_ok(){
+    IbanQueueWalletDTO iban = new IbanQueueWalletDTO(USER_ID,IBAN_OK,"KO",LocalDateTime.now().toString());
+    Mockito.when(walletRepositoryMock.findByUserIdAndIban(USER_ID,IBAN_OK))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.doAnswer(
+            invocationOnMock -> {
+              TEST_WALLET.setIban(null);
+              TEST_WALLET.setStatus(WalletConstants.STATUS_NOT_REFUNDABLE);
+              return null;
+            })
+        .when(walletRepositoryMock).save(Mockito.any(Wallet.class));
+    try{
+      walletService.deleteOperation(iban);
+      assertNull(TEST_WALLET.getIban());
+      assertNotNull(iban.getIban());
+      assertEquals(WalletConstants.STATUS_NOT_REFUNDABLE, TEST_WALLET.getStatus());
+      assertEquals(TEST_WALLET.getUserId(), iban.getUserId());
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+
+  }
+  @Test
+  void deleteOperation_ko(){
+    IbanQueueWalletDTO iban = new IbanQueueWalletDTO(USER_ID,IBAN_OK,"KO",LocalDateTime.now().toString());
+    Mockito.when(walletRepositoryMock.findByUserIdAndIban(USER_ID,IBAN_OK))
+        .thenReturn(Optional.empty());
+    try {
+      walletService.deleteOperation(iban);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
+      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
+    }
+
   }
 }
