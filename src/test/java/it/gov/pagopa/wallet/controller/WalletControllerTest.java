@@ -46,6 +46,7 @@ class WalletControllerTest {
   private static final String BASE_URL = "http://localhost:8080/idpay/wallet";
   private static final String USER_ID = "TEST_USER_ID";
   private static final String ENROLL_INSTRUMENT_URL = "/instrument/";
+  private static final String INSTRUMENTS_URL = "/instruments/";
   private static final String ENROLL_IBAN_URL = "/iban/";
   private static final String UPDATE_EMAIL_URL = "/email/";
   private static final String EMAIL_URL = "/email";
@@ -184,6 +185,67 @@ class WalletControllerTest {
 
     assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
     assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
+  }
+
+  @Test
+  void delete_instrument_ok() throws Exception {
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+    Mockito.doNothing().when(walletServiceMock).deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + INSTRUMENTS_URL + HPAN)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andReturn();
+  }
+
+  @Test
+  void delete_instrument_initiative_ko() throws Exception {
+
+    Mockito.doThrow(
+            new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        .when(walletServiceMock)
+        .checkInitiative(INITIATIVE_ID);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + INSTRUMENTS_URL + HPAN)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isForbidden())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
+    assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+  }
+
+  @Test
+  void delete_instrument_initiative_wallet_not_found() throws Exception {
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
+    Mockito.doThrow(
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        .when(walletServiceMock)
+        .deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + INSTRUMENTS_URL + HPAN)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
+    assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
   }
 
   @Test

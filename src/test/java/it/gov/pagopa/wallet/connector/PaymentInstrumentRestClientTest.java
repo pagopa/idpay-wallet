@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import it.gov.pagopa.wallet.config.WalletConfig;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import java.time.LocalDateTime;
@@ -59,6 +60,18 @@ class PaymentInstrumentRestClientTest {
 
     assertNotNull(actualResponse);
     assertEquals(3, actualResponse.getNinstr());
+  }
+
+  @Test
+  void delete_instrument_test() {
+
+
+    final DeactivationBodyDTO instrument = new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, HPAN, LocalDateTime.now());
+
+    final InstrumentResponseDTO actualResponse = restConnector.deleteInstrument(instrument);
+
+    assertNotNull(actualResponse);
+    assertEquals(2, actualResponse.getNinstr());
   }
 
   public static class WireMockInitializer

@@ -12,11 +12,11 @@ public interface WalletService {
   EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId);
   InitiativeDTO getWalletDetail(String initiativeId, String userId);
   void enrollInstrument(String initiativeId, String userId, String hpan);
+  void deleteInstrument(String initiativeId, String userId, String hpan);
   void enrollIban(String initiativeId, String userId, String iban, String description);
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
   void updateEmail(String initiativeId, String userId, String email);
   EmailDTO getEmail(String initiativeId, String userId);
   void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
-
 }
