@@ -66,6 +66,7 @@ class WalletControllerTest {
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE.name(),
           null,
+          EMAIL_OK,
           "TEST_DATE",
           null,
           "TEST_AMOUNT",
@@ -86,6 +87,7 @@ class WalletControllerTest {
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
           IBAN_OK,
+          EMAIL_OK,
           "",
           "1",
           "450.00",
@@ -420,6 +422,7 @@ class WalletControllerTest {
     assertEquals(INITIATIVE_DTO.getStatus(), initiativeDTO.getStatus());
     assertEquals(INITIATIVE_DTO.getEndDate(), initiativeDTO.getEndDate());
     assertEquals(INITIATIVE_DTO.getIban(), initiativeDTO.getIban());
+    assertEquals(INITIATIVE_DTO.getEmail(), initiativeDTO.getEmail());
     assertEquals(INITIATIVE_DTO.getNInstr(), initiativeDTO.getNInstr());
     assertEquals(INITIATIVE_DTO.getAmount(), initiativeDTO.getAmount());
     assertEquals(INITIATIVE_DTO.getAccrued(), initiativeDTO.getAccrued());

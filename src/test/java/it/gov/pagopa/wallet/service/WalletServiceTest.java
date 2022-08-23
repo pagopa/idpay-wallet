@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -62,6 +63,8 @@ class WalletServiceTest {
 
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
+  private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
+
   private static final String INITIATIVE_ID_FAIL = "FAIL";
   private static final String HPAN = "TEST_HPAN";
   private static final String EMAIL = "test@example.com";
@@ -82,7 +85,7 @@ class WalletServiceTest {
       Wallet.builder()
           .userId(USER_ID)
           .initiativeId(INITIATIVE_ID)
-          .initiativeName(INITIATIVE_ID)
+          .initiativeName(INITIATIVE_NAME)
           .acceptanceDate(TEST_DATE)
           .status(WalletStatus.NOT_REFUNDABLE.name())
           .endDate(TEST_DATE)
@@ -98,9 +101,10 @@ class WalletServiceTest {
   private static final InitiativeDTO INITIATIVE_DTO =
       new InitiativeDTO(
           INITIATIVE_ID,
-          INITIATIVE_ID,
+          INITIATIVE_NAME,
           WalletStatus.NOT_REFUNDABLE.name(),
           IBAN_OK,
+          EMAIL,
           TEST_DATE.toString(),
           "0",
           String.valueOf(TEST_AMOUNT),
@@ -630,7 +634,7 @@ class WalletServiceTest {
 
   @Test
   void deleteOperation_ok(){
-    IbanQueueWalletDTO iban = new IbanQueueWalletDTO(USER_ID,IBAN_OK,"KO",LocalDateTime.now().toString());
+    IbanQueueWalletDTO iban = new IbanQueueWalletDTO(USER_ID,IBAN_OK,STATUS_KO,LocalDateTime.now().toString());
     Mockito.when(walletRepositoryMock.findByUserIdAndIban(USER_ID,IBAN_OK))
         .thenReturn(Optional.of(TEST_WALLET));
 
@@ -647,6 +651,9 @@ class WalletServiceTest {
       assertNotNull(iban.getIban());
       assertEquals(WalletConstants.STATUS_NOT_REFUNDABLE, TEST_WALLET.getStatus());
       assertEquals(TEST_WALLET.getUserId(), iban.getUserId());
+      assertEquals(STATUS_KO,iban.getStatus());
+      assertNotNull(iban.getQueueDate());
+      assertNotNull(iban);
     } catch (WalletException e) {
       Assertions.fail();
     }
@@ -654,7 +661,7 @@ class WalletServiceTest {
   }
   @Test
   void deleteOperation_ko(){
-    IbanQueueWalletDTO iban = new IbanQueueWalletDTO(USER_ID,IBAN_OK,"KO",LocalDateTime.now().toString());
+    IbanQueueWalletDTO iban = new IbanQueueWalletDTO(USER_ID,IBAN_OK,STATUS_KO,LocalDateTime.now().toString());
     Mockito.when(walletRepositoryMock.findByUserIdAndIban(USER_ID,IBAN_OK))
         .thenReturn(Optional.empty());
     try {
