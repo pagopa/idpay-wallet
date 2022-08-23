@@ -9,6 +9,7 @@ import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,7 +29,22 @@ public interface WalletController {
    * @return
    */
   @PutMapping("/instrument/{userId}")
-  ResponseEntity<Void> enrollInstrument(@Valid @RequestBody InstrumentBodyDTO body, @PathVariable String userId);
+  ResponseEntity<Void> enrollInstrument(
+      @Valid @RequestBody InstrumentBodyDTO body, @PathVariable String userId);
+
+  /**
+   * Deactivation of a Payment Instrument
+   *
+   * @param initiativeId
+   * @param userId
+   * @param hpan
+   * @return
+   */
+  @DeleteMapping("/{initiativeId}/{userId}/instruments/{hpan}")
+  ResponseEntity<Void> deleteInstrument(
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId,
+      @PathVariable("hpan") String hpan);
 
   /**
    * Returns the actual enrollment status
@@ -39,7 +55,7 @@ public interface WalletController {
    */
   @GetMapping("/{initiativeId}/{userId}/status")
   ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(
-          @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   /**
    * Returns the detail of an active initiative for a citizen
@@ -60,7 +76,8 @@ public interface WalletController {
    * @return
    */
   @PutMapping("/iban/{userId}")
-  ResponseEntity<Void> enrollIban(@Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
+  ResponseEntity<Void> enrollIban(
+      @Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
 
   /**
    * Returns the active initiative lists
@@ -79,7 +96,8 @@ public interface WalletController {
    * @return
    */
   @PutMapping("/email/{userId}")
-  ResponseEntity<Void> updateEmail(@Valid @RequestBody EmailRequestDTO body, @PathVariable("userId") String userId);
+  ResponseEntity<Void> updateEmail(
+      @Valid @RequestBody EmailRequestDTO body, @PathVariable("userId") String userId);
 
   /**
    * Returns the actual enrollment status
@@ -91,5 +109,4 @@ public interface WalletController {
   @GetMapping("/{initiativeId}/{userId}/email")
   ResponseEntity<EmailDTO> getEmail(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
-
 }

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "DELETE",
+    "urlPath": "/idpay/instrument/deactivate"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "ninstr": 2
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

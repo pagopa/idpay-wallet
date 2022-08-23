@@ -11,6 +11,7 @@ import feign.Request;
 import feign.RequestTemplate;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
@@ -220,6 +221,94 @@ class WalletServiceTest {
         .thenReturn(Optional.empty());
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
+      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
+    }
+  }
+
+  @Test
+  void deleteInstrument_ok_with_iban() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    TEST_WALLET.setIban(IBAN_OK);
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
+    TEST_WALLET.setNInstr(1);
+    TEST_WALLET.setEmail(null);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.deleteInstrument(
+                Mockito.any(DeactivationBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO);
+
+    try {
+      walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
+
+    assertEquals(WalletStatus.NOT_REFUNDABLE_NO_EMAIL.name(), TEST_WALLET.getStatus());
+    assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void deleteInstrument_ok_with_instrument() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+    TEST_WALLET.setNInstr(1);
+    TEST_WALLET.setIban(null);
+    TEST_WALLET.setEmail(null);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.deleteInstrument(
+                Mockito.any(DeactivationBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO);
+
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
+
+    try {
+      walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
+    assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void deleteInstrument_ko_feignexception() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Request request =
+        Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
+
+    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+        .when(paymentInstrumentRestConnector)
+        .deleteInstrument(Mockito.any(DeactivationBodyDTO.class));
+
+    try {
+      walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+    }
+  }
+
+  @Test
+  void deleteInstrument_not_found() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+    try {
+      walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());

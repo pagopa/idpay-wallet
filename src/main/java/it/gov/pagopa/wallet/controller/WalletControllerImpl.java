@@ -27,6 +27,13 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  public ResponseEntity<Void> deleteInstrument(String initiativeId, String userId, String hpan) {
+    walletService.checkInitiative(initiativeId);
+    walletService.deleteInstrument(initiativeId, userId, hpan);
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @Override
   public ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(String initiativeId, String userId) {
     EnrollmentStatusDTO enrollmentStatusDTO =
         walletService.getEnrollmentStatus(initiativeId, userId);

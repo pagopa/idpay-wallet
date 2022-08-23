@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.service;
 import feign.FeignException;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
@@ -105,6 +106,45 @@ public class WalletServiceImpl implements WalletService {
         QueueOperationDTO.builder()
             .hpan(dto.getHpan())
             .operationType("ADD_INSTRUMENT")
+            .application("IDPAY")
+            .operationDate(LocalDateTime.now())
+            .build();
+    rtdProducer.sendInstrument(queueOperationDTOToRTD);
+  }
+
+  @Override
+  public void deleteInstrument(String initiativeId, String userId, String hpan) {
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    DeactivationBodyDTO dto =
+        new DeactivationBodyDTO(
+            userId, initiativeId, hpan, LocalDateTime.now());
+
+    InstrumentResponseDTO responseDTO;
+    try {
+      responseDTO = paymentInstrumentRestConnector.deleteInstrument(dto);
+    } catch (FeignException e) {
+      throw new WalletException(e.status(), e.getMessage());
+    }
+
+    wallet.setNInstr(responseDTO.getNinstr());
+
+    setStatus(wallet);
+
+    walletRepository.save(wallet);
+    QueueOperationDTO queueOperationDTO =
+        QueueOperationDTO.builder()
+            .initiativeId(dto.getInitiativeId())
+            .userId(dto.getUserId())
+            .hpan(dto.getHpan())
+            .operationType("DELETE_INSTRUMENT")
+            .operationDate(LocalDateTime.now())
+            .build();
+    timelineProducer.sendEvent(queueOperationDTO);
+    QueueOperationDTO queueOperationDTOToRTD =
+        QueueOperationDTO.builder()
+            .hpan(dto.getHpan())
+            .operationType("DELETE_INSTRUMENT")
             .application("IDPAY")
             .operationDate(LocalDateTime.now())
             .build();
