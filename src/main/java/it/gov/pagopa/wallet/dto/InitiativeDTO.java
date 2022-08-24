@@ -19,8 +19,6 @@ public class InitiativeDTO {
 
   private String iban;
 
-  private String email;
-
   private String endDate;
 
   private String nInstr;

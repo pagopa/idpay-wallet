@@ -4,7 +4,6 @@ import feign.FeignException;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.EmailDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
@@ -211,36 +210,6 @@ public class WalletServiceImpl implements WalletService {
     }
   }
 
-  @Override
-  public void updateEmail(String initiativeId, String userId, String email) {
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-
-    if (wallet.getEmail() == null || !wallet.getEmail().equals(email)) {
-
-      wallet.setEmail(email);
-      wallet.setEmailUpdateDate(LocalDateTime.now());
-      setStatus(wallet);
-      walletRepository.save(wallet);
-
-      QueueOperationDTO event =
-          QueueOperationDTO.builder()
-              .initiativeId(initiativeId)
-              .userId(userId)
-              .email(email)
-              .operationDate(wallet.getEmailUpdateDate())
-              .operationType("ADD_EMAIL")
-              .build();
-
-      timelineProducer.sendEvent(event);
-    }
-  }
-
-  @Override
-  public EmailDTO getEmail(String initiativeId, String userId) {
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-    return new EmailDTO(wallet.getEmail(), wallet.getEmailUpdateDate().toString());
-  }
-
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
     return walletRepository
         .findByInitiativeIdAndUserId(initiativeId, userId)
@@ -253,8 +222,7 @@ public class WalletServiceImpl implements WalletService {
   private void setStatus(Wallet wallet) {
     boolean hasIban = wallet.getIban() != null;
     boolean hasInstrument = wallet.getNInstr() > 0;
-    boolean hasEmail = wallet.getEmail() != null;
-    String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
+    String status = WalletStatus.getByBooleans(hasIban, hasInstrument).name();
     wallet.setStatus(status);
   }
 
