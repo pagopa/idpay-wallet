@@ -912,6 +912,70 @@
 					"response": []
 				},
 				{
+					"name": "Delete Instrument - Ok [Idemp]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/wallet_postman_e2e_test/instruments/e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"wallet_postman_e2e_test",
+								"instruments",
+								"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete Instrument - Ok [Other HPAN}",
 					"event": [
 						{
