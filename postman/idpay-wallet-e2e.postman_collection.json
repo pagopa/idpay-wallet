@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "0ff9dcb6-cb43-4276-a33c-7b73095c7240",
-		"name": "Wallet - e2e",
+		"_postman_id": "b1a32f6c-a6ef-4a1b-a47a-336bc1fd9d63",
+		"name": "Wallet - e2e [to automation]",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21721440"
 	},
@@ -103,14 +103,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/idpay/wallet/test_get_wallet",
+							"raw": "{{baseUrl}}/idpay/wallet/wallet_postman_e2e_test",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"idpay",
 								"wallet",
-								"test_get_wallet"
+								"wallet_postman_e2e_test"
 							]
 						}
 					},
@@ -283,6 +283,830 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Payment Instrument",
+			"item": [
+				{
+					"name": "Generate Token IO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Retrieve Token', () => {\r",
+									"    //verify response HTTP status \r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "",
+								"type": "default"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode=AAAAAA00A00A000A",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bpd",
+								"pagopa",
+								"api",
+								"v1",
+								"login"
+							],
+							"query": [
+								{
+									"key": "fiscalCode",
+									"value": "AAAAAA00A00A000A"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Token IO2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Retrieve Token', () => {\r",
+									"    //verify response HTTP status \r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.collectionVariables.set(\"tokenIO2\", pm.response.text());\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "",
+								"type": "default"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode=AAAAAA00A00A000B",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bpd",
+								"pagopa",
+								"api",
+								"v1",
+								"login"
+							],
+							"query": [
+								{
+									"key": "fiscalCode",
+									"value": "AAAAAA00A00A000B"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ok",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ok [Idemp]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ok Inactive",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"32982c100d1c7f822cab08443271d124c3143a16964569e269e47cdb9c9b78c7\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ko [Active another Citizen]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"32982c100d1c7f822cab08443271d124c3143a16964569e269e47cdb9c9b78c7\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ko [Empty Body]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response tests\", function () {\r",
+									"    let jsonStatus = pm.response.json()\r",
+									"    pm.expect(jsonStatus.code).equals(400);\r",
+									"    pm.expect(jsonStatus.message).contains(\"The field is mandatory!\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"\",\r\n    \"hpan\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ko [Initiative Checks Failed]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response tests\", function () {\r",
+									"    let jsonStatus = pm.response.json()\r",
+									"    pm.expect(jsonStatus.code).equals(403);\r",
+									"    pm.expect(jsonStatus.message).equals(\"The requested initiative is not active!\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"fail\",\r\n    \"hpan\": \"606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Instrument - Ko [Citizen Not Onboarded - Not Present in Wallet]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response tests\", function () {\r",
+									"    let jsonStatus = pm.response.json()\r",
+									"    pm.expect(jsonStatus.code).equals(404);\r",
+									"    pm.expect(jsonStatus.message).equals(\"The requested initiative is not active for the current user!\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_fail\",\r\n    \"hpan\": \"606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/instrument",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"instrument"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Instrument - Ok",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/wallet_postman_e2e_test/instruments/e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"wallet_postman_e2e_test",
+								"instruments",
+								"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Instrument - Ok [Other HPAN}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_test\",\r\n    \"hpan\": \"e556e291aa16641ac4475bae437429475f61198244f6d2bd1c259a08958b82eb\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/wallet_postman_e2e_test/instruments/32982c100d1c7f822cab08443271d124c3143a16964569e269e47cdb9c9b78c7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"wallet_postman_e2e_test",
+								"instruments",
+								"32982c100d1c7f822cab08443271d124c3143a16964569e269e47cdb9c9b78c7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Instrument - Ko [Initiative Checks Failed]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response tests\", function () {\r",
+									"    let jsonStatus = pm.response.json()\r",
+									"    pm.expect(jsonStatus.code).equals(403);\r",
+									"    pm.expect(jsonStatus.message).equals(\"The requested initiative is not active!\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "{{Ocp-Apim-Trace}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/fail/instruments/606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"fail",
+								"instruments",
+								"606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Instrument - Ko [Citizen Not Onboarded - Not Present in Wallet]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response tests\", function () {\r",
+									"    let jsonStatus = pm.response.json()\r",
+									"    pm.expect(jsonStatus.code).equals(404);\r",
+									"    pm.expect(jsonStatus.message).equals(\"The requested initiative is not active for the current user!\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenIO}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{apimSubscriptionKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Ocp-Apim-Trace",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"initiativeId\": \"wallet_postman_e2e_fail\",\r\n    \"hpan\": \"606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/idpay/wallet/wallet_postman_e2e_fail/instruments/606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"idpay",
+								"wallet",
+								"wallet_postman_e2e_fail",
+								"instruments",
+								"606be4be7da45ecaae02068579b7579f4c9218c87fa7e3678b3b151c78457908"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -312,6 +1136,11 @@
 		},
 		{
 			"key": "Ocp-Apim-Trace",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tokenIO2",
 			"value": "",
 			"type": "string"
 		}
