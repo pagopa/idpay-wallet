@@ -56,4 +56,10 @@ public class WalletControllerImpl implements WalletController {
     InitiativeListDTO initiativeDTO = walletService.getInitiativeList(userId);
     return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
   }
+
+  @Override
+  public ResponseEntity<Void> unsubscribeInitiative(String initiativeId, String userId) {
+    walletService.unsubscribe(initiativeId, userId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
 }

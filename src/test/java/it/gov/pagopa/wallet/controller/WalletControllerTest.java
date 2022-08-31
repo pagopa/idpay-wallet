@@ -47,6 +47,8 @@ class WalletControllerTest {
   private static final String INSTRUMENTS_URL = "/instruments/";
   private static final String ENROLL_IBAN_URL = "/iban/";
   private static final String STATUS_URL = "/status";
+
+  private static final String UNSUBSCRIBE_URL = "/unsubscribe/";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
@@ -494,6 +496,41 @@ class WalletControllerTest {
             .andReturn();
 
     ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+    assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+  }
+
+   @Test
+  void unsubscribeInitiative_ok() throws Exception {
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(BASE_URL + UNSUBSCRIBE_URL +INITIATIVE_ID+"/" + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(MockMvcResultMatchers.status().isNoContent())
+        .andReturn();
+  }
+
+  @Test
+  void unsubscribeInitiative_not_found() throws Exception {
+    Mockito.doThrow(
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        .when(walletServiceMock).unsubscribe(INITIATIVE_ID, USER_ID);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(
+                        BASE_URL + UNSUBSCRIBE_URL + INITIATIVE_ID+"/" + USER_ID)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
     assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
     assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
   }

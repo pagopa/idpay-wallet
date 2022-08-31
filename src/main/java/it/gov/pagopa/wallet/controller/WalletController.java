@@ -85,4 +85,15 @@ public interface WalletController {
    */
   @GetMapping("/{userId}")
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
+
+  /**
+   * unsubscrive intiative
+   *
+   * @param initiativeId
+   * @param userId
+   * @return
+   */
+  @DeleteMapping("/unsubscribe/{initiativeId}/{userId}")
+  ResponseEntity<Void> unsubscribeInitiative(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
 }

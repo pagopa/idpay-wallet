@@ -16,4 +16,5 @@ public interface WalletService {
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
   void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
+  void unsubscribe(String initiativeId, String userId);
 }
