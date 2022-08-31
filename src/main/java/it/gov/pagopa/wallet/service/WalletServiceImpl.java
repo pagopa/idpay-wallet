@@ -4,7 +4,7 @@ import feign.FeignException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.EmailDTO;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
@@ -95,6 +95,10 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(e.status(), e.getMessage());
     }
 
+    if(responseDTO.getNinstr() == wallet.getNInstr()){
+      return;
+    }
+
     wallet.setNInstr(responseDTO.getNinstr());
 
     setStatus(wallet);
@@ -114,6 +118,49 @@ public class WalletServiceImpl implements WalletService {
         QueueOperationDTO.builder()
             .hpan(dto.getHpan())
             .operationType("ADD_INSTRUMENT")
+            .application("IDPAY")
+            .operationDate(LocalDateTime.now())
+            .build();
+    rtdProducer.sendInstrument(queueOperationDTOToRTD);
+  }
+
+  @Override
+  public void deleteInstrument(String initiativeId, String userId, String hpan) {
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    DeactivationBodyDTO dto =
+        new DeactivationBodyDTO(
+            userId, initiativeId, hpan, LocalDateTime.now());
+
+    InstrumentResponseDTO responseDTO;
+    try {
+      responseDTO = paymentInstrumentRestConnector.deleteInstrument(dto);
+    } catch (FeignException e) {
+      throw new WalletException(e.status(), e.getMessage());
+    }
+
+    if(responseDTO.getNinstr() == wallet.getNInstr()){
+      return;
+    }
+
+    wallet.setNInstr(responseDTO.getNinstr());
+
+    setStatus(wallet);
+
+    walletRepository.save(wallet);
+    QueueOperationDTO queueOperationDTO =
+        QueueOperationDTO.builder()
+            .initiativeId(dto.getInitiativeId())
+            .userId(dto.getUserId())
+            .hpan(dto.getHpan())
+            .operationType("DELETE_INSTRUMENT")
+            .operationDate(LocalDateTime.now())
+            .build();
+    timelineProducer.sendEvent(queueOperationDTO);
+    QueueOperationDTO queueOperationDTOToRTD =
+        QueueOperationDTO.builder()
+            .hpan(dto.getHpan())
+            .operationType("DELETE_INSTRUMENT")
             .application("IDPAY")
             .operationDate(LocalDateTime.now())
             .build();
@@ -182,37 +229,7 @@ public class WalletServiceImpl implements WalletService {
       timelineProducer.sendEvent(dto);
     }
   }
-
-  @Override
-  public void updateEmail(String initiativeId, String userId, String email) {
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-
-    if (wallet.getEmail() == null || !wallet.getEmail().equals(email)) {
-
-      wallet.setEmail(email);
-      wallet.setEmailUpdateDate(LocalDateTime.now());
-      setStatus(wallet);
-      walletRepository.save(wallet);
-
-      QueueOperationDTO event =
-          QueueOperationDTO.builder()
-              .initiativeId(initiativeId)
-              .userId(userId)
-              .email(email)
-              .operationDate(wallet.getEmailUpdateDate())
-              .operationType("ADD_EMAIL")
-              .build();
-
-      timelineProducer.sendEvent(event);
-    }
-  }
-
-  @Override
-  public EmailDTO getEmail(String initiativeId, String userId) {
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-    return new EmailDTO(wallet.getEmail(), wallet.getEmailUpdateDate().toString());
-  }
-
+  
   @Override
   public void unsubscribe(String initiativeId, String userId) {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
@@ -241,13 +258,10 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void setStatus(Wallet wallet) {
-    if(!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-      boolean hasIban = wallet.getIban() != null;
-      boolean hasInstrument = wallet.getNInstr() > 0;
-      boolean hasEmail = wallet.getEmail() != null;
-      String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
-      wallet.setStatus(status);
-    }
+    boolean hasIban = wallet.getIban() != null;
+    boolean hasInstrument = wallet.getNInstr() > 0;
+    String status = WalletStatus.getByBooleans(hasIban, hasInstrument).name();
+    wallet.setStatus(status);
   }
 
   @Override

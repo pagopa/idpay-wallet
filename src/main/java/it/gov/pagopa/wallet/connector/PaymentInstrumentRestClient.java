@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.connector;
 
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
@@ -28,4 +29,10 @@ public interface PaymentInstrumentRestClient {
   void disableAllInstrument(
       @RequestBody UnsubscribeCallDTO body);
 
+@DeleteMapping(
+      value = "/idpay/instrument/deactivate",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
+  InstrumentResponseDTO deleteInstrument(
+      @RequestBody DeactivationBodyDTO body);
 }

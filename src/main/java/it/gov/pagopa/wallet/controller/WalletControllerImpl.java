@@ -1,7 +1,5 @@
 package it.gov.pagopa.wallet.controller;
 
-import it.gov.pagopa.wallet.dto.EmailDTO;
-import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
@@ -23,6 +21,13 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<Void> enrollInstrument(InstrumentBodyDTO body, String userId) {
     walletService.checkInitiative(body.getInitiativeId());
     walletService.enrollInstrument(body.getInitiativeId(), userId, body.getHpan());
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<Void> deleteInstrument(String initiativeId, String userId, String hpan) {
+    walletService.checkInitiative(initiativeId);
+    walletService.deleteInstrument(initiativeId, userId, hpan);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
@@ -50,18 +55,6 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<InitiativeListDTO> initiativeList(String userId) {
     InitiativeListDTO initiativeDTO = walletService.getInitiativeList(userId);
     return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
-  }
-
-  @Override
-  public ResponseEntity<Void> updateEmail(EmailRequestDTO body, String userId) {
-    walletService.updateEmail(body.getInitiativeId(), userId, body.getEmail());
-    return new ResponseEntity<>(HttpStatus.OK);
-  }
-
-  @Override
-  public ResponseEntity<EmailDTO> getEmail(String initiativeId, String userId) {
-    EmailDTO emailDTO = walletService.getEmail(initiativeId, userId);
-    return new ResponseEntity<>(emailDTO, HttpStatus.OK);
   }
 
   @Override

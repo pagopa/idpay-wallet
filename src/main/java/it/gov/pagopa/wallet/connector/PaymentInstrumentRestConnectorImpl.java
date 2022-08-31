@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.connector;
 
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
@@ -25,5 +26,9 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
     paymentInstrumentRestClient.disableAllInstrument(body);
   }
 
+  @Override
+  public InstrumentResponseDTO deleteInstrument(DeactivationBodyDTO body) {
+    return paymentInstrumentRestClient.deleteInstrument(body);
+  }
 
 }

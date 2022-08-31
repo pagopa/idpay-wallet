@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.connector;
 
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
@@ -10,4 +11,6 @@ public interface PaymentInstrumentRestConnector {
   InstrumentResponseDTO enrollInstrument(@RequestBody InstrumentCallBodyDTO body);
 
   void disableAllInstrument(@RequestBody UnsubscribeCallDTO body);
+  
+  InstrumentResponseDTO deleteInstrument(@RequestBody DeactivationBodyDTO body);
 }

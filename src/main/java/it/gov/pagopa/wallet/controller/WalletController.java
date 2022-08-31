@@ -1,7 +1,5 @@
 package it.gov.pagopa.wallet.controller;
 
-import it.gov.pagopa.wallet.dto.EmailDTO;
-import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
@@ -29,7 +27,22 @@ public interface WalletController {
    * @return
    */
   @PutMapping("/instrument/{userId}")
-  ResponseEntity<Void> enrollInstrument(@Valid @RequestBody InstrumentBodyDTO body, @PathVariable String userId);
+  ResponseEntity<Void> enrollInstrument(
+      @Valid @RequestBody InstrumentBodyDTO body, @PathVariable String userId);
+
+  /**
+   * Deactivation of a Payment Instrument
+   *
+   * @param initiativeId
+   * @param userId
+   * @param hpan
+   * @return
+   */
+  @DeleteMapping("/{initiativeId}/{userId}/instruments/{hpan}")
+  ResponseEntity<Void> deleteInstrument(
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId,
+      @PathVariable("hpan") String hpan);
 
   /**
    * Returns the actual enrollment status
@@ -40,7 +53,7 @@ public interface WalletController {
    */
   @GetMapping("/{initiativeId}/{userId}/status")
   ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(
-          @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   /**
    * Returns the detail of an active initiative for a citizen
@@ -61,7 +74,8 @@ public interface WalletController {
    * @return
    */
   @PutMapping("/iban/{userId}")
-  ResponseEntity<Void> enrollIban(@Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
+  ResponseEntity<Void> enrollIban(
+      @Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
 
   /**
    * Returns the active initiative lists
@@ -71,27 +85,6 @@ public interface WalletController {
    */
   @GetMapping("/{userId}")
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
-
-  /**
-   * Update the email
-   *
-   * @param body
-   * @param userId
-   * @return
-   */
-  @PutMapping("/email/{userId}")
-  ResponseEntity<Void> updateEmail(@Valid @RequestBody EmailRequestDTO body, @PathVariable("userId") String userId);
-
-  /**
-   * Returns the actual enrollment status
-   *
-   * @param initiativeId
-   * @param userId
-   * @return
-   */
-  @GetMapping("/{initiativeId}/{userId}/email")
-  ResponseEntity<EmailDTO> getEmail(
-      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   /**
    * unsubscrive intiative
