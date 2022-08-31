@@ -18,5 +18,6 @@ public interface WalletService {
   void updateEmail(String initiativeId, String userId, String email);
   EmailDTO getEmail(String initiativeId, String userId);
   void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
+  void unsubscribe(String initiativeId, String userId);
 
 }

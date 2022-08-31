@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
+import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EmailDTO;
@@ -57,6 +58,7 @@ class WalletServiceTest {
   @MockBean RTDProducer rtdProducer;
   @MockBean WalletRepository walletRepositoryMock;
   @MockBean PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  @MockBean OnboardingRestConnector onboardingRestConnector;
   @MockBean WalletMapper walletMapper;
   @Autowired WalletService walletService;
 
@@ -666,4 +668,41 @@ class WalletServiceTest {
     }
 
   }
+
+  @Test
+  void unsbubscribe_ok(){
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.doAnswer(
+            invocationOnMock -> {
+              TEST_WALLET.setUnsubscribeDate(LocalDateTime.now());
+              TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
+              return null;
+            })
+        .when(walletRepositoryMock).save(Mockito.any(Wallet.class));
+    try{
+      walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+      assertNotNull(TEST_WALLET.getUnsubscribeDate());
+      assertEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void unsubscribed_ko(){
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+    try {
+      walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
+      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
+    }
+
+  }
+
 }

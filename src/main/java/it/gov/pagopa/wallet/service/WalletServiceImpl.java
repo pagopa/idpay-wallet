@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
 import feign.FeignException;
+import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EmailDTO;
@@ -13,6 +14,7 @@ import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.IbanProducer;
@@ -42,6 +44,9 @@ public class WalletServiceImpl implements WalletService {
   @Autowired WalletRepository walletRepository;
 
   @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+
+  @Autowired
+  OnboardingRestConnector onboardingRestConnector;
   @Autowired IbanProducer ibanProducer;
   @Autowired TimelineProducer timelineProducer;
   @Autowired RTDProducer rtdProducer;
@@ -74,6 +79,10 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrument(String initiativeId, String userId, String hpan) {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    if(this.getEnrollmentStatus(initiativeId,userId).getStatus().equals(WalletStatus.UNSUBSCRIBED)){
+      throw new WalletException(HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    }
 
     InstrumentCallBodyDTO dto =
         new InstrumentCallBodyDTO(
@@ -114,6 +123,9 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollIban(String initiativeId, String userId, String iban, String description) {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    if(this.getEnrollmentStatus(initiativeId,userId).getStatus().equals(WalletStatus.UNSUBSCRIBED)){
+      throw new WalletException(HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    }
 
     iban = iban.toUpperCase();
     this.formalControl(iban);
@@ -201,6 +213,24 @@ public class WalletServiceImpl implements WalletService {
     return new EmailDTO(wallet.getEmail(), wallet.getEmailUpdateDate().toString());
   }
 
+  @Override
+  public void unsubscribe(String initiativeId, String userId) {
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    if(!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      wallet.setStatus(WalletStatus.UNSUBSCRIBED);
+      wallet.setUnsubscribeDate(LocalDateTime.now());
+      UnsubscribeCallDTO unsubscribeCallDTO = new UnsubscribeCallDTO(initiativeId, userId, wallet.getUnsubscribeDate().toString());
+      try {
+        paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
+        onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
+        walletRepository.save(wallet);
+
+      } catch (FeignException e) {
+        throw new WalletException(e.status(), e.getMessage());
+      }
+    }
+  }
+
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
     return walletRepository
         .findByInitiativeIdAndUserId(initiativeId, userId)
@@ -211,11 +241,13 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void setStatus(Wallet wallet) {
-    boolean hasIban = wallet.getIban() != null;
-    boolean hasInstrument = wallet.getNInstr() > 0;
-    boolean hasEmail = wallet.getEmail() != null;
-    String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
-    wallet.setStatus(status);
+    if(!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      boolean hasIban = wallet.getIban() != null;
+      boolean hasInstrument = wallet.getNInstr() > 0;
+      boolean hasEmail = wallet.getEmail() != null;
+      String status = WalletStatus.getByBooleans(hasIban, hasInstrument, hasEmail).name();
+      wallet.setStatus(status);
+    }
   }
 
   @Override

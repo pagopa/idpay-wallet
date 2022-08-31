@@ -9,6 +9,7 @@ import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -91,5 +92,15 @@ public interface WalletController {
   @GetMapping("/{initiativeId}/{userId}/email")
   ResponseEntity<EmailDTO> getEmail(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
+  /**
+   * unsubscrive intiative
+   *
+   * @param initiativeId
+   * @param userId
+   * @return
+   */
+  @DeleteMapping("/unsubscribe/{initiativeId}/{userId}")
+  ResponseEntity<Void> unsubscribeInitiative(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
 }

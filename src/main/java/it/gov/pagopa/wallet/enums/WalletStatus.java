@@ -15,6 +15,8 @@ public enum WalletStatus {
   private final boolean hasInstrument;
   private final boolean hasEmail;
 
+  public static final String UNSUBSCRIBED = "UNSUBSCRIBED";
+
   WalletStatus(boolean hasIban, boolean hasInstrument, boolean hasEmail) {
     this.hasIban = hasIban;
     this.hasInstrument = hasInstrument;
