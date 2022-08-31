@@ -78,6 +78,7 @@ class WalletServiceTest {
   private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(0.00);
   private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
   private static final int TEST_COUNT = 2;
+  private static final int TEST_COUNT_IDEMP = 1;
 
   private static final Wallet TEST_WALLET =
       Wallet.builder()
@@ -94,6 +95,9 @@ class WalletServiceTest {
 
   private static final InstrumentResponseDTO INSTRUMENT_RESPONSE_DTO =
       new InstrumentResponseDTO(TEST_COUNT);
+
+  private static final InstrumentResponseDTO INSTRUMENT_RESPONSE_DTO_IDEMP =
+      new InstrumentResponseDTO(TEST_COUNT_IDEMP);
 
   private static final InitiativeDTO INITIATIVE_DTO =
       new InitiativeDTO(
@@ -133,6 +137,29 @@ class WalletServiceTest {
     }
     assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void enrollInstrument_idemp() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    TEST_WALLET.setIban(null);
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+    TEST_WALLET.setNInstr(1);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.enrollInstrument(
+                Mockito.any(InstrumentCallBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO_IDEMP);
+
+    try {
+      walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
+    assertEquals(TEST_COUNT_IDEMP, TEST_WALLET.getNInstr());
   }
 
   @Test
@@ -271,6 +298,32 @@ class WalletServiceTest {
     }
     assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void deleteInstrument_ok_with_idemp() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+    TEST_WALLET.setNInstr(1);
+    TEST_WALLET.setIban(null);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.deleteInstrument(
+                Mockito.any(DeactivationBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO_IDEMP);
+
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
+
+    try {
+      walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
+    assertEquals(TEST_COUNT_IDEMP, TEST_WALLET.getNInstr());
   }
 
   @Test

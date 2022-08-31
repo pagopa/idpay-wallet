@@ -86,6 +86,10 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(e.status(), e.getMessage());
     }
 
+    if(responseDTO.getNinstr() == wallet.getNInstr()){
+      return;
+    }
+
     wallet.setNInstr(responseDTO.getNinstr());
 
     setStatus(wallet);
@@ -124,6 +128,10 @@ public class WalletServiceImpl implements WalletService {
       responseDTO = paymentInstrumentRestConnector.deleteInstrument(dto);
     } catch (FeignException e) {
       throw new WalletException(e.status(), e.getMessage());
+    }
+
+    if(responseDTO.getNinstr() == wallet.getNInstr()){
+      return;
     }
 
     wallet.setNInstr(responseDTO.getNinstr());
