@@ -12,7 +12,6 @@ public enum WalletStatus {
 
   public static final String UNSUBSCRIBED = "UNSUBSCRIBED";
 
-  WalletStatus(boolean hasIban, boolean hasInstrument, boolean hasEmail) {
   WalletStatus(boolean hasIban, boolean hasInstrument) {
     this.hasIban = hasIban;
     this.hasInstrument = hasInstrument;
