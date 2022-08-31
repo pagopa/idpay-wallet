@@ -18,7 +18,6 @@ import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.IbanProducer;
-import it.gov.pagopa.wallet.event.RTDProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -49,7 +48,6 @@ public class WalletServiceImpl implements WalletService {
   OnboardingRestConnector onboardingRestConnector;
   @Autowired IbanProducer ibanProducer;
   @Autowired TimelineProducer timelineProducer;
-  @Autowired RTDProducer rtdProducer;
   @Autowired WalletMapper walletMapper;
 
   @Override
@@ -114,14 +112,6 @@ public class WalletServiceImpl implements WalletService {
             .operationDate(LocalDateTime.now())
             .build();
     timelineProducer.sendEvent(queueOperationDTO);
-    QueueOperationDTO queueOperationDTOToRTD =
-        QueueOperationDTO.builder()
-            .hpan(dto.getHpan())
-            .operationType("ADD_INSTRUMENT")
-            .application("IDPAY")
-            .operationDate(LocalDateTime.now())
-            .build();
-    rtdProducer.sendInstrument(queueOperationDTOToRTD);
   }
 
   @Override
@@ -157,14 +147,6 @@ public class WalletServiceImpl implements WalletService {
             .operationDate(LocalDateTime.now())
             .build();
     timelineProducer.sendEvent(queueOperationDTO);
-    QueueOperationDTO queueOperationDTOToRTD =
-        QueueOperationDTO.builder()
-            .hpan(dto.getHpan())
-            .operationType("DELETE_INSTRUMENT")
-            .application("IDPAY")
-            .operationDate(LocalDateTime.now())
-            .build();
-    rtdProducer.sendInstrument(queueOperationDTOToRTD);
   }
 
   @Override

@@ -25,7 +25,6 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.IbanProducer;
-import it.gov.pagopa.wallet.event.RTDProducer;
 import it.gov.pagopa.wallet.event.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -56,7 +55,6 @@ class WalletServiceTest {
 
   @MockBean IbanProducer ibanProducer;
   @MockBean TimelineProducer timelineProducer;
-  @MockBean RTDProducer rtdProducer;
   @MockBean WalletRepository walletRepositoryMock;
   @MockBean PaymentInstrumentRestConnector paymentInstrumentRestConnector;
   @MockBean OnboardingRestConnector onboardingRestConnector;
@@ -185,7 +183,6 @@ class WalletServiceTest {
     }
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
-    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
     assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
@@ -205,7 +202,6 @@ class WalletServiceTest {
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
-    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
@@ -270,7 +266,6 @@ class WalletServiceTest {
     }
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
-    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
     assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
@@ -291,7 +286,6 @@ class WalletServiceTest {
         .thenReturn(INSTRUMENT_RESPONSE_DTO);
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
-    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
     try {
       walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
@@ -317,7 +311,6 @@ class WalletServiceTest {
         .thenReturn(INSTRUMENT_RESPONSE_DTO_IDEMP);
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
-    Mockito.doNothing().when(rtdProducer).sendInstrument(Mockito.any(QueueOperationDTO.class));
 
     try {
       walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
