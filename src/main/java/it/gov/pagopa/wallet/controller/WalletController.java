@@ -93,7 +93,7 @@ public interface WalletController {
    * @param userId
    * @return
    */
-  @DeleteMapping("/unsubscribe/{initiativeId}/{userId}")
+  @DeleteMapping("/{initiativeId}/{userId}/unsubscribe")
   ResponseEntity<Void> unsubscribeInitiative(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
 }
