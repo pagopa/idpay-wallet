@@ -48,7 +48,7 @@ class WalletControllerTest {
   private static final String ENROLL_IBAN_URL = "/iban/";
   private static final String STATUS_URL = "/status";
 
-  private static final String UNSUBSCRIBE_URL = "/unsubscribe/";
+  private static final String UNSUBSCRIBE_URL = "/unsubscribe";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
@@ -506,7 +506,7 @@ class WalletControllerTest {
     Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
 
     mvc.perform(
-            MockMvcRequestBuilders.delete(BASE_URL + UNSUBSCRIBE_URL +INITIATIVE_ID+"/" + USER_ID)
+            MockMvcRequestBuilders.delete(BASE_URL +"/"+INITIATIVE_ID+"/" + USER_ID+ UNSUBSCRIBE_URL)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(MockMvcResultMatchers.status().isNoContent())
@@ -523,7 +523,7 @@ class WalletControllerTest {
     MvcResult res =
         mvc.perform(
                 MockMvcRequestBuilders.delete(
-                        BASE_URL + UNSUBSCRIBE_URL + INITIATIVE_ID+"/" + USER_ID)
+                        BASE_URL +"/"+INITIATIVE_ID+"/" + USER_ID+ UNSUBSCRIBE_URL)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .accept(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
