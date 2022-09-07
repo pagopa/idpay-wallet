@@ -1,0 +1,158 @@
+iban:
+  uri: ${IBAN_URI}
+logging:
+  level:
+    it:
+      gov:
+        pagopa: ${LOG_LEVEL_PAGOPA:DEBUG}
+    org:
+      springframework:
+        boot: ${LOG_LEVEL_SPRING_BOOT:INFO}
+        cloud: ${LOG_LEVEL_SPRING_CLOUD:WARN}
+        data: ${LOG_LEVEL_SPRING_DATA:INFO}
+    root: ${LOG_LEVEL_ROOT:INFO}
+onboarding:
+  uri: ${ONBOARDING_URI:}
+payment:
+  instrument:
+    uri: ${PAYMENT_INSTRUMENT_URI:}
+rest-client:
+  onboarding:
+    serviceCode: idpay-onboarding
+  payment:
+    intrument:
+      serviceCode: idpay-payment-instrument
+spring:
+  application:
+    name: idpay-wallet
+  cloud:
+    stream:
+      binders:
+        kafka-checkiban-outcome:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_CHECKIBAN_OUTCOME_SASL_JAAS_CONFIG:}
+        kafka-iban:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_IBAN_SASL_JAAS_CONFIG:}
+        kafka-outcome:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_OUTCOME_SASL_JAAS_CONFIG:}
+        kafka-re:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST_RULE_ENGINE:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_RULE_ENGINE_SASL_JAAS_CONFIG:}
+        kafka-timeline:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_TIMELINE_SASL_JAAS_CONFIG:}
+      bindings:
+        consumerIban-in-0:
+          binder: kafka-checkiban-outcome
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_CHECKIBAN_OUTCOME:}
+          group: ${KAFKA_CHECKIBAN_OUTCOME_GROUP_IN:}
+        walletQueue-in-0:
+          binder: kafka-outcome
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_OUTCOME:}
+          group: ${KAFKA_OUTCOME_GROUP_IN:}
+        walletQueue-in-1:
+          binder: kafka-re
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_RULE_ENGINE:}
+          group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
+        walletQueue-out-0:
+          binder: kafka-iban
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_IBAN:}
+        walletQueue-out-1:
+          binder: kafka-timeline
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_TIMELINE:}
+      function:
+        definition: walletQueue;consumerIban
+      kafka:
+        binder:
+          auto-create-topics: false
+          configuration:
+            heartbeat:
+              interval:
+                ms: 30000
+            sasl:
+              mechanism: ${KAFKA_SASL_MECHANISM:}
+            security:
+              protocol: ${KAFKA_SECURITY_PROTOCOL:}
+            session:
+              timeout:
+                ms: 60000
+          consumerProperties:
+            connections:
+              max:
+                idle:
+                  ms: 300000
+            key:
+              deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            socket:
+              connection:
+                setup:
+                  timeout:
+                    max:
+                      ms: 200000
+                    ms: 100000
+            value:
+              deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  config:
+    activate:
+      on-profile: default
+  data:
+    mongodb:
+      database: ${MONGODB_DBNAME:}
+      uri: ${MONGODB_URI:}
