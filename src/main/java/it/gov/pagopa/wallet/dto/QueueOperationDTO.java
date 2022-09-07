@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +25,17 @@ public class QueueOperationDTO {
 
   private String channel;
 
+  private String circuitType;
+
   private LocalDateTime operationDate;
+
+  private BigDecimal amount;
+
+  private BigDecimal accrued;
+
+  private String idTrxIssuer;
+
+  private String idTrxAcquirer;
 
   private String application;
 }

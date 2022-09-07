@@ -1,4 +1,4 @@
-package it.gov.pagopa.wallet.event;
+package it.gov.pagopa.wallet.event.producer;
 
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
