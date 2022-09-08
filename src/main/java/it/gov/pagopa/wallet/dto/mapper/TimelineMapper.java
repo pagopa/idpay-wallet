@@ -33,6 +33,7 @@ public class TimelineMapper {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
+        .channel("APP_IO")
         .hpan(dto.getHpan())
         .operationType("DELETE_INSTRUMENT")
         .operationDate(dto.getDeactivationDate())
