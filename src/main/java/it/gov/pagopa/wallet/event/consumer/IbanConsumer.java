@@ -1,4 +1,4 @@
-package it.gov.pagopa.wallet.event;
+package it.gov.pagopa.wallet.event.consumer;
 
 import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.service.WalletService;

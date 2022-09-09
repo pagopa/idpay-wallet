@@ -35,7 +35,7 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
       HttpMessageConvertersAutoConfiguration.class
     })
 @TestPropertySource(
-    locations = "classpath:application.properties",
+    locations = "classpath:application.yml",
     properties = {
       "spring.application.name=idpay-payment-instrument-integration-rest"
     })
