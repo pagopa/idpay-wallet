@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class IbanQueueWalletDTO {
   private String userId;
+  private String initiativeId;
   private String iban;
   private String status;
   private String queueDate;

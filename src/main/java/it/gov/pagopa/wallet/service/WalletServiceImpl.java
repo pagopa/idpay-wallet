@@ -297,7 +297,7 @@ public class WalletServiceImpl implements WalletService {
   private void sendCheckIban(IbanQueueWalletDTO iban){
     NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
         .userId(iban.getUserId())
-        .initiativeId("")
+        .initiativeId(iban.getInitiativeId())
         .iban(iban.getIban())
         .status(WalletConstants.STATUS_KO)
         .build();
