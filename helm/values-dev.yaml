@@ -105,7 +105,7 @@ microservice-chart:
     idpay-eventhub-01:
       KAFKA_BINDER_BROKER_ENDPOINT_RULE_ENGINE: kafka_broker
       KAFKA_TOPIC_RULE_ENGINE: idpay_hpan_update_topic
-      KAFKA_RULE_ENGINE_GROUP_IN: idpay-transaction-wallet-consumer-group
+      KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
 
   envSecret:
     aks-api-url: cstar-d-weu-dev01-aks-apiserver-url
