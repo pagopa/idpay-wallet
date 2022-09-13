@@ -11,6 +11,7 @@ import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,16 @@ class TimelineMapperTest {
   private static final LocalDateTime OPERATION_DATE = LocalDateTime.now();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
-          USER_ID, INITIATIVE_ID, WalletConstants.STATUS_ONBOARDING_OK, OPERATION_DATE, null);
+          USER_ID,
+          INITIATIVE_ID,
+          INITIATIVE_ID,
+          OPERATION_DATE,
+          INITIATIVE_ID,
+          WalletConstants.STATUS_ONBOARDING_OK,
+          OPERATION_DATE,
+          List.of(),
+          new BigDecimal(500),
+          INITIATIVE_ID);
   private static final InstrumentCallBodyDTO INSTRUMENT_BODY_DTO =
       new InstrumentCallBodyDTO(
           USER_ID, INITIATIVE_ID, HPAN, WalletConstants.CHANNEL_APP_IO, OPERATION_DATE);
