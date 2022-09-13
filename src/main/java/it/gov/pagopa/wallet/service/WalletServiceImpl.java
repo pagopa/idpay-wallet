@@ -279,7 +279,7 @@ public class WalletServiceImpl implements WalletService {
   public void deleteOperation(IbanQueueWalletDTO iban) {
     Wallet wallet =
         walletRepository
-            .findByUserIdAndIban(iban.getUserId(), iban.getIban())
+            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
             .orElseThrow(
                 () ->
                     new WalletException(
