@@ -93,6 +93,19 @@ spring:
                         sasl:
                           jaas:
                             config: ${KAFKA_TIMELINE_SASL_JAAS_CONFIG:}
+        kafka-notification:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_NOTIFICATION_SASL_JAAS_CONFIG:}
       bindings:
         consumerIban-in-0:
           binder: kafka-checkiban-outcome
@@ -112,6 +125,10 @@ spring:
           binder: kafka-timeline
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_TIMELINE:}
+        walletQueue-out-2:
+          binder: kafka-notification
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_NOTIFICATION:}
         trxConsumer-in-0:
           binder: kafka-re
           content-type: ${KAFKA_CONTENT_TYPE:application/json}

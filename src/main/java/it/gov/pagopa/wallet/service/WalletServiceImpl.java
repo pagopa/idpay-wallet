@@ -14,12 +14,14 @@ import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
+import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -53,6 +55,8 @@ public class WalletServiceImpl implements WalletService {
   @Autowired TimelineProducer timelineProducer;
   @Autowired WalletMapper walletMapper;
   @Autowired TimelineMapper timelineMapper;
+  @Autowired
+  NotificationProducer notificationProducer;
 
   @Override
   public void checkInitiative(String initiativeId) {
@@ -157,6 +161,7 @@ public class WalletServiceImpl implements WalletService {
       IbanQueueDTO ibanQueueDTO =
           new IbanQueueDTO(
               userId,
+              initiativeId,
               iban,
               description,
               WalletConstants.CHANNEL_APP_IO,
@@ -274,7 +279,7 @@ public class WalletServiceImpl implements WalletService {
   public void deleteOperation(IbanQueueWalletDTO iban) {
     Wallet wallet =
         walletRepository
-            .findByUserIdAndIban(iban.getUserId(), iban.getIban())
+            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
             .orElseThrow(
                 () ->
                     new WalletException(
@@ -286,6 +291,19 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
     log.debug("Finished consumer: " + wallet.toString());
+    sendCheckIban(iban);
+  }
+
+  private void sendCheckIban(IbanQueueWalletDTO iban){
+    NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
+        .operationType("CHECKIBAN_KO")
+        .userId(iban.getUserId())
+        .initiativeId(iban.getInitiativeId())
+        .iban(iban.getIban())
+        .status(WalletConstants.STATUS_KO)
+        .build();
+    notificationProducer.sendCheckIban(notificationQueueDTO);
+
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {
