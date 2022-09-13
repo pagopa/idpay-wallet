@@ -100,7 +100,7 @@ microservice-chart:
       KAFKA_TOPIC_OUTCOME: idpay_onboarding_outcome_topic
       KAFKA_TOPIC_CHECKIBAN_OUTCOME: idpay_checkiban_outcome_topic
       KAFKA_TOPIC_TIMELINE: idpay_timeline_topic
-      KAFKA_TOPIC_NOTIFICATION: idpay-notification-request
+      KAFKA_TOPIC_NOTIFICATION: idpay_notification_outcome_topic
       KAFKA_CHECKIBAN_OUTCOME_GROUP_IN: idpay-checkiban-outcome-consumer-group
       KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
     idpay-eventhub-01:
