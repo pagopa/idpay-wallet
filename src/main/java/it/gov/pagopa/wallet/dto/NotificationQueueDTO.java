@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class NotificationQueueDTO {
+  private String operationType;
   private String userId;
   private String initiativeId;
   private String iban;
