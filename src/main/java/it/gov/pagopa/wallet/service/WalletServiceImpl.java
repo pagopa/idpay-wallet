@@ -291,14 +291,15 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
     log.debug("Finished consumer: " + wallet.toString());
-    sendCheckIban(iban);
+    sendCheckIban(iban,wallet);
   }
 
-  private void sendCheckIban(IbanQueueWalletDTO iban){
+  private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet){
     NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
         .operationType("CHECKIBAN_KO")
         .userId(iban.getUserId())
         .initiativeId(iban.getInitiativeId())
+        .serviceId(wallet.getServiceId())
         .iban(iban.getIban())
         .status(WalletConstants.STATUS_KO)
         .build();
