@@ -9,6 +9,7 @@ public class NotificationQueueDTO {
   private String operationType;
   private String userId;
   private String initiativeId;
+  private String serviceId;
   private String iban;
   private String status;
 
