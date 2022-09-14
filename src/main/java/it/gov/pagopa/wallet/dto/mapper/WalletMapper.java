@@ -16,6 +16,7 @@ public class WalletMapper {
         .endDate(evaluationDTO.getInitiativeEndDate())
         .organizationId(evaluationDTO.getOrganizationId())
         .userId(evaluationDTO.getUserId())
+        .serviceId(evaluationDTO.getServiceId())
         .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
         .status(WalletStatus.NOT_REFUNDABLE.name())
         .amount(evaluationDTO.getBeneficiaryBudget())
