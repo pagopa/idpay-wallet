@@ -19,4 +19,9 @@ public class OnboardingRestConnectorImpl implements OnboardingRestConnector {
     onboardingRestClient.disableOnboarding(body);
   }
 
+  @Override
+  public void rollback(String initiativeId, String userId) {
+  onboardingRestClient.rollback(initiativeId, userId);
+  }
+
 }

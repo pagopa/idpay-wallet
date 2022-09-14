@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.service;
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -103,6 +104,19 @@ class WalletServiceTest {
           .refunded(TEST_REFUNDED)
           .build();
 
+  private static final Wallet TEST_WALLET_2 =
+    Wallet.builder()
+          .userId(USER_ID)
+          .initiativeId(INITIATIVE_ID)
+          .initiativeName(INITIATIVE_NAME)
+          .acceptanceDate(TEST_DATE)
+          .status(WalletStatus.NOT_REFUNDABLE.name())
+          .endDate(TEST_DATE)
+          .amount(TEST_AMOUNT)
+          .accrued(TEST_ACCRUED)
+          .refunded(TEST_REFUNDED)
+          .build();
+          
   private static final Wallet TEST_WALLET_UNSUBSCRIBED =
       Wallet.builder()
           .userId(USER_ID)
@@ -413,6 +427,19 @@ class WalletServiceTest {
   }
 
   @Test
+  void enrollInstrument_ko_unsubscribe() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+    TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
+    try {
+      walletService.enrollInstrument(INITIATIVE_ID,USER_ID, HPAN);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+    }
+  }
+
+  @Test
   void deleteInstrument_not_found() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.empty());
@@ -597,7 +624,7 @@ class WalletServiceTest {
   }
 
   @Test
-  void enrollIban_unsubscribed() {
+  void enrollIban_ko_unsubscribe() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET_UNSUBSCRIBED));
     try {
@@ -606,6 +633,7 @@ class WalletServiceTest {
     } catch (WalletException e) {
       assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
       assertEquals(WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED, e.getMessage());
+
     }
   }
 
@@ -837,9 +865,50 @@ class WalletServiceTest {
   }
 
   @Test
+
+  void unsubscribe_rollback_wallet(){
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Request request =
+        Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
+
+    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null)).when(onboardingRestConnector).disableOnboarding(Mockito.any(UnsubscribeCallDTO.class));
+
+    try{
+      walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertNull(TEST_WALLET.getUnsubscribeDate());
+      assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
+    }
+
+  }
+
+  @Test
+  void unsubscribe_rollback_wallet_2(){
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET_2));
+
+    Request request =
+        Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
+
+    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null)).when(paymentInstrumentRestConnector).disableAllInstrument(Mockito.any(UnsubscribeCallDTO.class));
+
+    try{
+      walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertNull(TEST_WALLET_2.getUnsubscribeDate());
+      assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET_2.getStatus());
+    }
+
   void processTransaction_not_rewarded() {
     walletService.processTransaction(REWARD_TRX_DTO);
     Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
     Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
+
 }

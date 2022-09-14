@@ -38,6 +38,8 @@ import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,9 @@ public class WalletServiceImpl implements WalletService {
   @Autowired TimelineMapper timelineMapper;
   @Autowired
   NotificationProducer notificationProducer;
+
+  private static final Logger LOG = LoggerFactory.getLogger(
+      WalletServiceImpl.class);
 
   @Override
   public void checkInitiative(String initiativeId) {
@@ -199,20 +204,32 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void unsubscribe(String initiativeId, String userId) {
+    LOG.info("---UNSUBSCRIBE---");
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-    if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+    String statusTemp = wallet.getStatus();
+    if(!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       wallet.setStatus(WalletStatus.UNSUBSCRIBED);
       wallet.setUnsubscribeDate(LocalDateTime.now());
-      UnsubscribeCallDTO unsubscribeCallDTO =
-          new UnsubscribeCallDTO(initiativeId, userId, wallet.getUnsubscribeDate().toString());
-      try {
-        paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-        onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-        walletRepository.save(wallet);
+      walletRepository.save(wallet);
+      LOG.info("Wallet disabled");
+      UnsubscribeCallDTO unsubscribeCallDTO = new UnsubscribeCallDTO(initiativeId, userId, wallet.getUnsubscribeDate().toString());
 
+      try {
+        onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
+        LOG.info("Onboarding disabled");
       } catch (FeignException e) {
+        this.rollbackWallet(statusTemp, wallet);
         throw new WalletException(e.status(), e.getMessage());
       }
+      try {
+        paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
+        LOG.info("Payment instruments disabled");
+      } catch (FeignException e) {
+        this.rollbackWallet(statusTemp, wallet);
+        onboardingRestConnector.rollback(initiativeId, userId);
+        throw new WalletException(e.status(), e.getMessage());
+      }
+
     }
   }
 
@@ -277,20 +294,17 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void deleteOperation(IbanQueueWalletDTO iban) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
-    log.debug("Entry consumer: " + wallet.toString());
-
+    Wallet wallet = walletRepository.findByUserIdAndIban(iban.getUserId(), iban.getIban())
+        .orElseThrow(
+        () ->
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    log.debug("Entry consumer: " + wallet);
     wallet.setIban(null);
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    log.debug("Finished consumer: " + wallet.toString());
+    log.debug("Finished consumer: " + wallet);
     sendCheckIban(iban,wallet);
   }
 
@@ -304,7 +318,6 @@ public class WalletServiceImpl implements WalletService {
         .status(WalletConstants.STATUS_KO)
         .build();
     notificationProducer.sendCheckIban(notificationQueueDTO);
-
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {
@@ -318,5 +331,13 @@ public class WalletServiceImpl implements WalletService {
     if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
       throw new UnsupportedCountryException(iban + " Iban is not italian");
     }
+  }
+
+  private void rollbackWallet(String oldStatus, Wallet wallet){
+      LOG.info("Wallet, old status: {}",oldStatus);
+      wallet.setStatus(oldStatus);
+      wallet.setUnsubscribeDate(null);
+      walletRepository.save(wallet);
+      LOG.info("Rollback wallet, new status: {}",wallet.getStatus());
   }
 }
