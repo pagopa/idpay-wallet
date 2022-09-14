@@ -887,7 +887,7 @@ class WalletServiceTest {
   }
 
   @Test
-  void unsubscribe_rollback_wallet_2(){
+  void unsubscribe_rollback_wallet_2() {
 
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET_2));
@@ -895,15 +895,18 @@ class WalletServiceTest {
     Request request =
         Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
 
-    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null)).when(paymentInstrumentRestConnector).disableAllInstrument(Mockito.any(UnsubscribeCallDTO.class));
+    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+        .when(paymentInstrumentRestConnector)
+        .disableAllInstrument(Mockito.any(UnsubscribeCallDTO.class));
 
-    try{
+    try {
       walletService.unsubscribe(INITIATIVE_ID, USER_ID);
       Assertions.fail();
     } catch (WalletException e) {
       assertNull(TEST_WALLET_2.getUnsubscribeDate());
       assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET_2.getStatus());
     }
+  }
 
   void processTransaction_not_rewarded() {
     walletService.processTransaction(REWARD_TRX_DTO);

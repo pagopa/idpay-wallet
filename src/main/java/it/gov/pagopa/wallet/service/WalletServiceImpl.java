@@ -294,7 +294,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void deleteOperation(IbanQueueWalletDTO iban) {
-    Wallet wallet = walletRepository.findByUserIdAndIban(iban.getUserId(), iban.getIban())
+    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
         .orElseThrow(
         () ->
             new WalletException(
@@ -305,7 +305,7 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
     log.debug("Finished consumer: " + wallet);
-    sendCheckIban(iban,wallet);
+    sendCheckIban(iban, wallet);
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet){
