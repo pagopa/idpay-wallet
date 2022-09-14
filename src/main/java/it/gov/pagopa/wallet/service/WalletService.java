@@ -5,6 +5,7 @@ import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 
 public interface WalletService {
   void checkInitiative(String initiativeId);
@@ -17,4 +18,5 @@ public interface WalletService {
   void createWallet(EvaluationDTO evaluationDTO);
   void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
   void unsubscribe(String initiativeId, String userId);
+  void processTransaction(RewardTransactionDTO rewardTransactionDTO);
 }

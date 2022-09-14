@@ -4,6 +4,7 @@ import feign.FeignException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.Counters;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
@@ -13,15 +14,20 @@ import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
+import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
-import it.gov.pagopa.wallet.event.IbanProducer;
-import it.gov.pagopa.wallet.event.TimelineProducer;
+import it.gov.pagopa.wallet.event.producer.IbanProducer;
+import it.gov.pagopa.wallet.event.producer.NotificationProducer;
+import it.gov.pagopa.wallet.event.producer.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,11 +52,13 @@ public class WalletServiceImpl implements WalletService {
 
   @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
 
-  @Autowired
-  OnboardingRestConnector onboardingRestConnector;
+  @Autowired OnboardingRestConnector onboardingRestConnector;
   @Autowired IbanProducer ibanProducer;
   @Autowired TimelineProducer timelineProducer;
   @Autowired WalletMapper walletMapper;
+  @Autowired TimelineMapper timelineMapper;
+  @Autowired
+  NotificationProducer notificationProducer;
 
   private static final Logger LOG = LoggerFactory.getLogger(
       WalletServiceImpl.class);
@@ -83,8 +91,11 @@ public class WalletServiceImpl implements WalletService {
   public void enrollInstrument(String initiativeId, String userId, String hpan) {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    if(this.getEnrollmentStatus(initiativeId,userId).getStatus().equals(WalletStatus.UNSUBSCRIBED)){
-      throw new WalletException(HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    if (this.getEnrollmentStatus(initiativeId, userId)
+        .getStatus()
+        .equals(WalletStatus.UNSUBSCRIBED)) {
+      throw new WalletException(
+          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
 
     InstrumentCallBodyDTO dto =
@@ -98,7 +109,7 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(e.status(), e.getMessage());
     }
 
-    if(responseDTO.getNinstr() == wallet.getNInstr()){
+    if (responseDTO.getNinstr() == wallet.getNInstr()) {
       return;
     }
 
@@ -107,16 +118,8 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    QueueOperationDTO queueOperationDTO =
-        QueueOperationDTO.builder()
-            .initiativeId(dto.getInitiativeId())
-            .userId(dto.getUserId())
-            .channel(dto.getChannel())
-            .hpan(dto.getHpan())
-            .operationType("ADD_INSTRUMENT")
-            .operationDate(LocalDateTime.now())
-            .build();
-    timelineProducer.sendEvent(queueOperationDTO);
+
+    timelineProducer.sendEvent(timelineMapper.enrollInstrumentToTimeline(dto));
   }
 
   @Override
@@ -124,8 +127,7 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     DeactivationBodyDTO dto =
-        new DeactivationBodyDTO(
-            userId, initiativeId, hpan, LocalDateTime.now());
+        new DeactivationBodyDTO(userId, initiativeId, hpan, LocalDateTime.now());
 
     InstrumentResponseDTO responseDTO;
     try {
@@ -134,7 +136,7 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(e.status(), e.getMessage());
     }
 
-    if(responseDTO.getNinstr() == wallet.getNInstr()){
+    if (responseDTO.getNinstr() == wallet.getNInstr()) {
       return;
     }
 
@@ -143,47 +145,39 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    QueueOperationDTO queueOperationDTO =
-        QueueOperationDTO.builder()
-            .initiativeId(dto.getInitiativeId())
-            .userId(dto.getUserId())
-            .hpan(dto.getHpan())
-            .operationType("DELETE_INSTRUMENT")
-            .operationDate(LocalDateTime.now())
-            .build();
-    timelineProducer.sendEvent(queueOperationDTO);
+
+    timelineProducer.sendEvent(timelineMapper.deleteInstrumentToTimeline(dto));
   }
 
   @Override
   public void enrollIban(String initiativeId, String userId, String iban, String description) {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-    if(this.getEnrollmentStatus(initiativeId,userId).getStatus().equals(WalletStatus.UNSUBSCRIBED)){
-      throw new WalletException(HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    if (this.getEnrollmentStatus(initiativeId, userId)
+        .getStatus()
+        .equals(WalletStatus.UNSUBSCRIBED)) {
+      throw new WalletException(
+          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
 
     iban = iban.toUpperCase();
     this.formalControl(iban);
     if (wallet.getIban() == null || !(wallet.getIban().equals(iban))) {
       wallet.setIban(iban);
-      IbanQueueDTO ibanQueueDTO = new IbanQueueDTO(wallet.getUserId(), wallet.getIban(),
-          description, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
+      IbanQueueDTO ibanQueueDTO =
+          new IbanQueueDTO(
+              userId,
+              initiativeId,
+              iban,
+              description,
+              WalletConstants.CHANNEL_APP_IO,
+              LocalDateTime.now());
       ibanProducer.sendIban(ibanQueueDTO);
     }
 
     setStatus(wallet);
 
     walletRepository.save(wallet);
-
-    QueueOperationDTO queueOperationDTO =
-        QueueOperationDTO.builder()
-            .initiativeId(wallet.getInitiativeId())
-            .userId(wallet.getUserId())
-            .channel(WalletConstants.CHANNEL_APP_IO)
-            .iban(wallet.getIban())
-            .operationType("ADD_IBAN")
-            .operationDate(LocalDateTime.now())
-            .build();
-    timelineProducer.sendEvent(queueOperationDTO);
+    timelineProducer.sendEvent(timelineMapper.ibanToTimeline(initiativeId, userId, iban));
   }
 
   @Override
@@ -204,19 +198,10 @@ public class WalletServiceImpl implements WalletService {
     if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       walletRepository.save(wallet);
-
-      QueueOperationDTO dto =
-          QueueOperationDTO.builder()
-              .initiativeId(evaluationDTO.getInitiativeId())
-              .userId(evaluationDTO.getUserId())
-              .operationType(WalletConstants.ONBOARDING_OPERATION)
-              .operationDate(LocalDateTime.now())
-              .build();
-
-      timelineProducer.sendEvent(dto);
+      timelineProducer.sendEvent(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
   }
-  
+
   @Override
   public void unsubscribe(String initiativeId, String userId) {
     LOG.info("---UNSUBSCRIBE---");
@@ -228,6 +213,7 @@ public class WalletServiceImpl implements WalletService {
       walletRepository.save(wallet);
       LOG.info("Wallet disabled");
       UnsubscribeCallDTO unsubscribeCallDTO = new UnsubscribeCallDTO(initiativeId, userId, wallet.getUnsubscribeDate().toString());
+
       try {
         onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
         LOG.info("Onboarding disabled");
@@ -245,6 +231,49 @@ public class WalletServiceImpl implements WalletService {
       }
 
     }
+  }
+
+  @Override
+  public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
+    if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
+      return;
+    }
+    log.info("[processTransaction] New trx from Rule Engine");
+    rewardTransactionDTO
+        .getRewards()
+        .forEach(
+            (initiativeId, reward) -> {
+              log.info("[processTransaction] Processing initiative: {}", initiativeId);
+              updateWalletFromTransaction(
+                  initiativeId, rewardTransactionDTO.getUserId(), reward.getCounters());
+              sendTransactionToTimeline(
+                  initiativeId, rewardTransactionDTO, reward.getAccruedReward());
+            });
+  }
+
+  private void sendTransactionToTimeline(
+      String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
+    timelineProducer.sendEvent(
+        timelineMapper.transactionToTimeline(initiativeId, rewardTransaction, accruedReward));
+  }
+
+  private void updateWalletFromTransaction(String initiativeId, String userId, Counters counters) {
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    log.info(
+        "[updateWalletFromTransaction] Found wallet for initiative and user: {} {}",
+        initiativeId,
+        userId);
+    wallet.setNTrx(counters.getTrxNumber());
+    log.info("[updateWalletFromTransaction] New value for nTrx: {}", wallet.getNTrx());
+    wallet.setAccrued(counters.getTotalReward());
+    log.info("[updateWalletFromTransaction] New value for Accrued: {}", wallet.getAccrued());
+    wallet.setAmount(
+        counters
+            .getInitiativeBudget()
+            .subtract(counters.getTotalReward())
+            .setScale(2, RoundingMode.HALF_DOWN));
+    log.info("[updateWalletFromTransaction] New value for Amount: {}", wallet.getAmount());
+    walletRepository.save(wallet);
   }
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
@@ -271,12 +300,24 @@ public class WalletServiceImpl implements WalletService {
             new WalletException(
                 HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
     log.debug("Entry consumer: " + wallet);
-
     wallet.setIban(null);
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    log.debug("Finished consumer: " +wallet);
+    log.debug("Finished consumer: " + wallet);
+    sendCheckIban(iban,wallet);
+  }
+
+  private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet){
+    NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
+        .operationType("CHECKIBAN_KO")
+        .userId(iban.getUserId())
+        .initiativeId(iban.getInitiativeId())
+        .serviceId(wallet.getServiceId())
+        .iban(iban.getIban())
+        .status(WalletConstants.STATUS_KO)
+        .build();
+    notificationProducer.sendCheckIban(notificationQueueDTO);
   }
 
   private InitiativeDTO walletToDto(Wallet wallet) {

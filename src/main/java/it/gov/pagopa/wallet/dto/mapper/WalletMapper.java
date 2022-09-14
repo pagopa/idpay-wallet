@@ -12,9 +12,14 @@ public class WalletMapper {
   public Wallet map(EvaluationDTO evaluationDTO) {
     return Wallet.builder()
         .initiativeId(evaluationDTO.getInitiativeId())
+        .initiativeName(evaluationDTO.getInitiativeName())
+        .endDate(evaluationDTO.getInitiativeEndDate())
+        .organizationId(evaluationDTO.getOrganizationId())
         .userId(evaluationDTO.getUserId())
+        .serviceId(evaluationDTO.getServiceId())
         .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
         .status(WalletStatus.NOT_REFUNDABLE.name())
+        .amount(evaluationDTO.getBeneficiaryBudget())
         .accrued(BigDecimal.valueOf(0.00))
         .refunded(BigDecimal.valueOf(0.00))
         .build();
