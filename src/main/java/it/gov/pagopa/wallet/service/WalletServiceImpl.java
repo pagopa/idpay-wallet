@@ -31,13 +31,11 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,13 +76,12 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public InitiativeDTO getWalletDetail(String initiativeId, String userId) {
-    Optional<Wallet> wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId);
-    return wallet
-        .map(this::walletToDto)
-        .orElseThrow(
-            () ->
-                new WalletException(
-                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    Wallet wallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, userId).orElseThrow(
+        () ->
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    return walletMapper.toInitiativeDTO(wallet);
+
   }
 
   @Override
@@ -187,7 +184,7 @@ public class WalletServiceImpl implements WalletService {
     List<InitiativeDTO> initiativeDTOList = new ArrayList<>();
 
     for (Wallet wallet : walletList) {
-      initiativeDTOList.add(walletToDto(wallet));
+      initiativeDTOList.add(walletMapper.toInitiativeDTO(wallet));
     }
     initiativeListDTO.setInitiativeList(initiativeDTOList);
     return initiativeListDTO;
@@ -318,11 +315,6 @@ public class WalletServiceImpl implements WalletService {
         .status(WalletConstants.STATUS_KO)
         .build();
     notificationProducer.sendCheckIban(notificationQueueDTO);
-  }
-
-  private InitiativeDTO walletToDto(Wallet wallet) {
-    ModelMapper modelmapper = new ModelMapper();
-    return modelmapper.map(wallet, InitiativeDTO.class);
   }
 
   private void formalControl(String iban) {
