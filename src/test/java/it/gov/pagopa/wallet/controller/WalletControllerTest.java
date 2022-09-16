@@ -14,6 +14,7 @@ import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +64,9 @@ class WalletControllerTest {
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE.name(),
           null,
-          "TEST_DATE",
+          DATE,
           null,
-          "TEST_AMOUNT",
+          null,
           null,
           null);
   private static final InstrumentBodyDTO INSTRUMENT_BODY_DTO =
@@ -83,11 +84,11 @@ class WalletControllerTest {
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
           IBAN_OK,
-          "",
+          DATE,
           "1",
-          "450.00",
-          "50.00",
-          "0.00");
+          new BigDecimal("450.00"),
+          new BigDecimal("50.00"),
+          new BigDecimal("0.00"));
 
   @MockBean WalletService walletServiceMock;
 
