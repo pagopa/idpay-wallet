@@ -29,5 +29,5 @@ public class Wallet {
   private BigDecimal refunded;
   private Long nTrx;
   private int nInstr;
-  private LocalDateTime unsubscribeDate;
+  private LocalDateTime requestUnsubscribeDate;
 }

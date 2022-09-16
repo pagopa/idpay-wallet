@@ -206,10 +206,10 @@ public class WalletServiceImpl implements WalletService {
     String statusTemp = wallet.getStatus();
     if(!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       wallet.setStatus(WalletStatus.UNSUBSCRIBED);
-      wallet.setUnsubscribeDate(LocalDateTime.now());
+      wallet.setRequestUnsubscribeDate(LocalDateTime.now());
       walletRepository.save(wallet);
       LOG.info("Wallet disabled");
-      UnsubscribeCallDTO unsubscribeCallDTO = new UnsubscribeCallDTO(initiativeId, userId, wallet.getUnsubscribeDate().toString());
+      UnsubscribeCallDTO unsubscribeCallDTO = new UnsubscribeCallDTO(initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
 
       try {
         onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
@@ -329,7 +329,7 @@ public class WalletServiceImpl implements WalletService {
   private void rollbackWallet(String oldStatus, Wallet wallet){
       LOG.info("Wallet, old status: {}",oldStatus);
       wallet.setStatus(oldStatus);
-      wallet.setUnsubscribeDate(null);
+      wallet.setRequestUnsubscribeDate(null);
       walletRepository.save(wallet);
       LOG.info("Rollback wallet, new status: {}",wallet.getStatus());
   }

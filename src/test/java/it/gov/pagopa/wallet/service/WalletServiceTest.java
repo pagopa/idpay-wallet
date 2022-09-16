@@ -811,7 +811,7 @@ class WalletServiceTest {
 
     Mockito.doAnswer(
             invocationOnMock -> {
-              TEST_WALLET.setUnsubscribeDate(LocalDateTime.now());
+              TEST_WALLET.setRequestUnsubscribeDate(LocalDateTime.now());
               TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
               return null;
             })
@@ -819,7 +819,7 @@ class WalletServiceTest {
         .save(Mockito.any(Wallet.class));
     try {
       walletService.unsubscribe(INITIATIVE_ID, USER_ID);
-      assertNotNull(TEST_WALLET.getUnsubscribeDate());
+      assertNotNull(TEST_WALLET.getRequestUnsubscribeDate());
       assertEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
     } catch (WalletException e) {
       Assertions.fail();
@@ -885,7 +885,7 @@ class WalletServiceTest {
       walletService.unsubscribe(INITIATIVE_ID, USER_ID);
       Assertions.fail();
     } catch (WalletException e) {
-      assertNull(TEST_WALLET.getUnsubscribeDate());
+      assertNull(TEST_WALLET.getRequestUnsubscribeDate());
       assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
     }
   }
@@ -907,7 +907,7 @@ class WalletServiceTest {
       walletService.unsubscribe(INITIATIVE_ID, USER_ID);
       Assertions.fail();
     } catch (WalletException e) {
-      assertNull(TEST_WALLET_2.getUnsubscribeDate());
+      assertNull(TEST_WALLET_2.getRequestUnsubscribeDate());
       assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET_2.getStatus());
     }
   }
