@@ -50,6 +50,7 @@ import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -806,6 +807,8 @@ class WalletServiceTest {
   @Test
   void unsbubscribe_ok() {
 
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
@@ -824,6 +827,23 @@ class WalletServiceTest {
     } catch (WalletException e) {
       Assertions.fail();
     }
+  }
+
+  @Test
+  void unsbubscribe_ko_unsubscribed() {
+
+    TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    try {
+      walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
   }
 
   @Test
@@ -912,6 +932,7 @@ class WalletServiceTest {
     }
   }
 
+  @Test
   void processTransaction_not_rewarded() {
     walletService.processTransaction(REWARD_TRX_DTO);
     Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());

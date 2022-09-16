@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.mongodb.assertions.Assertions;
+import feign.Feign;
 import feign.FeignException;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
@@ -30,63 +31,48 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ContextConfiguration(
-    initializers = PaymentInstrumentRestClientTest.WireMockInitializer.class,
+    initializers = OnboardingRestClientTest.WireMockInitializer.class,
     classes = {
-      PaymentInstrumentRestConnectorImpl.class,
+      OnboardingRestConnectorImpl.class,
       WalletConfig.class,
       FeignAutoConfiguration.class,
       HttpMessageConvertersAutoConfiguration.class
     })
 @TestPropertySource(
     locations = "classpath:application.yml",
-    properties = {"spring.application.name=idpay-payment-instrument-integration-rest"})
-class PaymentInstrumentRestClientTest {
+    properties = {"spring.application.name=idpay-onboarding-integration-rest"})
+class OnboardingRestClientTest {
 
   private static final String USER_ID = "USER_ID";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
-  private static final String HPAN = "HPAN";
-  private static final String CHANNEL = "CHANNEL";
 
-  @Autowired private PaymentInstrumentRestClient restClient;
+  @Autowired private OnboardingRestClient restClient;
 
-  @Autowired private PaymentInstrumentRestConnector restConnector;
+  @Autowired private OnboardingRestConnector restConnector;
 
   @Test
-  void enroll_instrument_test() {
-
-    final InstrumentCallBodyDTO instrument =
-        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, HPAN, CHANNEL, LocalDateTime.now());
-
-    final InstrumentResponseDTO actualResponse = restConnector.enrollInstrument(instrument);
-
-    assertNotNull(actualResponse);
-    assertEquals(3, actualResponse.getNinstr());
-  }
-
-  @Test
-  void delete_instrument_test() {
-
-    final DeactivationBodyDTO instrument =
-        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, HPAN, LocalDateTime.now());
-
-    final InstrumentResponseDTO actualResponse = restConnector.deleteInstrument(instrument);
-
-    assertNotNull(actualResponse);
-    assertEquals(2, actualResponse.getNinstr());
-  }
-
-  @Test
-  void delete_all_instrument_test() {
+  void disable_onboarding_test() {
 
     final UnsubscribeCallDTO instrument =
         new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
 
-    try {
-      restConnector.disableAllInstrument(instrument);
-    } catch (Exception e) {
+    try{
+      restConnector.disableOnboarding(instrument);
+    } catch (Exception e){
+      Assertions.fail();
+    }
+
+  }
+
+  @Test
+  void rollback_test() {
+    try{
+      restConnector.rollback(INITIATIVE_ID, USER_ID);
+    } catch (Exception e){
       Assertions.fail();
     }
   }
+
 
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -108,7 +94,7 @@ class PaymentInstrumentRestClientTest {
       TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
           applicationContext,
           String.format(
-              "payment.instrument.uri=http://%s:%d",
+              "onboarding.uri=http://%s:%d",
               wireMockServer.getOptions().bindAddress(), wireMockServer.port()));
     }
   }
