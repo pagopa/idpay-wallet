@@ -284,19 +284,17 @@ public class WalletServiceImpl implements WalletService {
                 () ->
                     new WalletException(
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
-    log.debug("Entry consumer: " + wallet.toString());
 
     wallet.setIban(null);
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    log.debug("Finished consumer: " + wallet.toString());
     sendCheckIban(iban,wallet);
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet){
     NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
-        .operationType("CHECKIBAN_KO")
+        .operationType("CHECKIBAN")
         .userId(iban.getUserId())
         .initiativeId(iban.getInitiativeId())
         .serviceId(wallet.getServiceId())
