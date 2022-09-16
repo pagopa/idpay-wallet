@@ -3,12 +3,11 @@ package it.gov.pagopa.wallet.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@Getter
 @AllArgsConstructor
-public class IbanQueueWalletDTO {
-  private String userId;
+@Getter
+public class UnsubscribeCallDTO {
+
   private String initiativeId;
-  private String iban;
-  private String status;
-  private String queueDate;
+  private String userId;
+  private String unsubscribeDate;
 }

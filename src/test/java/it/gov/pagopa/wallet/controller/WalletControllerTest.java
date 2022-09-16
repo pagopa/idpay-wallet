@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.EmailDTO;
-import it.gov.pagopa.wallet.dto.EmailRequestDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.ErrorDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
@@ -16,6 +14,7 @@ import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,10 +45,11 @@ class WalletControllerTest {
   private static final String BASE_URL = "http://localhost:8080/idpay/wallet";
   private static final String USER_ID = "TEST_USER_ID";
   private static final String ENROLL_INSTRUMENT_URL = "/instrument/";
+  private static final String INSTRUMENTS_URL = "/instruments/";
   private static final String ENROLL_IBAN_URL = "/iban/";
-  private static final String UPDATE_EMAIL_URL = "/email/";
-  private static final String EMAIL_URL = "/email";
   private static final String STATUS_URL = "/status";
+
+  private static final String UNSUBSCRIBE_URL = "/unsubscribe";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
@@ -57,8 +57,6 @@ class WalletControllerTest {
   private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
   private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String DESCRIPTION_OK = "conto cointestato";
-  private static final String EMAIL_OK = "test@email.com";
-  private static final String EMAIL_KO = "This is not an email";
   private static final LocalDateTime DATE = LocalDateTime.now();
   private static final InitiativeDTO INITIATIVE_DTO_TEST =
       new InitiativeDTO(
@@ -66,9 +64,9 @@ class WalletControllerTest {
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE.name(),
           null,
-          "TEST_DATE",
+          DATE,
           null,
-          "TEST_AMOUNT",
+          null,
           null,
           null);
   private static final InstrumentBodyDTO INSTRUMENT_BODY_DTO =
@@ -86,17 +84,11 @@ class WalletControllerTest {
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
           IBAN_OK,
-          "",
+          DATE,
           "1",
-          "450.00",
-          "50.00",
-          "0.00");
-  private static final EmailRequestDTO EMAIL_BODY_DTO =
-      new EmailRequestDTO(INITIATIVE_ID, EMAIL_OK);
-  private static final EmailRequestDTO EMAIL_BODY_DTO_EMPTY = new EmailRequestDTO("", "");
-  private static final EmailRequestDTO EMAIL_BODY_DTO_NOT_VALID =
-      new EmailRequestDTO(INITIATIVE_ID, EMAIL_KO);
-  private static final EmailDTO EMAIL_DTO = new EmailDTO("test@example.com", DATE.toString());
+          new BigDecimal("450.00"),
+          new BigDecimal("50.00"),
+          new BigDecimal("0.00"));
 
   @MockBean WalletService walletServiceMock;
 
@@ -184,6 +176,67 @@ class WalletControllerTest {
 
     assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
     assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
+  }
+
+  @Test
+  void delete_instrument_ok() throws Exception {
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+    Mockito.doNothing().when(walletServiceMock).deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+
+    mvc.perform(
+            MockMvcRequestBuilders.delete(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + INSTRUMENTS_URL + HPAN)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andReturn();
+  }
+
+  @Test
+  void delete_instrument_initiative_ko() throws Exception {
+
+    Mockito.doThrow(
+            new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        .when(walletServiceMock)
+        .checkInitiative(INITIATIVE_ID);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + INSTRUMENTS_URL + HPAN)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isForbidden())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
+    assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+  }
+
+  @Test
+  void delete_instrument_initiative_wallet_not_found() throws Exception {
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
+    Mockito.doThrow(
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        .when(walletServiceMock)
+        .deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.delete(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + INSTRUMENTS_URL + HPAN)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
+    assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
   }
 
   @Test
@@ -448,87 +501,31 @@ class WalletControllerTest {
     assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
   }
 
-  @Test
-  void update_email_ok() throws Exception {
+   @Test
+  void unsubscribeInitiative_ok() throws Exception {
+
+    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
+
     mvc.perform(
-            MockMvcRequestBuilders.put(BASE_URL + UPDATE_EMAIL_URL + USER_ID)
+            MockMvcRequestBuilders.delete(BASE_URL +"/"+INITIATIVE_ID+"/" + USER_ID+ UNSUBSCRIBE_URL)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(EMAIL_BODY_DTO))
                 .accept(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(MockMvcResultMatchers.status().isNoContent())
         .andReturn();
   }
 
   @Test
-  void update_email_not_valid() throws Exception {
-    MvcResult res =
-        mvc.perform(
-                MockMvcRequestBuilders.put(BASE_URL + UPDATE_EMAIL_URL + USER_ID)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(objectMapper.writeValueAsString(EMAIL_BODY_DTO_NOT_VALID))
-                    .accept(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andReturn();
-
-    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
-    assertTrue(error.getMessage().contains(WalletConstants.ERROR_EMAIL_NOT_VALID));
-  }
-
-  @Test
-  void update_email_empty_body() throws Exception {
-    MvcResult res =
-        mvc.perform(
-                MockMvcRequestBuilders.put(BASE_URL + UPDATE_EMAIL_URL + USER_ID)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(objectMapper.writeValueAsString(EMAIL_BODY_DTO_EMPTY))
-                    .accept(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andReturn();
-
-    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
-    assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
-  }
-
-  @Test
-  void email_ok() throws Exception {
-
-    Mockito.when(walletServiceMock.getEmail(INITIATIVE_ID, USER_ID))
-        .thenReturn(EMAIL_DTO);
-
-    MvcResult res =
-        mvc.perform(
-                MockMvcRequestBuilders.get(
-                        BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + EMAIL_URL)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(objectMapper.writeValueAsString(INSTRUMENT_BODY_DTO))
-                    .accept(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andReturn();
-
-    EmailDTO emailDTO =
-        objectMapper.readValue(res.getResponse().getContentAsString(), EmailDTO.class);
-    assertEquals(EMAIL_DTO.getEmail(), emailDTO.getEmail());
-  }
-
-  @Test
-  void email_not_found() throws Exception {
-
+  void unsubscribeInitiative_not_found() throws Exception {
     Mockito.doThrow(
             new WalletException(
                 HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
-        .when(walletServiceMock)
-        .getEmail(INITIATIVE_ID, USER_ID);
+        .when(walletServiceMock).unsubscribe(INITIATIVE_ID, USER_ID);
 
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.get(
-                        BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + EMAIL_URL)
+                MockMvcRequestBuilders.delete(
+                        BASE_URL +"/"+INITIATIVE_ID+"/" + USER_ID+ UNSUBSCRIBE_URL)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(objectMapper.writeValueAsString(INSTRUMENT_BODY_DTO))
                     .accept(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
             .andReturn();

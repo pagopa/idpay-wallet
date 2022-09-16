@@ -10,6 +10,8 @@ public class IbanQueueDTO {
 
   String userId;
 
+  String initiativeId;
+
   String iban;
 
   String description;

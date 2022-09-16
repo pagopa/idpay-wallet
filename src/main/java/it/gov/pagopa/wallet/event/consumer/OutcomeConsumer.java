@@ -1,4 +1,4 @@
-package it.gov.pagopa.wallet.event;
+package it.gov.pagopa.wallet.event.consumer;
 
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.service.WalletService;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class OutcomeConsumer {
 
   @Bean
-  public Consumer<EvaluationDTO> consumerTimeline(WalletService walletService) {
+  public Consumer<EvaluationDTO> consumerOutcome(WalletService walletService) {
     return walletService::createWallet;
   }
 

@@ -18,15 +18,16 @@ public class Wallet {
   private String userId;
   private String initiativeId;
   private String initiativeName;
+  private String serviceId;
+  private String organizationId;
   private String status;
   private LocalDateTime acceptanceDate;
   private LocalDateTime endDate;
   private String iban;
-  private String email;
-  private LocalDateTime emailUpdateDate;
   private BigDecimal amount;
   private BigDecimal accrued;
   private BigDecimal refunded;
-  private int nTrx;
+  private Long nTrx;
   private int nInstr;
+  private LocalDateTime requestUnsubscribeDate;
 }
