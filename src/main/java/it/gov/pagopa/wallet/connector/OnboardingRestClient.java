@@ -4,6 +4,8 @@ import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -18,5 +20,12 @@ public interface OnboardingRestClient {
   @ResponseBody
   void disableOnboarding(
       @RequestBody UnsubscribeCallDTO body);
+
+  @PutMapping(
+      value = "/idpay/onboarding/rollback/{initiativeId}/{userId}",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
+  void rollback(
+      @PathVariable String initiativeId, @PathVariable String userId);
 
 }

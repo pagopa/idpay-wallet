@@ -1,12 +1,14 @@
 package it.gov.pagopa.wallet.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class InitiativeDTO {
@@ -19,14 +21,14 @@ public class InitiativeDTO {
 
   private String iban;
 
-  private String endDate;
+  private LocalDateTime endDate;
 
   private String nInstr;
 
-  private String amount;
+  private BigDecimal amount;
 
-  private String accrued;
+  private BigDecimal accrued;
 
-  private String refunded;
+  private BigDecimal refunded;
 
 }
