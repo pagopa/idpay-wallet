@@ -219,7 +219,7 @@ public class WalletServiceImpl implements WalletService {
         LOG.info("Onboarding disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
-        throw new WalletException(e.status(), e.getMessage());
+        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       try {
         paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
@@ -227,7 +227,7 @@ public class WalletServiceImpl implements WalletService {
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         onboardingRestConnector.rollback(initiativeId, userId);
-        throw new WalletException(e.status(), e.getMessage());
+        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
 
     }
