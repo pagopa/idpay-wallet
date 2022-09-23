@@ -8,7 +8,7 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.ErrorDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -58,8 +58,8 @@ class WalletControllerTest {
   private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final LocalDateTime DATE = LocalDateTime.now();
-  private static final InitiativeDTO INITIATIVE_DTO_TEST =
-      new InitiativeDTO(
+  private static final WalletDTO INITIATIVE_DTO_TEST =
+      new WalletDTO(
           INITIATIVE_ID,
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE.name(),
@@ -78,8 +78,8 @@ class WalletControllerTest {
   private static final InstrumentBodyDTO INSTRUMENT_BODY_DTO_EMPTY = new InstrumentBodyDTO("", "");
   private static final EnrollmentStatusDTO ENROLLMENT_STATUS_DTO =
       new EnrollmentStatusDTO(WalletStatus.NOT_REFUNDABLE.name());
-  private static final InitiativeDTO INITIATIVE_DTO =
-      new InitiativeDTO(
+  private static final WalletDTO INITIATIVE_DTO =
+      new WalletDTO(
           INITIATIVE_ID,
           INITIATIVE_ID,
           WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
@@ -99,7 +99,6 @@ class WalletControllerTest {
   @Test
   void enroll_instrument_ok() throws Exception {
 
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
     Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
 
     mvc.perform(
@@ -117,7 +116,7 @@ class WalletControllerTest {
     Mockito.doThrow(
             new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
         .when(walletServiceMock)
-        .checkInitiative(INITIATIVE_ID);
+        .enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
 
     MvcResult res =
         mvc.perform(
@@ -136,8 +135,6 @@ class WalletControllerTest {
 
   @Test
   void enroll_initiative_wallet_not_found() throws Exception {
-
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
 
     Mockito.doThrow(
             new WalletException(
@@ -181,7 +178,6 @@ class WalletControllerTest {
   @Test
   void delete_instrument_ok() throws Exception {
 
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
     Mockito.doNothing().when(walletServiceMock).deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
 
     mvc.perform(
@@ -198,7 +194,7 @@ class WalletControllerTest {
     Mockito.doThrow(
             new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
         .when(walletServiceMock)
-        .checkInitiative(INITIATIVE_ID);
+        .deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
 
     MvcResult res =
         mvc.perform(
@@ -216,8 +212,6 @@ class WalletControllerTest {
 
   @Test
   void delete_instrument_initiative_wallet_not_found() throws Exception {
-
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
 
     Mockito.doThrow(
             new WalletException(
@@ -288,8 +282,6 @@ class WalletControllerTest {
   @Test
   void enroll_iban_wallet_not_found() throws Exception {
 
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
-
     Mockito.doThrow(
             new WalletException(
                 HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
@@ -315,8 +307,6 @@ class WalletControllerTest {
   void enroll_iban_wallet_format() throws Exception {
     final IbanBodyDTO iban = new IbanBodyDTO(INITIATIVE_ID, IBAN_WRONG, DESCRIPTION_OK);
 
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
-
     Mockito.doThrow(new IbanFormatException())
         .when(walletServiceMock)
         .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, DESCRIPTION_OK);
@@ -337,8 +327,6 @@ class WalletControllerTest {
   void enroll_iban_invalid_digit() throws Exception {
     final IbanBodyDTO iban = new IbanBodyDTO(INITIATIVE_ID, IBAN_KO_NOT_IT, DESCRIPTION_OK);
 
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
-
     Mockito.doThrow(new InvalidCheckDigitException())
         .when(walletServiceMock)
         .enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, DESCRIPTION_OK);
@@ -358,8 +346,6 @@ class WalletControllerTest {
   @Test
   void enroll_iban_not_it() throws Exception {
     final IbanBodyDTO iban = new IbanBodyDTO(INITIATIVE_ID, IBAN_WRONG_DIGIT, DESCRIPTION_OK);
-
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
 
     Mockito.doThrow(new UnsupportedCountryException())
         .when(walletServiceMock)
@@ -400,7 +386,7 @@ class WalletControllerTest {
     Mockito.doThrow(
             new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
         .when(walletServiceMock)
-        .checkInitiative(INITIATIVE_ID);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
 
     MvcResult res =
         mvc.perform(
@@ -419,8 +405,6 @@ class WalletControllerTest {
 
   @Test
   void enroll_iban_ok() throws Exception {
-
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
     Mockito.doNothing()
         .when(walletServiceMock)
         .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
@@ -438,9 +422,9 @@ class WalletControllerTest {
   void initiativeList() throws Exception {
     InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
 
-    List<InitiativeDTO> initiativeDTOList = new ArrayList<>();
-    initiativeDTOList.add(INITIATIVE_DTO_TEST);
-    initiativeListDTO.setInitiativeList(initiativeDTOList);
+    List<WalletDTO> walletDTOList = new ArrayList<>();
+    walletDTOList.add(INITIATIVE_DTO_TEST);
+    initiativeListDTO.setInitiativeList(walletDTOList);
 
     Mockito.when(walletServiceMock.getInitiativeList(USER_ID)).thenReturn(initiativeListDTO);
 
@@ -466,17 +450,17 @@ class WalletControllerTest {
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andReturn();
 
-    InitiativeDTO initiativeDTO =
-        objectMapper.readValue(res.getResponse().getContentAsString(), InitiativeDTO.class);
-    assertEquals(INITIATIVE_DTO.getInitiativeId(), initiativeDTO.getInitiativeId());
-    assertEquals(INITIATIVE_DTO.getInitiativeName(), initiativeDTO.getInitiativeName());
-    assertEquals(INITIATIVE_DTO.getStatus(), initiativeDTO.getStatus());
-    assertEquals(INITIATIVE_DTO.getEndDate(), initiativeDTO.getEndDate());
-    assertEquals(INITIATIVE_DTO.getIban(), initiativeDTO.getIban());
-    assertEquals(INITIATIVE_DTO.getNInstr(), initiativeDTO.getNInstr());
-    assertEquals(INITIATIVE_DTO.getAmount(), initiativeDTO.getAmount());
-    assertEquals(INITIATIVE_DTO.getAccrued(), initiativeDTO.getAccrued());
-    assertEquals(INITIATIVE_DTO.getRefunded(), initiativeDTO.getRefunded());
+    WalletDTO walletDTO =
+        objectMapper.readValue(res.getResponse().getContentAsString(), WalletDTO.class);
+    assertEquals(INITIATIVE_DTO.getInitiativeId(), walletDTO.getInitiativeId());
+    assertEquals(INITIATIVE_DTO.getInitiativeName(), walletDTO.getInitiativeName());
+    assertEquals(INITIATIVE_DTO.getStatus(), walletDTO.getStatus());
+    assertEquals(INITIATIVE_DTO.getEndDate(), walletDTO.getEndDate());
+    assertEquals(INITIATIVE_DTO.getIban(), walletDTO.getIban());
+    assertEquals(INITIATIVE_DTO.getNInstr(), walletDTO.getNInstr());
+    assertEquals(INITIATIVE_DTO.getAmount(), walletDTO.getAmount());
+    assertEquals(INITIATIVE_DTO.getAccrued(), walletDTO.getAccrued());
+    assertEquals(INITIATIVE_DTO.getRefunded(), walletDTO.getRefunded());
   }
 
   @Test
@@ -503,9 +487,6 @@ class WalletControllerTest {
 
    @Test
   void unsubscribeInitiative_ok() throws Exception {
-
-    Mockito.doNothing().when(walletServiceMock).checkInitiative(INITIATIVE_ID);
-
     mvc.perform(
             MockMvcRequestBuilders.delete(BASE_URL +"/"+INITIATIVE_ID+"/" + USER_ID+ UNSUBSCRIBE_URL)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)

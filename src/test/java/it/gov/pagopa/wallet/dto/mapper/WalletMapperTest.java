@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
@@ -49,8 +49,8 @@ class WalletMapperTest {
           new BigDecimal(500),
           INITIATIVE_ID);
 
-  private static final InitiativeDTO INITIATIVE_DTO =
-      InitiativeDTO.builder()
+  private static final WalletDTO INITIATIVE_DTO =
+      WalletDTO.builder()
           .initiativeId(INITIATIVE_ID)
           .initiativeName(INITIATIVE_ID)
           .endDate(OPERATION_DATE)
@@ -72,7 +72,7 @@ class WalletMapperTest {
 
   @Test
   void toInitiativeDTO(){
-    InitiativeDTO actual = walletMapper.toInitiativeDTO(WALLET);
+    WalletDTO actual = walletMapper.toInitiativeDTO(WALLET);
 
     assertEquals(INITIATIVE_DTO, actual);
   }

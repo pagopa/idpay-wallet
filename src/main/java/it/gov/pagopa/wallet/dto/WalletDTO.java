@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InitiativeDTO {
+public class WalletDTO {
 
   private String initiativeId;
 

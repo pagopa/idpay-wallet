@@ -2,7 +2,7 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import javax.validation.Valid;
@@ -63,7 +63,7 @@ public interface WalletController {
    * @return
    */
   @GetMapping("/{initiativeId}/{userId}")
-  ResponseEntity<InitiativeDTO> walletDetail(
+  ResponseEntity<WalletDTO> walletDetail(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   /**
