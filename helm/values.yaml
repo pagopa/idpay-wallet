@@ -57,6 +57,7 @@ microservice-chart:
     rest-client:
       PAYMENT_INSTRUMENT_URI: idpay_payment_instrument_host
       ONBOARDING_URI: idpay_onboarding_host
+      IDPAY_INITIATIVE_BASE_URL: idpay_initiative_host
     idpay-eventhub-00:
       KAFKA_BINDER_BROKER_ENDPOINT_LIST: kafka_broker
       KAFKA_SASL_MECHANISM: kafka_sasl_mechanism

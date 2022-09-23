@@ -19,9 +19,11 @@ payment:
 rest-client:
   onboarding:
     serviceCode: idpay-onboarding
-  payment:
-    intrument:
+  payment.intrument:
       serviceCode: idpay-payment-instrument
+  initiative:
+    serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
+    baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
 spring:
   application:
     name: idpay-wallet
