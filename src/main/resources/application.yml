@@ -93,6 +93,19 @@ spring:
                         sasl:
                           jaas:
                             config: ${KAFKA_TIMELINE_SASL_JAAS_CONFIG:}
+        kafka-errors:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_ERRORS:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_ERRORS_SASL_JAAS_CONFIG:}
         kafka-notification:
           type: kafka
           environment:
@@ -129,6 +142,10 @@ spring:
           binder: kafka-notification
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_NOTIFICATION:}
+        walletQueue-out-3:
+          binder: kafka-errors
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_ERRORS:}
         trxConsumer-in-0:
           binder: kafka-re
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
