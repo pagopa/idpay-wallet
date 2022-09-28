@@ -15,6 +15,7 @@ import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
@@ -22,6 +23,7 @@ import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
+import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
@@ -42,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -57,6 +60,7 @@ public class WalletServiceImpl implements WalletService {
   @Autowired TimelineProducer timelineProducer;
   @Autowired WalletMapper walletMapper;
   @Autowired TimelineMapper timelineMapper;
+  @Autowired ErrorProducer errorProducer;
   @Autowired NotificationProducer notificationProducer;
   @Autowired InitiativeRestConnector initiativeRestConnector;
 
@@ -115,8 +119,13 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
+    QueueOperationDTO queueOperationDTO = timelineMapper.enrollInstrumentToTimeline(dto);
 
-    timelineProducer.sendEvent(timelineMapper.enrollInstrumentToTimeline(dto));
+    try {
+      timelineProducer.sendEvent(queueOperationDTO);
+    }catch(Exception e){
+      this.sendToQueueError(e, queueOperationDTO);
+    }
   }
 
   @Override
@@ -356,4 +365,18 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(e.status(), e.contentUTF8());
     }
   }
+
+  private void sendToQueueError(Exception e, QueueOperationDTO queueOperationDTO){
+    final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(queueOperationDTO)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TYPE, WalletConstants.KAFKA)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_SERVER, WalletConstants.BROKER_TIMELINE)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TOPIC, WalletConstants.TOPIC_TIMELINE)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_DESCRIPTION, WalletConstants.ERROR_TIMELINE)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_RETRYABLE, true)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_STACKTRACE, e.getStackTrace())
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_CLASS, e.getClass())
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
+    errorProducer.sendEvent(errorMessage.build());
+  }
+
 }

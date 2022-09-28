@@ -33,6 +33,7 @@ import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
+import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
@@ -66,6 +67,7 @@ class WalletServiceTest {
 
   @MockBean IbanProducer ibanProducer;
   @MockBean TimelineProducer timelineProducer;
+  @MockBean ErrorProducer errorProducer;
   @MockBean NotificationProducer notificationProducer;
   @MockBean WalletRepository walletRepositoryMock;
   @MockBean PaymentInstrumentRestConnector paymentInstrumentRestConnector;
@@ -107,6 +109,11 @@ class WalletServiceTest {
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
+          .build();
+
+  private static final QueueOperationDTO TEST_OPERATION_DTO =
+      QueueOperationDTO.builder()
+          .userId(USER_ID)
           .build();
 
   private static final Wallet TEST_WALLET_2 =
@@ -333,6 +340,33 @@ class WalletServiceTest {
   }
 
   @Test
+  void enrollInstrument_queue_error() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.doThrow(new WalletException(400,"")).when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
+
+    TEST_WALLET.setIban(null);
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+    TEST_WALLET.setNInstr(0);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.enrollInstrument(
+                Mockito.any(InstrumentCallBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO);
+
+    Mockito.when(timelineMapper.enrollInstrumentToTimeline(Mockito.any(InstrumentCallBodyDTO.class))).thenReturn(TEST_OPERATION_DTO);
+
+    try {
+      walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
+    assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
+  }
+  
   void enrollInstrument_ko_initiative_feignexception() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
