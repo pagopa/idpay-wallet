@@ -351,6 +351,9 @@ class WalletServiceTest {
     TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
     TEST_WALLET.setNInstr(0);
 
+    Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+        .thenReturn(INITIATIVE_DTO);
+
     Mockito.when(
             paymentInstrumentRestConnector.enrollInstrument(
                 Mockito.any(InstrumentCallBodyDTO.class)))
