@@ -92,6 +92,7 @@ spring:
                     binder:
                       brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
                       configuration:
+                        retries: 3
                         sasl:
                           jaas:
                             config: ${KAFKA_TIMELINE_SASL_JAAS_CONFIG:}
@@ -140,6 +141,11 @@ spring:
           binder: kafka-timeline
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_TIMELINE:}
+          producer:
+            configuration:
+              retries: 3
+              linger.ms: 3
+
         walletQueue-out-2:
           binder: kafka-notification
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
