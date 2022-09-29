@@ -122,8 +122,10 @@ public class WalletServiceImpl implements WalletService {
     QueueOperationDTO queueOperationDTO = timelineMapper.enrollInstrumentToTimeline(dto);
 
     try {
+      LOG.info("Provo a mandare a timeline");
       timelineProducer.sendEvent(queueOperationDTO);
     }catch(Exception e){
+      LOG.info("Non sono riuscito a mandare a timeline, mando alla coda di errore");
       this.sendToQueueError(e, queueOperationDTO);
     }
   }
