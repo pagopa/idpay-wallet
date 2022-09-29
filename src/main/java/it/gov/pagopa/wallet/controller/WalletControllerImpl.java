@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WalletControllerImpl implements WalletController {
 
-  @Autowired
-  WalletService walletService;
+  @Autowired WalletService walletService;
 
   @Override
-  public ResponseEntity<Void> enrollInstrument(InstrumentBodyDTO body, String userId) {
-    walletService.enrollInstrument(body.getInitiativeId(), userId, body.getHpan());
+  public ResponseEntity<Void> enrollInstrument(
+      InstrumentBodyDTO body, String initiativeId, String userId) {
+    walletService.enrollInstrument(initiativeId, userId, body.getHpan());
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
