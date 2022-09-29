@@ -71,9 +71,10 @@ microservice-chart:
       KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
     idpay-eventhub-01:
       KAFKA_BINDER_BROKER_ENDPOINT_RULE_ENGINE: kafka_broker
+      KAFKA_BINDER_BROKER_ENDPOINT_ERRORS: kafka_broker
       KAFKA_TOPIC_RULE_ENGINE: idpay_transaction_topic
-      KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
       KAFKA_TOPIC_ERRORS: idpay_error_topic
+      KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
 
   envSecret:
     MONGODB_URI: mongodb-connection-string
