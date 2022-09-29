@@ -31,6 +31,8 @@ public class QueueOperationDTO {
 
   private BigDecimal amount;
 
+  private BigDecimal effectiveAmount;
+
   private BigDecimal accrued;
 
   private String idTrxIssuer;

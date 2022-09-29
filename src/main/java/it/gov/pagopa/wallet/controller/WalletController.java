@@ -23,12 +23,15 @@ public interface WalletController {
    * Enrollment of a Payment Instrument
    *
    * @param userId
+   * @param initiativeId
    * @param body
    * @return
    */
-  @PutMapping("/instrument/{userId}")
+  @PutMapping("/{initiativeId}/{userId}/instruments")
   ResponseEntity<Void> enrollInstrument(
-      @Valid @RequestBody InstrumentBodyDTO body, @PathVariable String userId);
+      @Valid @RequestBody InstrumentBodyDTO body,
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId);
 
   /**
    * Deactivation of a Payment Instrument
@@ -94,6 +97,6 @@ public interface WalletController {
    * @return
    */
   @DeleteMapping("/{initiativeId}/{userId}/unsubscribe")
-  ResponseEntity<Void> unsubscribeInitiative(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
-
+  ResponseEntity<Void> unsubscribeInitiative(
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 }

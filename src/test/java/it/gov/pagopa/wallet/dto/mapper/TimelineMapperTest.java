@@ -50,6 +50,20 @@ class TimelineMapperTest {
       RewardTransactionDTO.builder()
           .userId(USER_ID)
           .status("REWARDED")
+          .operationType("00")
+          .trxDate(OffsetDateTime.now())
+          .hpan(HPAN)
+          .circuitType(CIRCUIT_TYPE)
+          .amount(BIG_DECIMAL)
+          .idTrxIssuer(USER_ID)
+          .idTrxAcquirer(USER_ID)
+          .build();
+
+  private static final RewardTransactionDTO REWARD_TRX_DTO_REVERSAL =
+      RewardTransactionDTO.builder()
+          .userId(USER_ID)
+          .status("REWARDED")
+          .operationType("01")
           .trxDate(OffsetDateTime.now())
           .hpan(HPAN)
           .circuitType(CIRCUIT_TYPE)
@@ -106,6 +120,21 @@ class TimelineMapperTest {
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
+    assertEquals(HPAN, actual.getHpan());
+    assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
+    assertEquals(BIG_DECIMAL, actual.getAmount());
+    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(USER_ID, actual.getIdTrxIssuer());
+    assertEquals(USER_ID, actual.getIdTrxAcquirer());
+  }
+
+  @Test
+  void transactionToTimelineReversal() {
+    QueueOperationDTO actual =
+        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_REVERSAL, BIG_DECIMAL);
+    assertEquals(USER_ID, actual.getUserId());
+    assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+    assertEquals("REVERSAL", actual.getOperationType());
     assertEquals(HPAN, actual.getHpan());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
     assertEquals(BIG_DECIMAL, actual.getAmount());
