@@ -335,7 +335,7 @@ class WalletServiceTest {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, HPAN);
       Assertions.fail();
     } catch (WalletException e) {
-      assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+      assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
     }
   }
 

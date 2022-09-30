@@ -107,7 +107,7 @@ public class WalletServiceImpl implements WalletService {
     try {
       responseDTO = paymentInstrumentRestConnector.enrollInstrument(dto);
     } catch (FeignException e) {
-      throw new WalletException(e.status(), e.getMessage());
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 
     if (responseDTO.getNinstr() == wallet.getNInstr()) {
