@@ -85,7 +85,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void enrollInstrument(String initiativeId, String userId, String hpan) {
+  public void enrollInstrument(String initiativeId, String userId, String idWallet) {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
 
     getInitiative(initiativeId);
@@ -101,7 +101,7 @@ public class WalletServiceImpl implements WalletService {
 
     InstrumentCallBodyDTO dto =
         new InstrumentCallBodyDTO(
-            userId, initiativeId, hpan, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
+            userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
 
     InstrumentResponseDTO responseDTO;
     try {
@@ -119,19 +119,20 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    QueueOperationDTO queueOperationDTO = timelineMapper.enrollInstrumentToTimeline(dto);
+    QueueOperationDTO queueOperationDTO = timelineMapper.enrollInstrumentToTimeline(dto,
+        responseDTO.getMaskedPan(), responseDTO.getBrandLogo());
 
     try {
-      LOG.info("Provo a mandare a timeline");
+      LOG.info("[ENROLL_INSTRUMENT] Sending queue message to Timeline");
       timelineProducer.sendEvent(queueOperationDTO);
     }catch(Exception e){
-      LOG.info("Non sono riuscito a mandare a timeline, mando alla coda di errore");
+      LOG.error("[ENROLL_INSTRUMENT] An error has occurred. Sending message to Error queue");
       this.sendToQueueError(e, queueOperationDTO);
     }
   }
 
   @Override
-  public void deleteInstrument(String initiativeId, String userId, String hpan) {
+  public void deleteInstrument(String initiativeId, String userId, String instrumentId) {
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
 
     getInitiative(initiativeId);
@@ -139,7 +140,7 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     DeactivationBodyDTO dto =
-        new DeactivationBodyDTO(userId, initiativeId, hpan, LocalDateTime.now());
+        new DeactivationBodyDTO(userId, initiativeId, instrumentId, LocalDateTime.now());
 
     InstrumentResponseDTO responseDTO;
     try {
@@ -158,7 +159,8 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
 
-    timelineProducer.sendEvent(timelineMapper.deleteInstrumentToTimeline(dto));
+    timelineProducer.sendEvent(timelineMapper.deleteInstrumentToTimeline(dto,
+        responseDTO.getMaskedPan(), responseDTO.getBrandLogo()));
   }
 
   @Override

@@ -17,6 +17,12 @@ public class QueueOperationDTO {
 
   private String operationType;
 
+  private String brandLogo;
+
+  private String maskedPan;
+
+  private String instrumentId;
+
   private String hpan;
 
   private String iban;

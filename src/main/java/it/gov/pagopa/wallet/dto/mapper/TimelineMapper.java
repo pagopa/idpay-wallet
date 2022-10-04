@@ -30,23 +30,25 @@ public class TimelineMapper {
         .build();
   }
 
-  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto) {
+  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto, String maskedPan, String brandLogo) {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel("APP_IO")
-        .hpan(dto.getHpan())
+        .maskedPan(maskedPan)
+        .brandLogo(brandLogo)
         .operationType("DELETE_INSTRUMENT")
         .operationDate(dto.getDeactivationDate())
         .build();
   }
 
-  public QueueOperationDTO enrollInstrumentToTimeline(InstrumentCallBodyDTO dto) {
+  public QueueOperationDTO enrollInstrumentToTimeline(InstrumentCallBodyDTO dto, String maskedPan, String brandLogo) {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel(dto.getChannel())
-        .hpan(dto.getHpan())
+        .maskedPan(maskedPan)
+        .brandLogo(brandLogo)
         .operationType("ADD_INSTRUMENT")
         .operationDate(LocalDateTime.now())
         .build();

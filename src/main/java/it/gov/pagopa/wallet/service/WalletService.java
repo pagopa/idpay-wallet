@@ -10,8 +10,8 @@ import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 public interface WalletService {
   EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId);
   WalletDTO getWalletDetail(String initiativeId, String userId);
-  void enrollInstrument(String initiativeId, String userId, String hpan);
-  void deleteInstrument(String initiativeId, String userId, String hpan);
+  void enrollInstrument(String initiativeId, String userId, String idWallet);
+  void deleteInstrument(String initiativeId, String userId, String instrumentId);
   void enrollIban(String initiativeId, String userId, String iban, String description);
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
