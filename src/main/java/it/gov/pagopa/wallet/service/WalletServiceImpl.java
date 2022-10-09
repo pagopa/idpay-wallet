@@ -134,7 +134,7 @@ public class WalletServiceImpl implements WalletService {
   public void deleteInstrument(String initiativeId, String userId, String hpan) {
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
 
-    getInitiative(initiativeId);
+   getInitiative(initiativeId);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
@@ -157,8 +157,14 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
+    QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto);
 
-    timelineProducer.sendEvent(timelineMapper.deleteInstrumentToTimeline(dto));
+    try {
+      timelineProducer.sendEvent(queueOperationDTO);
+    }catch(Exception e){
+      log.info("Error to send delete instrument to timeline");
+      this.sendToQueueError(e, queueOperationDTO);
+    }
   }
 
   @Override
