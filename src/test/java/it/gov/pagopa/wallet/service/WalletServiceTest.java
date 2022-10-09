@@ -491,7 +491,34 @@ class WalletServiceTest {
     assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
     assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
   }
+  @Test
+  void deleteInstrument_ok_queue_error() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
+    Mockito.doThrow(new WalletException(400,"")).when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
+
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+    TEST_WALLET.setNInstr(1);
+    TEST_WALLET.setIban(null);
+
+    Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+        .thenReturn(INITIATIVE_DTO);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.deleteInstrument(Mockito.any(DeactivationBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO);
+    Mockito.when(timelineMapper.deleteInstrumentToTimeline(Mockito.any(DeactivationBodyDTO.class))).thenReturn(TEST_OPERATION_DTO);
+
+    try {
+      walletService.deleteInstrument(INITIATIVE_ID, USER_ID, HPAN);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
+    assertEquals(TEST_COUNT, TEST_WALLET.getNInstr());
+  }
   @Test
   void deleteInstrument_ok_with_idemp() {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
