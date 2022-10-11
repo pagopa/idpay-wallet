@@ -23,8 +23,6 @@ public class QueueOperationDTO {
 
   private String instrumentId;
 
-  private String hpan;
-
   private String iban;
 
   private String email;

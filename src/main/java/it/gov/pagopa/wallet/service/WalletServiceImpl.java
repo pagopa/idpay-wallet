@@ -40,8 +40,6 @@ import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.support.MessageBuilder;
@@ -64,7 +62,6 @@ public class WalletServiceImpl implements WalletService {
   @Autowired NotificationProducer notificationProducer;
   @Autowired InitiativeRestConnector initiativeRestConnector;
 
-  private static final Logger LOG = LoggerFactory.getLogger(WalletServiceImpl.class);
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -123,10 +120,10 @@ public class WalletServiceImpl implements WalletService {
         responseDTO.getMaskedPan(), responseDTO.getBrandLogo());
 
     try {
-      LOG.info("[ENROLL_INSTRUMENT] Sending queue message to Timeline");
+      log.info("[ENROLL_INSTRUMENT] Sending queue message to Timeline");
       timelineProducer.sendEvent(queueOperationDTO);
     }catch(Exception e){
-      LOG.error("[ENROLL_INSTRUMENT] An error has occurred. Sending message to Error queue");
+      log.error("[ENROLL_INSTRUMENT] An error has occurred. Sending message to Error queue");
       this.sendToQueueError(e, queueOperationDTO);
     }
   }
@@ -222,28 +219,28 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void unsubscribe(String initiativeId, String userId) {
-    LOG.info("---UNSUBSCRIBE---");
+    log.info("---UNSUBSCRIBE---");
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     String statusTemp = wallet.getStatus();
     if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       wallet.setStatus(WalletStatus.UNSUBSCRIBED);
       wallet.setRequestUnsubscribeDate(LocalDateTime.now());
       walletRepository.save(wallet);
-      LOG.info("Wallet disabled");
+      log.info("Wallet disabled");
       UnsubscribeCallDTO unsubscribeCallDTO =
           new UnsubscribeCallDTO(
               initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
 
       try {
         onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-        LOG.info("Onboarding disabled");
+        log.info("Onboarding disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       try {
         paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-        LOG.info("Payment instruments disabled");
+        log.info("Payment instruments disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         onboardingRestConnector.rollback(initiativeId, userId);
@@ -350,11 +347,11 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void rollbackWallet(String oldStatus, Wallet wallet) {
-    LOG.info("Wallet, old status: {}", oldStatus);
+    log.info("Wallet, old status: {}", oldStatus);
     wallet.setStatus(oldStatus);
     wallet.setRequestUnsubscribeDate(null);
     walletRepository.save(wallet);
-    LOG.info("Rollback wallet, new status: {}", wallet.getStatus());
+    log.info("Rollback wallet, new status: {}", wallet.getStatus());
   }
 
   private void getInitiative(String initiativeId) {
