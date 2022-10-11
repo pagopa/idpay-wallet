@@ -55,7 +55,9 @@ class TimelineMapperTest {
           .status("REWARDED")
           .operationType("00")
           .trxDate(OffsetDateTime.now())
-          .hpan(HPAN)
+          .instrumentId(INSTRUMENT_ID)
+          .maskedPan(MASKED_PAN)
+          .brandLogo(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
           .amount(BIG_DECIMAL)
           .idTrxIssuer(USER_ID)
@@ -68,7 +70,9 @@ class TimelineMapperTest {
           .status("REWARDED")
           .operationType("01")
           .trxDate(OffsetDateTime.now())
-          .hpan(HPAN)
+          .instrumentId(INSTRUMENT_ID)
+          .maskedPan(MASKED_PAN)
+          .brandLogo(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
           .amount(BIG_DECIMAL)
           .idTrxIssuer(USER_ID)
@@ -125,7 +129,9 @@ class TimelineMapperTest {
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
-    assertEquals(HPAN, actual.getHpan());
+    assertEquals(MASKED_PAN, actual.getMaskedPan());
+    assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
+    assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
     assertEquals(BIG_DECIMAL, actual.getAmount());
     assertEquals(BIG_DECIMAL, actual.getAccrued());
@@ -140,7 +146,9 @@ class TimelineMapperTest {
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("REVERSAL", actual.getOperationType());
-    assertEquals(HPAN, actual.getHpan());
+    assertEquals(MASKED_PAN, actual.getMaskedPan());
+    assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
+    assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
     assertEquals(BIG_DECIMAL, actual.getAmount());
     assertEquals(BIG_DECIMAL, actual.getAccrued());
