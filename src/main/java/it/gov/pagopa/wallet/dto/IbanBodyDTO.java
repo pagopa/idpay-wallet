@@ -10,9 +10,6 @@ import lombok.Getter;
 public class IbanBodyDTO {
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String initiativeId;
-
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String iban;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
