@@ -106,7 +106,7 @@ class TimelineMapperTest {
   @Test
   void deleteInstrumentToTimeline() {
     QueueOperationDTO actual =
-        timelineMapper.deleteInstrumentToTimeline(DELETE_INSTRUMENT_BODY_DTO);
+        timelineMapper.deleteInstrumentToTimeline(DELETE_INSTRUMENT_BODY_DTO, "APP-IO");
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("DELETE_INSTRUMENT", actual.getOperationType());

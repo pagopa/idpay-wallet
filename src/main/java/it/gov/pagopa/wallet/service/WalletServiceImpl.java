@@ -19,6 +19,8 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletPIDTO;
 import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
@@ -157,7 +159,7 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto);
+    QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_APP_IO);
 
     try {
       timelineProducer.sendEvent(queueOperationDTO);
@@ -272,6 +274,20 @@ public class WalletServiceImpl implements WalletService {
               sendTransactionToTimeline(
                   initiativeId, rewardTransactionDTO, reward.getAccruedReward());
             });
+  }
+
+  @Override
+  public void updateWallet(WalletPIBodyDTO walletPIDTO) {
+    for(WalletPIDTO walletPI: walletPIDTO.getWalletDTOlist()){
+      Wallet wallet = findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId());
+      wallet.setNInstr(wallet.getNInstr()-1);
+      this.setStatus(wallet);
+      walletRepository.save(wallet);
+      DeactivationBodyDTO dto =
+          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(), walletPI.getHpan(), LocalDateTime.now());
+      QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_PM);
+      timelineProducer.sendEvent(queueOperationDTO);
+    }
   }
 
   private void sendTransactionToTimeline(

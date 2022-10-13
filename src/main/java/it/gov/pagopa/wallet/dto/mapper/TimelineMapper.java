@@ -30,11 +30,11 @@ public class TimelineMapper {
         .build();
   }
 
-  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto) {
+  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto, String deleteChannel) {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
-        .channel("APP_IO")
+        .channel(deleteChannel)
         .hpan(dto.getHpan())
         .operationType("DELETE_INSTRUMENT")
         .operationDate(dto.getDeactivationDate())
