@@ -19,6 +19,8 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletPIDTO;
 import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
@@ -85,7 +87,7 @@ public class WalletServiceImpl implements WalletService {
   public void enrollInstrument(String initiativeId, String userId, String idWallet) {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
 
-//    getInitiative(initiativeId);
+    getInitiative(initiativeId);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
@@ -156,9 +158,14 @@ public class WalletServiceImpl implements WalletService {
     setStatus(wallet);
 
     walletRepository.save(wallet);
+    QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_APP_IO,responseDTO.getMaskedPan(), responseDTO.getBrandLogo());
 
-    timelineProducer.sendEvent(timelineMapper.deleteInstrumentToTimeline(dto,
-        responseDTO.getMaskedPan(), responseDTO.getBrandLogo()));
+    try {
+      timelineProducer.sendEvent(queueOperationDTO);
+    }catch(Exception e){
+      log.info("Error to send delete instrument to timeline");
+      this.sendToQueueError(e, queueOperationDTO);
+    }
   }
 
   @Override
@@ -268,6 +275,20 @@ public class WalletServiceImpl implements WalletService {
             });
   }
 
+  @Override
+  public void updateWallet(WalletPIBodyDTO walletPIDTO) {
+    for(WalletPIDTO walletPI: walletPIDTO.getWalletDTOlist()){
+      Wallet wallet = findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId());
+      wallet.setNInstr(wallet.getNInstr()-1);
+      this.setStatus(wallet);
+      walletRepository.save(wallet);
+      DeactivationBodyDTO dto =
+          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(), walletPI.getHpan(), LocalDateTime.now());
+      QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_PM);
+      timelineProducer.sendEvent(queueOperationDTO);
+    }
+  }
+
   private void sendTransactionToTimeline(
       String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
     timelineProducer.sendEvent(
@@ -318,6 +339,10 @@ public class WalletServiceImpl implements WalletService {
                 () ->
                     new WalletException(
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+
+    if(!wallet.getIban().equals(iban.getIban())){
+      return;
+    }
 
     wallet.setIban(null);
     setStatus(wallet);
