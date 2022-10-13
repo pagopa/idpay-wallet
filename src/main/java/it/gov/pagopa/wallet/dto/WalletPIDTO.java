@@ -13,5 +13,6 @@ public class WalletPIDTO {
 
   private String initiativeId;
   private String userId;
-  private String hpan;
+  private String maskedPan;
+  private String brandLogo;
 }

@@ -59,6 +59,8 @@ class WalletControllerTest {
   private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
   private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String DESCRIPTION_OK = "conto cointestato";
+  private static final String MASKED_PAN = "masked_pan";
+  private static final String BRAND_LOGO = "brand_logo";
   private static final LocalDateTime DATE = LocalDateTime.now();
   private static final WalletDTO INITIATIVE_DTO_TEST =
       new WalletDTO(
@@ -470,7 +472,7 @@ class WalletControllerTest {
   @Test
   void update_wallet_ok() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID,USER_ID,HPAN);
+    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID,USER_ID,MASKED_PAN,BRAND_LOGO);
     List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
     walletPIDTOList.add(walletPIDTO);
     WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);

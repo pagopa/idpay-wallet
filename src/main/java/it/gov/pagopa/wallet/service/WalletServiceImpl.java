@@ -283,8 +283,9 @@ public class WalletServiceImpl implements WalletService {
       this.setStatus(wallet);
       walletRepository.save(wallet);
       DeactivationBodyDTO dto =
-          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(), walletPI.getHpan(), LocalDateTime.now());
-      QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_PM);
+          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(),"", LocalDateTime.now());
+      QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_PM,walletPI.getMaskedPan(),
+          walletPI.getBrandLogo());
       timelineProducer.sendEvent(queueOperationDTO);
     }
   }
