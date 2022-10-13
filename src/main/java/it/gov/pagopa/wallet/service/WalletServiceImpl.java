@@ -85,7 +85,7 @@ public class WalletServiceImpl implements WalletService {
   public void enrollInstrument(String initiativeId, String userId, String idWallet) {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
 
-    getInitiative(initiativeId);
+//    getInitiative(initiativeId);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
@@ -95,15 +95,16 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
-
     InstrumentCallBodyDTO dto =
         new InstrumentCallBodyDTO(
             userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
 
     InstrumentResponseDTO responseDTO;
     try {
+      log.info("[ENROLL_INSTRUMENT] Calling Payment_instrument");
       responseDTO = paymentInstrumentRestConnector.enrollInstrument(dto);
     } catch (FeignException e) {
+      log.error("[ENROLL_INSTRUMENT_EXCEPTION] Calling Payment_instrument");
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 
