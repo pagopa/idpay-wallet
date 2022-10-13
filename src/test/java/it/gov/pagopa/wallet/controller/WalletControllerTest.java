@@ -11,6 +11,8 @@ import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletPIDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
@@ -50,6 +52,7 @@ class WalletControllerTest {
   private static final String STATUS_URL = "/status";
 
   private static final String UNSUBSCRIBE_URL = "/unsubscribe";
+  private static final String UPDATE_WALLET_URL = "/updateWallet";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String HPAN = "TEST_HPAN";
   private static final String IBAN_OK = "it99C1234567890123456789012";
@@ -489,6 +492,24 @@ class WalletControllerTest {
     ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
     assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
     assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+  }
+
+  @Test
+  void update_wallet_ok() throws Exception {
+    ObjectMapper objectMapper = new ObjectMapper();
+    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID,USER_ID,HPAN);
+    List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
+    walletPIDTOList.add(walletPIDTO);
+    WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
+
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    BASE_URL + UPDATE_WALLET_URL)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(walletPIBodyDTO))
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(MockMvcResultMatchers.status().isNoContent())
+        .andReturn();
   }
 
   @Test

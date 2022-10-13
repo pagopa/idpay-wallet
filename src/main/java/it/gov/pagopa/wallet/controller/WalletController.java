@@ -2,9 +2,10 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -68,6 +69,16 @@ public interface WalletController {
   @GetMapping("/{initiativeId}/{userId}")
   ResponseEntity<WalletDTO> walletDetail(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
+  /**
+   * Update wallet after a delete instrument by PM
+   *
+   * @param body
+   * @return
+   */
+  @PutMapping("/updateWallet")
+  ResponseEntity<Void> updateWallet(
+      @Valid @RequestBody WalletPIBodyDTO body);
 
   /**
    * Enrollment of a Iban
