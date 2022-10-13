@@ -87,9 +87,11 @@ public interface WalletController {
    * @param body
    * @return
    */
-  @PutMapping("/iban/{userId}")
+  @PutMapping("/{initiativeId}/{userId}/iban")
   ResponseEntity<Void> enrollIban(
-      @Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
+      @Valid @RequestBody IbanBodyDTO body,
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId);
 
   /**
    * Returns the active initiative lists

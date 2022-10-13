@@ -341,6 +341,10 @@ public class WalletServiceImpl implements WalletService {
                     new WalletException(
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
+    if(!wallet.getIban().equals(iban.getIban())){
+      return;
+    }
+
     wallet.setIban(null);
     setStatus(wallet);
 
