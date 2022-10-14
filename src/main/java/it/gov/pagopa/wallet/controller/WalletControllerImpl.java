@@ -2,8 +2,8 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import it.gov.pagopa.wallet.service.WalletService;
@@ -19,14 +19,14 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public ResponseEntity<Void> enrollInstrument(
-      InstrumentBodyDTO body, String initiativeId, String userId) {
-    walletService.enrollInstrument(initiativeId, userId, body.getHpan());
+      String initiativeId, String userId, String idWallet) {
+    walletService.enrollInstrument(initiativeId, userId, idWallet);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<Void> deleteInstrument(String initiativeId, String userId, String hpan) {
-    walletService.deleteInstrument(initiativeId, userId, hpan);
+  public ResponseEntity<Void> deleteInstrument(String initiativeId, String userId, String instrumentId) {
+    walletService.deleteInstrument(initiativeId, userId, instrumentId);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 

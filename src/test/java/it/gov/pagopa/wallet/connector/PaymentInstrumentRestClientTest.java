@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.mongodb.assertions.Assertions;
-import feign.FeignException;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
@@ -44,7 +43,8 @@ class PaymentInstrumentRestClientTest {
 
   private static final String USER_ID = "USER_ID";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
-  private static final String HPAN = "HPAN";
+  private static final String ID_WALLET = "TEST_ID_WALLET";
+  private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String CHANNEL = "CHANNEL";
 
   @Autowired private PaymentInstrumentRestClient restClient;
@@ -55,7 +55,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_test() {
 
     final InstrumentCallBodyDTO instrument =
-        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, HPAN, CHANNEL, LocalDateTime.now());
+        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL, LocalDateTime.now());
 
     final InstrumentResponseDTO actualResponse = restConnector.enrollInstrument(instrument);
 
@@ -67,7 +67,7 @@ class PaymentInstrumentRestClientTest {
   void delete_instrument_test() {
 
     final DeactivationBodyDTO instrument =
-        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, HPAN, LocalDateTime.now());
+        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, LocalDateTime.now());
 
     final InstrumentResponseDTO actualResponse = restConnector.deleteInstrument(instrument);
 

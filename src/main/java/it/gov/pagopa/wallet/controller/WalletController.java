@@ -3,7 +3,6 @@ package it.gov.pagopa.wallet.controller;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import javax.validation.Valid;
@@ -25,28 +24,28 @@ public interface WalletController {
    *
    * @param userId
    * @param initiativeId
-   * @param body
+   * @param idWallet
    * @return
    */
-  @PutMapping("/{initiativeId}/{userId}/instruments")
+  @PutMapping("/{initiativeId}/{userId}/instruments/{idWallet}")
   ResponseEntity<Void> enrollInstrument(
-      @Valid @RequestBody InstrumentBodyDTO body,
       @PathVariable("initiativeId") String initiativeId,
-      @PathVariable("userId") String userId);
+      @PathVariable("userId") String userId,
+      @PathVariable("idWallet") String idWallet);
 
   /**
    * Deactivation of a Payment Instrument
    *
    * @param initiativeId
    * @param userId
-   * @param hpan
+   * @param instrumentId
    * @return
    */
-  @DeleteMapping("/{initiativeId}/{userId}/instruments/{hpan}")
+  @DeleteMapping("/{initiativeId}/{userId}/instruments/{instrumentId}")
   ResponseEntity<Void> deleteInstrument(
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId,
-      @PathVariable("hpan") String hpan);
+      @PathVariable("instrumentId") String instrumentId);
 
   /**
    * Returns the actual enrollment status

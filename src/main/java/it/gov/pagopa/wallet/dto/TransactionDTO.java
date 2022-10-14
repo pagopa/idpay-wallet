@@ -22,7 +22,11 @@ public class TransactionDTO {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private OffsetDateTime trxDate;
 
-  private String hpan;
+  private String brandLogo;
+
+  private String maskedPan;
+
+  private String instrumentId;
 
   private String operationType;
 

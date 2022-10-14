@@ -20,7 +20,9 @@ public class TimelineMapper {
         .userId(rewardTransaction.getUserId())
         .operationType(rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
         .operationDate(rewardTransaction.getTrxDate().toLocalDateTime())
-        .hpan(rewardTransaction.getHpan())
+        .maskedPan(rewardTransaction.getMaskedPan())
+        .instrumentId(rewardTransaction.getInstrumentId())
+        .brandLogo(rewardTransaction.getBrandLogo())
         .circuitType(rewardTransaction.getCircuitType())
         .amount(rewardTransaction.getAmount())
         .effectiveAmount(rewardTransaction.getEffectiveAmount())
@@ -30,23 +32,25 @@ public class TimelineMapper {
         .build();
   }
 
-  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto, String deleteChannel) {
+  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto, String deleteChannel,String maskedPan, String brandLogo) {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel(deleteChannel)
-        .hpan(dto.getHpan())
+        .maskedPan(maskedPan)
+        .brandLogo(brandLogo)
         .operationType("DELETE_INSTRUMENT")
         .operationDate(dto.getDeactivationDate())
         .build();
   }
 
-  public QueueOperationDTO enrollInstrumentToTimeline(InstrumentCallBodyDTO dto) {
+  public QueueOperationDTO enrollInstrumentToTimeline(InstrumentCallBodyDTO dto, String maskedPan, String brandLogo) {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel(dto.getChannel())
-        .hpan(dto.getHpan())
+        .maskedPan(maskedPan)
+        .brandLogo(brandLogo)
         .operationType("ADD_INSTRUMENT")
         .operationDate(LocalDateTime.now())
         .build();

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class InstrumentResponseDTO {
 
   Integer ninstr = null;
+  String brandLogo;
+  String maskedPan;
 
 }
 

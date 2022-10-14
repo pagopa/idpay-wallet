@@ -17,7 +17,7 @@ public class DeactivationBodyDTO {
   String initiativeId;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String hpan;
+  String instrumentId;
 
   LocalDateTime deactivationDate;
 
