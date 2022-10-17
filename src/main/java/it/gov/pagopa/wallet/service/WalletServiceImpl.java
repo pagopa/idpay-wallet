@@ -342,6 +342,7 @@ public class WalletServiceImpl implements WalletService {
                         HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
     if(!wallet.getIban().equals(iban.getIban())){
+      log.warn("[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
       return;
     }
 
