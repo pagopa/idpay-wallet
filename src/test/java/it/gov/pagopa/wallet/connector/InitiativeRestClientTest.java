@@ -1,17 +1,11 @@
 package it.gov.pagopa.wallet.connector;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import java.time.LocalDateTime;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,64 +23,35 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ContextConfiguration(
-    initializers = PaymentInstrumentRestClientTest.WireMockInitializer.class,
+    initializers = InitiativeRestClientTest.WireMockInitializer.class,
     classes = {
-      PaymentInstrumentRestConnectorImpl.class,
-      WalletConfig.class,
-      FeignAutoConfiguration.class,
-      HttpMessageConvertersAutoConfiguration.class
+        InitiativeRestConnectorImpl.class,
+        WalletConfig.class,
+        FeignAutoConfiguration.class,
+        HttpMessageConvertersAutoConfiguration.class
     })
 @TestPropertySource(
     locations = "classpath:application.yml",
-    properties = {"spring.application.name=idpay-payment-instrument-integration-rest"})
-class PaymentInstrumentRestClientTest {
+    properties = {"spring.application.name=idpay-initiative-integration-rest"})
+class InitiativeRestClientTest {
 
-  private static final String USER_ID = "USER_ID";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
-  private static final String ID_WALLET = "TEST_ID_WALLET";
-  private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
-  private static final String CHANNEL = "CHANNEL";
 
-  @Autowired private PaymentInstrumentRestClient restClient;
+  @Autowired
+  private InitiativeRestClient restClient;
 
-  @Autowired private PaymentInstrumentRestConnector restConnector;
-
-  @Test
-  void enroll_instrument_test() {
-
-    final InstrumentCallBodyDTO instrument =
-        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL, LocalDateTime.now());
-
-    final InstrumentResponseDTO actualResponse = restConnector.enrollInstrument(instrument);
-
-    assertNotNull(actualResponse);
-    assertEquals(3, actualResponse.getNinstr());
-  }
+  @Autowired
+  private InitiativeRestConnector restConnector;
 
   @Test
-  void delete_instrument_test() {
+  void getInitiativeBeneficiaryView() {
 
-    final DeactivationBodyDTO instrument =
-        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, LocalDateTime.now());
+    InitiativeDTO actual = restConnector.getInitiativeBeneficiaryView(INITIATIVE_ID);
 
-    final InstrumentResponseDTO actualResponse = restConnector.deleteInstrument(instrument);
+    assertEquals(INITIATIVE_ID, actual.getInitiativeId());
 
-    assertNotNull(actualResponse);
-    assertEquals(2, actualResponse.getNinstr());
   }
 
-  @Test
-  void delete_all_instrument_test() {
-
-    final UnsubscribeCallDTO instrument =
-        new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
-
-    try {
-      restConnector.disableAllInstrument(instrument);
-    } catch (Exception e) {
-      Assertions.fail();
-    }
-  }
 
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -108,7 +73,7 @@ class PaymentInstrumentRestClientTest {
       TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
           applicationContext,
           String.format(
-              "payment.instrument.uri=http://%s:%d",
+              "rest-client.initiative.baseUrl=http://%s:%d",
               wireMockServer.getOptions().bindAddress(), wireMockServer.port()));
     }
   }

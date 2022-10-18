@@ -1,17 +1,14 @@
 package it.gov.pagopa.wallet.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class InstrumentResponseDTO {
+@NoArgsConstructor
+@Getter
+public class WalletPIBodyDTO {
 
-  Integer ninstr = null;
-  String brandLogo;
-  String maskedPan;
-
+  private List<WalletPIDTO> walletDTOlist;
 }
-

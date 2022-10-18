@@ -1,7 +1,7 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
@@ -26,8 +26,8 @@ public class WalletMapper {
         .build();
   }
 
-  public InitiativeDTO toInitiativeDTO(Wallet wallet){
-    return InitiativeDTO.builder()
+  public WalletDTO toInitiativeDTO(Wallet wallet){
+    return WalletDTO.builder()
         .initiativeId(wallet.getInitiativeId())
         .initiativeName(wallet.getInitiativeName())
         .endDate(wallet.getEndDate())
