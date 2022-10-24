@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient(
-    name = "${rest-client.payment.intrument.serviceCode}",
+    name = "${rest-client.payment.instrument.serviceCode}",
     url = "${payment.instrument.uri}")
 public interface PaymentInstrumentRestClient {
 
