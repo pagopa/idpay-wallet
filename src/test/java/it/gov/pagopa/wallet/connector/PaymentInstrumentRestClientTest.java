@@ -1,15 +1,11 @@
 package it.gov.pagopa.wallet.connector;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -57,10 +53,11 @@ class PaymentInstrumentRestClientTest {
     final InstrumentCallBodyDTO instrument =
         new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL, LocalDateTime.now());
 
-    final InstrumentResponseDTO actualResponse = restConnector.enrollInstrument(instrument);
-
-    assertNotNull(actualResponse);
-    assertEquals(3, actualResponse.getNinstr());
+    try {
+      restConnector.enrollInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
   }
 
   @Test
@@ -69,10 +66,11 @@ class PaymentInstrumentRestClientTest {
     final DeactivationBodyDTO instrument =
         new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, LocalDateTime.now());
 
-    final InstrumentResponseDTO actualResponse = restConnector.deleteInstrument(instrument);
-
-    assertNotNull(actualResponse);
-    assertEquals(2, actualResponse.getNinstr());
+    try {
+      restConnector.deleteInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
   }
 
   @Test
