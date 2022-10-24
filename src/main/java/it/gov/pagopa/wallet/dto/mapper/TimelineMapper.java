@@ -40,7 +40,7 @@ public class TimelineMapper {
         .maskedPan(maskedPan)
         .brandLogo(brandLogo)
         .operationType("DELETE_INSTRUMENT")
-        .operationDate(dto.getDeactivationDate())
+        .operationDate(LocalDateTime.now())
         .build();
   }
 

@@ -51,7 +51,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_test() {
 
     final InstrumentCallBodyDTO instrument =
-        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL, LocalDateTime.now());
+        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL);
 
     try {
       restConnector.enrollInstrument(instrument);
@@ -64,7 +64,7 @@ class PaymentInstrumentRestClientTest {
   void delete_instrument_test() {
 
     final DeactivationBodyDTO instrument =
-        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, LocalDateTime.now());
+        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID);
 
     try {
       restConnector.deleteInstrument(instrument);

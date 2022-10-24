@@ -96,7 +96,7 @@ public class WalletServiceImpl implements WalletService {
     }
     InstrumentCallBodyDTO dto =
         new InstrumentCallBodyDTO(
-            userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
+            userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO);
 
     try {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
@@ -116,7 +116,7 @@ public class WalletServiceImpl implements WalletService {
     findByInitiativeIdAndUserId(initiativeId, userId);
 
     DeactivationBodyDTO dto =
-        new DeactivationBodyDTO(userId, initiativeId, instrumentId, LocalDateTime.now());
+        new DeactivationBodyDTO(userId, initiativeId, instrumentId);
 
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
@@ -239,7 +239,7 @@ public class WalletServiceImpl implements WalletService {
       walletRepository.save(wallet);
       DeactivationBodyDTO dto =
           new DeactivationBodyDTO(
-              wallet.getUserId(), wallet.getInitiativeId(), "", LocalDateTime.now());
+              wallet.getUserId(), wallet.getInitiativeId(), "");
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(
               dto, WalletConstants.CHANNEL_PM, walletPI.getMaskedPan(), walletPI.getBrandLogo());

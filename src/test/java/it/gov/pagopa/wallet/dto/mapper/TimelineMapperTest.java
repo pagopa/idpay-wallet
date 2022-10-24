@@ -47,7 +47,7 @@ class TimelineMapperTest {
       new InstrumentAckDTO(
           INITIATIVE_ID, USER_ID, WalletConstants.CHANNEL_APP_IO, BRAND_LOGO, MASKED_PAN, "ADD_INSTRUMENT", OPERATION_DATE, 1);
   private static final DeactivationBodyDTO DELETE_INSTRUMENT_BODY_DTO =
-      new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, OPERATION_DATE);
+      new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID);
 
   private static final RewardTransactionDTO REWARD_TRX_DTO_REWARDED =
       RewardTransactionDTO.builder()
