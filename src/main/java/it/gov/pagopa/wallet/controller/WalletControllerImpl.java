@@ -71,6 +71,6 @@ public class WalletControllerImpl implements WalletController {
   @Override
   public ResponseEntity<Void> processAck(InstrumentAckDTO body) {
     walletService.processAck(body);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }
