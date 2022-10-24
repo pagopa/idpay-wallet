@@ -2,8 +2,8 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import it.gov.pagopa.wallet.service.WalletService;
@@ -66,5 +66,11 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<Void> unsubscribeInitiative(String initiativeId, String userId) {
     walletService.unsubscribe(initiativeId, userId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<Void> processAck(InstrumentAckDTO body) {
+    walletService.processAck(body);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }

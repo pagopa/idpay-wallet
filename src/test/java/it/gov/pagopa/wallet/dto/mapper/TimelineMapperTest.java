@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import java.math.BigDecimal;
@@ -43,9 +43,9 @@ class TimelineMapperTest {
           List.of(),
           new BigDecimal(500),
           INITIATIVE_ID);
-  private static final InstrumentCallBodyDTO INSTRUMENT_BODY_DTO =
-      new InstrumentCallBodyDTO(
-          USER_ID, INITIATIVE_ID, HPAN, WalletConstants.CHANNEL_APP_IO, OPERATION_DATE);
+  private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
+      new InstrumentAckDTO(
+          INITIATIVE_ID, USER_ID, WalletConstants.CHANNEL_APP_IO, BRAND_LOGO, MASKED_PAN, "ADD_INSTRUMENT", OPERATION_DATE, 1);
   private static final DeactivationBodyDTO DELETE_INSTRUMENT_BODY_DTO =
       new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, OPERATION_DATE);
 
@@ -101,8 +101,8 @@ class TimelineMapperTest {
   }
 
   @Test
-  void enrollInstrumentToTimeline() {
-    QueueOperationDTO actual = timelineMapper.enrollInstrumentToTimeline(INSTRUMENT_BODY_DTO, MASKED_PAN, BRAND_LOGO);
+  void ackToTimeline() {
+    QueueOperationDTO actual = timelineMapper.ackToTimeline(INSTRUMENT_ACK_DTO);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("ADD_INSTRUMENT", actual.getOperationType());
