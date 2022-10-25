@@ -356,12 +356,24 @@ class WalletServiceTest {
 
   @Test
   void enrollInstrument_queue_error() {
+
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
     Mockito.doThrow(new WalletException(400, "")).when(timelineProducer)
         .sendEvent(Mockito.any(QueueOperationDTO.class));
+
     Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
+
+    Mockito.when(timelineMapper.enrollInstrumentToTimeline(Mockito.any(InstrumentCallBodyDTO.class),
+            Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(TEST_OPERATION_DTO);
+
+    Mockito.when(
+            paymentInstrumentRestConnector.enrollInstrument(
+                Mockito.any(InstrumentCallBodyDTO.class)))
+        .thenReturn(INSTRUMENT_RESPONSE_DTO);
+
 
     TEST_WALLET.setIban(null);
     TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
@@ -370,15 +382,6 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
 
-    Mockito.when(
-            paymentInstrumentRestConnector.enrollInstrument(
-                Mockito.any(InstrumentCallBodyDTO.class)))
-        .thenReturn(INSTRUMENT_RESPONSE_DTO);
-    InstrumentCallBodyDTO instrumentCallBodyDTO = new InstrumentCallBodyDTO();
-
-    Mockito.when(
-            timelineMapper.enrollInstrumentToTimeline(instrumentCallBodyDTO, MASKED_PAN, BRAND_LOGO))
-        .thenReturn(TEST_OPERATION_DTO);
 
     try {
       walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
@@ -520,6 +523,10 @@ class WalletServiceTest {
     Mockito.doThrow(new WalletException(400, "")).when(timelineProducer)
         .sendEvent(Mockito.any(QueueOperationDTO.class));
     Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
+
+    Mockito.when(timelineMapper.enrollInstrumentToTimeline(Mockito.any(InstrumentCallBodyDTO.class),
+            Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(TEST_OPERATION_DTO);
 
     TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
     TEST_WALLET.setNInstr(1);
@@ -1229,6 +1236,36 @@ class WalletServiceTest {
     TEST_WALLET.setIban(null);
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+
+    try {
+      List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
+      walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID,MASKED_PAN,BRAND_LOGO));
+      WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
+      walletService.updateWallet(walletPIBodyDTO);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(0, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void update_wallet_ok_queue_error() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.when(timelineMapper.deleteInstrumentToTimeline(Mockito.any(DeactivationBodyDTO.class),
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(TEST_OPERATION_DTO);
+
+    Mockito.doThrow(new WalletException(400, "")).when(timelineProducer)
+        .sendEvent(Mockito.any(QueueOperationDTO.class));
+
+    Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
+
+
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+    TEST_WALLET.setNInstr(1);
+    TEST_WALLET.setIban(null);
 
     try {
       List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
