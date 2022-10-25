@@ -19,7 +19,7 @@ payment:
 rest-client:
   onboarding:
     serviceCode: idpay-onboarding
-  payment.intrument:
+  payment.instrument:
       serviceCode: idpay-payment-instrument
   initiative:
     serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
