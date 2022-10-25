@@ -238,12 +238,15 @@ public class WalletServiceImpl implements WalletService {
       this.setStatus(wallet);
       walletRepository.save(wallet);
       DeactivationBodyDTO dto =
-          new DeactivationBodyDTO(
-              wallet.getUserId(), wallet.getInitiativeId(), "");
-      QueueOperationDTO queueOperationDTO =
-          timelineMapper.deleteInstrumentToTimeline(
-              dto, WalletConstants.CHANNEL_PM, walletPI.getMaskedPan(), walletPI.getBrandLogo());
-      timelineProducer.sendEvent(queueOperationDTO);
+          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(),"");
+      QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_PM,walletPI.getMaskedPan(),
+          walletPI.getBrandLogo());
+      try {
+        timelineProducer.sendEvent(queueOperationDTO);
+      }catch(Exception exception){
+        log.error("[Delete-Instrument-PM] An error has occurred. Sending message to Error queue");
+        this.sendToQueueError(exception, queueOperationDTO);
+      }
     }
   }
 
