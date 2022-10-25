@@ -4,6 +4,7 @@ import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
@@ -20,4 +21,5 @@ public interface WalletService {
   void unsubscribe(String initiativeId, String userId);
   void processTransaction(RewardTransactionDTO rewardTransactionDTO);
   void updateWallet(WalletPIBodyDTO walletPIBodyDTO);
+  void processAck(InstrumentAckDTO instrumentAckDTO);
 }

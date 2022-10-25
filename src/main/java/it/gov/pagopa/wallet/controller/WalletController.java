@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.controller;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import javax.validation.Valid;
@@ -102,7 +103,7 @@ public interface WalletController {
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
 
   /**
-   * unsubscrive intiative
+   * unsubscribe intiative
    *
    * @param initiativeId
    * @param userId
@@ -111,4 +112,13 @@ public interface WalletController {
   @DeleteMapping("/{initiativeId}/{userId}/unsubscribe")
   ResponseEntity<Void> unsubscribeInitiative(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
+  /**
+   * Process Rule Engine ACK for PI Enrollment/Deactivation
+   *
+   * @param body
+   * @return
+   */
+  @PutMapping("/acknowledge")
+  ResponseEntity<Void> processAck(@Valid @RequestBody InstrumentAckDTO body);
 }

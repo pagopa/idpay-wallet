@@ -3,7 +3,7 @@ package it.gov.pagopa.wallet.dto.mapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import java.math.BigDecimal;
@@ -40,19 +40,19 @@ public class TimelineMapper {
         .maskedPan(maskedPan)
         .brandLogo(brandLogo)
         .operationType("DELETE_INSTRUMENT")
-        .operationDate(dto.getDeactivationDate())
+        .operationDate(LocalDateTime.now())
         .build();
   }
 
-  public QueueOperationDTO enrollInstrumentToTimeline(InstrumentCallBodyDTO dto, String maskedPan, String brandLogo) {
+  public QueueOperationDTO ackToTimeline(InstrumentAckDTO dto) {
     return QueueOperationDTO.builder()
         .initiativeId(dto.getInitiativeId())
         .userId(dto.getUserId())
         .channel(dto.getChannel())
-        .maskedPan(maskedPan)
-        .brandLogo(brandLogo)
-        .operationType("ADD_INSTRUMENT")
-        .operationDate(LocalDateTime.now())
+        .maskedPan(dto.getMaskedPan())
+        .brandLogo(dto.getBrandLogo())
+        .operationType(dto.getOperationType())
+        .operationDate(dto.getOperationDate())
         .build();
   }
 
