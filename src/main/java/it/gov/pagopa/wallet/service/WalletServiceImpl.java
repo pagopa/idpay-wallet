@@ -224,9 +224,7 @@ public class WalletServiceImpl implements WalletService {
             (initiativeId, reward) -> {
               log.info("[processTransaction] Processing initiative: {}", initiativeId);
               updateWalletFromTransaction(
-                  initiativeId, rewardTransactionDTO.getUserId(), reward.getCounters());
-              sendTransactionToTimeline(
-                  initiativeId, rewardTransactionDTO, reward.getAccruedReward());
+                  initiativeId, rewardTransactionDTO, reward.getCounters(), reward.getAccruedReward());
             });
   }
 
@@ -283,12 +281,21 @@ public class WalletServiceImpl implements WalletService {
         timelineMapper.transactionToTimeline(initiativeId, rewardTransaction, accruedReward));
   }
 
-  private void updateWalletFromTransaction(String initiativeId, String userId, Counters counters) {
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+  private void updateWalletFromTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, BigDecimal accruedReward) {
+    Wallet wallet =
+        walletRepository
+            .findByInitiativeIdAndUserId(initiativeId, rewardTransactionDTO.getUserId())
+            .orElse(null);
+
+    if(wallet == null){
+      log.info("[updateWalletFromTransaction] No wallet found for this initiativeId");
+      return;
+    }
+
     log.info(
         "[updateWalletFromTransaction] Found wallet for initiative and user: {} {}",
         initiativeId,
-        userId);
+        rewardTransactionDTO.getUserId());
     wallet.setNTrx(counters.getTrxNumber());
     log.info("[updateWalletFromTransaction] New value for nTrx: {}", wallet.getNTrx());
     wallet.setAccrued(counters.getTotalReward());
@@ -300,6 +307,10 @@ public class WalletServiceImpl implements WalletService {
             .setScale(2, RoundingMode.HALF_DOWN));
     log.info("[updateWalletFromTransaction] New value for Amount: {}", wallet.getAmount());
     walletRepository.save(wallet);
+
+    log.info("[updateWalletFromTransaction] Sending transaction to Timeline");
+    sendTransactionToTimeline(
+        initiativeId, rewardTransactionDTO, accruedReward);
   }
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {

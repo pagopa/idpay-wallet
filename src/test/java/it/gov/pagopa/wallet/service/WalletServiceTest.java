@@ -1021,6 +1021,15 @@ class WalletServiceTest {
   }
 
   @Test
+  void processTransaction_ko() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+    walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
+    Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
+    Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any());
+  }
+
+  @Test
   void unsubscribe_rollback_wallet() {
 
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
