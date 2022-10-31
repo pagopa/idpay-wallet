@@ -95,8 +95,7 @@ public class WalletServiceImpl implements WalletService {
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
     InstrumentCallBodyDTO dto =
-        new InstrumentCallBodyDTO(
-            userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO);
+        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO);
 
     try {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
@@ -115,8 +114,7 @@ public class WalletServiceImpl implements WalletService {
 
     findByInitiativeIdAndUserId(initiativeId, userId);
 
-    DeactivationBodyDTO dto =
-        new DeactivationBodyDTO(userId, initiativeId, instrumentId);
+    DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId);
 
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
@@ -224,7 +222,10 @@ public class WalletServiceImpl implements WalletService {
             (initiativeId, reward) -> {
               log.info("[processTransaction] Processing initiative: {}", initiativeId);
               updateWalletFromTransaction(
-                  initiativeId, rewardTransactionDTO, reward.getCounters(), reward.getAccruedReward());
+                  initiativeId,
+                  rewardTransactionDTO,
+                  reward.getCounters(),
+                  reward.getAccruedReward());
             });
   }
 
@@ -236,12 +237,13 @@ public class WalletServiceImpl implements WalletService {
       this.setStatus(wallet);
       walletRepository.save(wallet);
       DeactivationBodyDTO dto =
-          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(),"");
-      QueueOperationDTO queueOperationDTO = timelineMapper.deleteInstrumentToTimeline(dto, WalletConstants.CHANNEL_PM,walletPI.getMaskedPan(),
-          walletPI.getBrandLogo());
+          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(), "");
+      QueueOperationDTO queueOperationDTO =
+          timelineMapper.deleteInstrumentToTimeline(
+              dto, WalletConstants.CHANNEL_PM, walletPI.getMaskedPan(), walletPI.getBrandLogo());
       try {
         timelineProducer.sendEvent(queueOperationDTO);
-      }catch(Exception exception){
+      } catch (Exception exception) {
         log.error("[Delete-Instrument-PM] An error has occurred. Sending message to Error queue");
         this.sendToQueueError(exception, queueOperationDTO);
       }
@@ -281,13 +283,17 @@ public class WalletServiceImpl implements WalletService {
         timelineMapper.transactionToTimeline(initiativeId, rewardTransaction, accruedReward));
   }
 
-  private void updateWalletFromTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, BigDecimal accruedReward) {
+  private void updateWalletFromTransaction(
+      String initiativeId,
+      RewardTransactionDTO rewardTransactionDTO,
+      Counters counters,
+      BigDecimal accruedReward) {
     Wallet wallet =
         walletRepository
             .findByInitiativeIdAndUserId(initiativeId, rewardTransactionDTO.getUserId())
             .orElse(null);
 
-    if(wallet == null){
+    if (wallet == null) {
       log.info("[updateWalletFromTransaction] No wallet found for this initiativeId");
       return;
     }
@@ -309,8 +315,7 @@ public class WalletServiceImpl implements WalletService {
     walletRepository.save(wallet);
 
     log.info("[updateWalletFromTransaction] Sending transaction to Timeline");
-    sendTransactionToTimeline(
-        initiativeId, rewardTransactionDTO, accruedReward);
+    sendTransactionToTimeline(initiativeId, rewardTransactionDTO, accruedReward);
   }
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
@@ -331,25 +336,23 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void deleteOperation(IbanQueueWalletDTO iban) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
 
-    if (!wallet.getIban().equals(iban.getIban())) {
-      log.warn(
-          "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
-      return;
-    }
+    walletRepository
+        .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
+        .ifPresent(
+            wallet -> {
+              if (!wallet.getIban().equals(iban.getIban())) {
+                log.warn(
+                    "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
+                return;
+              }
 
-    wallet.setIban(null);
-    setStatus(wallet);
+              wallet.setIban(null);
+              setStatus(wallet);
 
-    walletRepository.save(wallet);
-    sendCheckIban(iban, wallet);
+              walletRepository.save(wallet);
+              sendCheckIban(iban, wallet);
+            });
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet) {

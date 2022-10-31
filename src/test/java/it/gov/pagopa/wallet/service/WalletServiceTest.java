@@ -921,19 +921,15 @@ class WalletServiceTest {
   }
 
   @Test
-  void deleteOperation_ko() {
+  void deleteOperation_not_found() {
     IbanQueueWalletDTO iban =
         new IbanQueueWalletDTO(
             USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString());
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.empty());
-    try {
       walletService.deleteOperation(iban);
-      Assertions.fail();
-    } catch (WalletException e) {
-      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
-      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
-    }
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any(Wallet.class));
   }
 
   @Test
