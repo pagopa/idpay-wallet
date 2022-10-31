@@ -1,0 +1,9 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPathPattern": "/idpay/onboarding/rollback/.*/.*"
+  },
+  "response": {
+    "status": "204"
+  }
+}

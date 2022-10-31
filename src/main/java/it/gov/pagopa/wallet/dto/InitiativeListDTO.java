@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InitiativeListDTO {
 
-  List<InitiativeDTO> initiativeList;
+  List<WalletDTO> initiativeList;
 
 }

@@ -1,14 +1,12 @@
 package it.gov.pagopa.wallet.connector;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentResponseDTO;
+import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,14 +34,13 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
     })
 @TestPropertySource(
     locations = "classpath:application.yml",
-    properties = {
-      "spring.application.name=idpay-payment-instrument-integration-rest"
-    })
+    properties = {"spring.application.name=idpay-payment-instrument-integration-rest"})
 class PaymentInstrumentRestClientTest {
 
   private static final String USER_ID = "USER_ID";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
-  private static final String HPAN = "HPAN";
+  private static final String ID_WALLET = "TEST_ID_WALLET";
+  private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String CHANNEL = "CHANNEL";
 
   @Autowired private PaymentInstrumentRestClient restClient;
@@ -53,25 +50,40 @@ class PaymentInstrumentRestClientTest {
   @Test
   void enroll_instrument_test() {
 
+    final InstrumentCallBodyDTO instrument =
+        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL);
 
-    final InstrumentCallBodyDTO instrument = new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, HPAN, CHANNEL, LocalDateTime.now());
-
-    final InstrumentResponseDTO actualResponse = restConnector.enrollInstrument(instrument);
-
-    assertNotNull(actualResponse);
-    assertEquals(3, actualResponse.getNinstr());
+    try {
+      restConnector.enrollInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
   }
 
   @Test
   void delete_instrument_test() {
 
+    final DeactivationBodyDTO instrument =
+        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID);
 
-    final DeactivationBodyDTO instrument = new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, HPAN, LocalDateTime.now());
+    try {
+      restConnector.deleteInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
 
-    final InstrumentResponseDTO actualResponse = restConnector.deleteInstrument(instrument);
+  @Test
+  void delete_all_instrument_test() {
 
-    assertNotNull(actualResponse);
-    assertEquals(2, actualResponse.getNinstr());
+    final UnsubscribeCallDTO instrument =
+        new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
+
+    try {
+      restConnector.disableAllInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
   }
 
   public static class WireMockInitializer

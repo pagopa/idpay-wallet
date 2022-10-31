@@ -17,7 +17,11 @@ public class QueueOperationDTO {
 
   private String operationType;
 
-  private String hpan;
+  private String brandLogo;
+
+  private String maskedPan;
+
+  private String instrumentId;
 
   private String iban;
 
@@ -30,6 +34,8 @@ public class QueueOperationDTO {
   private LocalDateTime operationDate;
 
   private BigDecimal amount;
+
+  private BigDecimal effectiveAmount;
 
   private BigDecimal accrued;
 

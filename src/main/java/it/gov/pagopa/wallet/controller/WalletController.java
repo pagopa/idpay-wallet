@@ -2,9 +2,10 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,26 +24,29 @@ public interface WalletController {
    * Enrollment of a Payment Instrument
    *
    * @param userId
-   * @param body
+   * @param initiativeId
+   * @param idWallet
    * @return
    */
-  @PutMapping("/instrument/{userId}")
+  @PutMapping("/{initiativeId}/{userId}/instruments/{idWallet}")
   ResponseEntity<Void> enrollInstrument(
-      @Valid @RequestBody InstrumentBodyDTO body, @PathVariable String userId);
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId,
+      @PathVariable("idWallet") String idWallet);
 
   /**
    * Deactivation of a Payment Instrument
    *
    * @param initiativeId
    * @param userId
-   * @param hpan
+   * @param instrumentId
    * @return
    */
-  @DeleteMapping("/{initiativeId}/{userId}/instruments/{hpan}")
+  @DeleteMapping("/{initiativeId}/{userId}/instruments/{instrumentId}")
   ResponseEntity<Void> deleteInstrument(
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId,
-      @PathVariable("hpan") String hpan);
+      @PathVariable("instrumentId") String instrumentId);
 
   /**
    * Returns the actual enrollment status
@@ -63,8 +67,18 @@ public interface WalletController {
    * @return
    */
   @GetMapping("/{initiativeId}/{userId}")
-  ResponseEntity<InitiativeDTO> walletDetail(
+  ResponseEntity<WalletDTO> walletDetail(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
+  /**
+   * Update wallet after a delete instrument by PM
+   *
+   * @param body
+   * @return
+   */
+  @PutMapping("/updateWallet")
+  ResponseEntity<Void> updateWallet(
+      @Valid @RequestBody WalletPIBodyDTO body);
 
   /**
    * Enrollment of a Iban
@@ -73,9 +87,11 @@ public interface WalletController {
    * @param body
    * @return
    */
-  @PutMapping("/iban/{userId}")
+  @PutMapping("/{initiativeId}/{userId}/iban")
   ResponseEntity<Void> enrollIban(
-      @Valid @RequestBody IbanBodyDTO body, @PathVariable String userId);
+      @Valid @RequestBody IbanBodyDTO body,
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId);
 
   /**
    * Returns the active initiative lists
@@ -87,13 +103,22 @@ public interface WalletController {
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
 
   /**
-   * unsubscrive intiative
+   * unsubscribe intiative
    *
    * @param initiativeId
    * @param userId
    * @return
    */
   @DeleteMapping("/{initiativeId}/{userId}/unsubscribe")
-  ResponseEntity<Void> unsubscribeInitiative(@PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+  ResponseEntity<Void> unsubscribeInitiative(
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
+  /**
+   * Process Rule Engine ACK for PI Enrollment/Deactivation
+   *
+   * @param body
+   * @return
+   */
+  @PutMapping("/acknowledge")
+  ResponseEntity<Void> processAck(@Valid @RequestBody InstrumentAckDTO body);
 }

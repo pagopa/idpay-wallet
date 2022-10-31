@@ -13,6 +13,20 @@ public class WalletConstants {
   public static final String ONBOARDING_OPERATION = "ONBOARDING";
   public static final String CHANNEL_APP_IO = "APP_IO";
   public static final String STATUS_KO = "KO";
+  public static final String ERROR_MSG_HEADER_SRC_TYPE = "srcType";
+  public static final String ERROR_MSG_HEADER_SRC_SERVER = "srcServer";
+  public static final String ERROR_MSG_HEADER_SRC_TOPIC = "srcTopic";
+  public static final String ERROR_MSG_HEADER_DESCRIPTION = "description";
+  public static final String ERROR_MSG_HEADER_RETRYABLE = "retryable";
+  public static final String ERROR_MSG_HEADER_STACKTRACE = "stacktrace";
+  public static final String ERROR_MSG_HEADER_CLASS = "rootCauseClass";
+  public static final String ERROR_MSG_HEADER_MESSAGE = "rootCauseMessage";
+  public static final String TOPIC_TIMELINE= "idpay-timeline";
+  public static final String KAFKA= "kafka";
+  public static final String BROKER_TIMELINE = "cstar-d-idpay-evh-ns-00.servicebus.windows.net:9093";
+  public static final String ERROR_TIMELINE= "error to send new instrument to timeline queue";
+  public static final String CHANNEL_PM= "PAYMENT-MANAGER";
+  public static final String ERROR_LESS_THAN_ZERO = "The field must be greater than zero!";
 
   private WalletConstants(){}
 }
