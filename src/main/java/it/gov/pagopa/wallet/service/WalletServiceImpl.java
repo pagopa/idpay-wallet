@@ -336,6 +336,11 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void deleteOperation(IbanQueueWalletDTO iban) {
+    if (!iban.getStatus().equals("KO")) {
+      log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
+      return;
+    }
+
 
     walletRepository
         .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
