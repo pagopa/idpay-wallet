@@ -58,7 +58,7 @@ class WalletMapperTest {
           .amount(new BigDecimal(500))
           .accrued(BigDecimal.valueOf(0.00))
           .refunded(BigDecimal.valueOf(0.00))
-          .nInstr(String.valueOf(0))
+          .nInstr(0)
           .build();
 
   @Autowired WalletMapper walletMapper;

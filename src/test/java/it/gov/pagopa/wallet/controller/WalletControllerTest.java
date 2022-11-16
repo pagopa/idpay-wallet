@@ -71,7 +71,7 @@ class WalletControllerTest {
           WalletStatus.NOT_REFUNDABLE.name(),
           null,
           DATE,
-          null,
+          0,
           null,
           null,
           null);
@@ -87,7 +87,7 @@ class WalletControllerTest {
           WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
           IBAN_OK,
           DATE,
-          "1",
+          1,
           new BigDecimal("450.00"),
           new BigDecimal("50.00"),
           new BigDecimal("0.00"));
