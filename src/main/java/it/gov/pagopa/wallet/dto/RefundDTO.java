@@ -13,7 +13,10 @@ public class RefundDTO {
   private String organizationId;
   private String status;
   private Long rewardCents;
+  private Long effectiveRewardCents;
   private LocalDateTime feedbackDate;
+  private String rejectionCode;
+  private String rejectionReason;
   private Long feedbackProgressive;
   private LocalDateTime executionDate;
   private String cro;

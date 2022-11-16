@@ -32,12 +32,15 @@ import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
+import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
@@ -51,6 +54,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class WalletServiceImpl implements WalletService {
+
+  public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
   @Autowired WalletRepository walletRepository;
 
@@ -213,6 +218,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
+    log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
       return;
     }
@@ -281,6 +287,45 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void processRefund(RefundDTO refundDTO) {
     log.info("[PROCESS_REFUND] Processing new refund: {}", refundDTO);
+
+    Wallet wallet =
+        walletRepository
+            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getUserId())
+            .orElse(null);
+
+    if (wallet == null) {
+      log.info("[PROCESS_REFUND] Wallet not found, skipping message");
+      return;
+    }
+
+    Map<String, RefundHistory> history = wallet.getRefundHistory();
+
+    if (history == null) {
+      history = new HashMap<>();
+      wallet.setRefundHistory(history);
+    }
+
+    if (history.containsKey(refundDTO.getRewardNotificationId())
+        && history.get(refundDTO.getRewardNotificationId()).getFeedbackProgressive()
+            >= refundDTO.getFeedbackProgressive()) {
+      log.info("[VALIDATE_FEEDBACK] Feedback already processed, skipping message");
+      return;
+    }
+
+    BigDecimal refunded =
+        BigDecimal.valueOf(refundDTO.getRewardCents())
+            .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN);
+
+    wallet.setRefunded(wallet.getRefunded().add(refunded));
+
+    history.put(
+        refundDTO.getRewardNotificationId(),
+        new RefundHistory(
+            refundDTO.getFeedbackProgressive(),
+            refundDTO.getFeedbackDate(),
+            refundDTO.getStatus()));
+
+    walletRepository.save(wallet);
   }
 
   private void sendTransactionToTimeline(
