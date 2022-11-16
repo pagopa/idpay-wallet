@@ -1,3 +1,5 @@
+iban:
+  uri: ${IBAN_URI}
 logging:
   level:
     it:

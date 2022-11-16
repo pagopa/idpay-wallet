@@ -286,7 +286,6 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processRefund(RefundDTO refundDTO) {
-    log.info("[PROCESS_REFUND] Processing new refund: {}", refundDTO);
 
     Wallet wallet =
         walletRepository
