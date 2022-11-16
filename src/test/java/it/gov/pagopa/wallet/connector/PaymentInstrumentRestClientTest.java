@@ -106,7 +106,7 @@ class PaymentInstrumentRestClientTest {
       TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
           applicationContext,
           String.format(
-              "payment.instrument.uri=http://%s:%d",
+              "rest-client.payment.instrument.baseUrl=http://%s:%d",
               wireMockServer.getOptions().bindAddress(), wireMockServer.port()));
     }
   }

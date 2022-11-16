@@ -86,7 +86,7 @@ class OnboardingRestClientTest {
       TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
           applicationContext,
           String.format(
-              "onboarding.uri=http://%s:%d",
+              "rest-client.onboarding.baseUrl=http://%s:%d",
               wireMockServer.getOptions().bindAddress(), wireMockServer.port()));
     }
   }
