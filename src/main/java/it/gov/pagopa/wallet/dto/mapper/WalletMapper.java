@@ -35,7 +35,7 @@ public class WalletMapper {
         .amount(wallet.getAmount())
         .accrued(wallet.getAccrued())
         .refunded(wallet.getRefunded())
-        .nInstr(String.valueOf(wallet.getNInstr()))
+        .nInstr(wallet.getNInstr())
         .iban(wallet.getIban())
         .build();
   }
