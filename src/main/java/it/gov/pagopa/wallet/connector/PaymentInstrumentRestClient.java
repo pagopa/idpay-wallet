@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient(
     name = "${rest-client.payment.instrument.serviceCode}",
-    url = "${payment.instrument.uri}")
+    url = "${rest-client.payment.instrument.baseUrl}")
 public interface PaymentInstrumentRestClient {
 
   @PutMapping(
