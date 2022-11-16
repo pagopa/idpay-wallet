@@ -149,7 +149,7 @@ class WalletServiceTest {
           WalletStatus.NOT_REFUNDABLE.name(),
           IBAN_OK,
           TEST_DATE,
-          "0",
+          0,
           TEST_AMOUNT,
           TEST_ACCRUED,
           TEST_REFUNDED);
