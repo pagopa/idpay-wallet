@@ -1,24 +1,27 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TimelineMapper {
+  private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
   public QueueOperationDTO transactionToTimeline(
       String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
     return QueueOperationDTO.builder()
         .initiativeId(initiativeId)
         .userId(rewardTransaction.getUserId())
-        .operationType(rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
+        .operationType(
+            rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
         .operationDate(rewardTransaction.getTrxDate().toLocalDateTime())
         .maskedPan(rewardTransaction.getMaskedPan())
         .instrumentId(rewardTransaction.getInstrumentId())
@@ -32,11 +35,12 @@ public class TimelineMapper {
         .build();
   }
 
-  public QueueOperationDTO deleteInstrumentToTimeline(DeactivationBodyDTO dto, String deleteChannel,String maskedPan, String brandLogo) {
+  public QueueOperationDTO deleteInstrumentToTimeline(
+      String initiativeId, String userId, String maskedPan, String brandLogo) {
     return QueueOperationDTO.builder()
-        .initiativeId(dto.getInitiativeId())
-        .userId(dto.getUserId())
-        .channel(deleteChannel)
+        .initiativeId(initiativeId)
+        .userId(userId)
+        .channel(WalletConstants.CHANNEL_PM)
         .maskedPan(maskedPan)
         .brandLogo(brandLogo)
         .operationType("DELETE_INSTRUMENT")
@@ -73,6 +77,23 @@ public class TimelineMapper {
         .iban(iban)
         .operationType("ADD_IBAN")
         .operationDate(LocalDateTime.now())
+        .build();
+  }
+
+  public QueueOperationDTO refundToTimeline(RefundDTO dto) {
+    String operationType = (dto.getStatus().equals("ACCEPTED")) ? "PAID_REFUND" : "REJECTED_REFUND";
+    return QueueOperationDTO.builder()
+        .initiativeId(dto.getInitiativeId())
+        .userId(dto.getUserId())
+        .operationType(operationType)
+        .operationDate(dto.getFeedbackDate())
+        .amount(BigDecimal.valueOf(dto.getRewardCents())
+            .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN))
+        .effectiveAmount(BigDecimal.valueOf(dto.getEffectiveRewardCents())
+            .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN))
+        .rewardNotificationId(dto.getRewardNotificationId())
+        .cro(dto.getCro())
+        .rewardFeedbackProgressive(dto.getFeedbackProgressive())
         .build();
   }
 }

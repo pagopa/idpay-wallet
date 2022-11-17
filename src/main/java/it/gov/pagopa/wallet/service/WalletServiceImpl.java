@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WalletServiceImpl implements WalletService {
 
-  public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
+  private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
   @Autowired WalletRepository walletRepository;
 
@@ -243,11 +243,12 @@ public class WalletServiceImpl implements WalletService {
       wallet.setNInstr(wallet.getNInstr() - 1);
       this.setStatus(wallet);
       walletRepository.save(wallet);
-      DeactivationBodyDTO dto =
-          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(), "");
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(
-              dto, WalletConstants.CHANNEL_PM, walletPI.getMaskedPan(), walletPI.getBrandLogo());
+              wallet.getInitiativeId(),
+              wallet.getUserId(),
+              walletPI.getMaskedPan(),
+              walletPI.getBrandLogo());
       try {
         timelineProducer.sendEvent(queueOperationDTO);
       } catch (Exception exception) {
@@ -319,13 +320,19 @@ public class WalletServiceImpl implements WalletService {
     wallet.setRefunded(wallet.getRefunded().add(refunded));
 
     history.put(
-        refundDTO.getRewardNotificationId(),
-        new RefundHistory(
-            refundDTO.getFeedbackProgressive(),
-            refundDTO.getFeedbackDate(),
-            refundDTO.getStatus()));
+        refundDTO.getRewardNotificationId(), new RefundHistory(refundDTO.getFeedbackProgressive()));
 
     walletRepository.save(wallet);
+
+    QueueOperationDTO queueOperationDTO = timelineMapper.refundToTimeline(refundDTO);
+
+    try {
+      log.info("[PROCESS_REFUND] Sending queue message to Timeline");
+      timelineProducer.sendEvent(queueOperationDTO);
+    } catch (Exception e) {
+      log.error("[PROCESS_REFUND] An error has occurred. Sending message to Error queue");
+      this.sendToQueueError(e, queueOperationDTO);
+    }
   }
 
   private void sendTransactionToTimeline(
