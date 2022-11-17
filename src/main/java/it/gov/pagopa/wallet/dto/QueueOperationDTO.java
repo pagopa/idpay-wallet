@@ -17,6 +17,8 @@ public class QueueOperationDTO {
 
   private String operationType;
 
+  private String rewardNotificationId;
+
   private String brandLogo;
 
   private String maskedPan;
@@ -25,13 +27,15 @@ public class QueueOperationDTO {
 
   private String iban;
 
-  private String email;
-
   private String channel;
 
   private String circuitType;
 
+  private String cro;
+
   private LocalDateTime operationDate;
+
+  private Long rewardFeedbackProgressive;
 
   private BigDecimal amount;
 
@@ -43,6 +47,5 @@ public class QueueOperationDTO {
 
   private String idTrxAcquirer;
 
-  private String application;
 }
 

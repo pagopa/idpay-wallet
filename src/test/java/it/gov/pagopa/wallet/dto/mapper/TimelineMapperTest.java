@@ -3,10 +3,10 @@ package it.gov.pagopa.wallet.dto.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,8 +23,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class TimelineMapperTest {
   private static final String USER_ID = "test_user";
   private static final String INITIATIVE_ID = "test_initiative";
+  private static final String ORGANIZATION_ID = "organization_id";
+  private static final String REWARD_NOTIFICATION_ID = "reward_notification_id";
   private static final String IBAN = "test_iban";
-  private static final String HPAN = "test_hpan";
+  private static final String CRO = "cro";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
   private static final String INSTRUMENT_ID = "instrument_id";
@@ -45,9 +47,14 @@ class TimelineMapperTest {
           INITIATIVE_ID);
   private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
       new InstrumentAckDTO(
-          INITIATIVE_ID, USER_ID, WalletConstants.CHANNEL_APP_IO, BRAND_LOGO, MASKED_PAN, "ADD_INSTRUMENT", OPERATION_DATE, 1);
-  private static final DeactivationBodyDTO DELETE_INSTRUMENT_BODY_DTO =
-      new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID);
+          INITIATIVE_ID,
+          USER_ID,
+          WalletConstants.CHANNEL_APP_IO,
+          BRAND_LOGO,
+          MASKED_PAN,
+          "ADD_INSTRUMENT",
+          OPERATION_DATE,
+          1);
 
   private static final RewardTransactionDTO REWARD_TRX_DTO_REWARDED =
       RewardTransactionDTO.builder()
@@ -78,6 +85,38 @@ class TimelineMapperTest {
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .build();
+
+  private static final RefundDTO REFUND_DTO =
+      new RefundDTO(
+          REWARD_NOTIFICATION_ID,
+          INITIATIVE_ID,
+          USER_ID,
+          ORGANIZATION_ID,
+          "ACCEPTED",
+          4000L,
+          4000L,
+          LocalDateTime.now(),
+          null,
+          null,
+          1L,
+          LocalDateTime.now(),
+          CRO);
+
+  private static final RefundDTO REFUND_DTO_REJECTED =
+      new RefundDTO(
+          REWARD_NOTIFICATION_ID,
+          INITIATIVE_ID,
+          USER_ID,
+          ORGANIZATION_ID,
+          "REJECTED",
+          4000L,
+          4000L,
+          LocalDateTime.now(),
+          null,
+          null,
+          1L,
+          LocalDateTime.now(),
+          CRO);
 
   @Autowired TimelineMapper timelineMapper;
 
@@ -114,7 +153,7 @@ class TimelineMapperTest {
   @Test
   void deleteInstrumentToTimeline() {
     QueueOperationDTO actual =
-        timelineMapper.deleteInstrumentToTimeline(DELETE_INSTRUMENT_BODY_DTO, "APP-IO",MASKED_PAN, BRAND_LOGO);
+        timelineMapper.deleteInstrumentToTimeline(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("DELETE_INSTRUMENT", actual.getOperationType());
@@ -154,5 +193,25 @@ class TimelineMapperTest {
     assertEquals(BIG_DECIMAL, actual.getAccrued());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
+  }
+
+  @Test
+  void refundToTimelineAccepted() {
+    QueueOperationDTO actual = timelineMapper.refundToTimeline(REFUND_DTO);
+    assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+    assertEquals(USER_ID, actual.getUserId());
+    assertEquals(REWARD_NOTIFICATION_ID, actual.getRewardNotificationId());
+    assertEquals(CRO, actual.getCro());
+    assertEquals("PAID_REFUND", actual.getOperationType());
+  }
+
+  @Test
+  void refundToTimelineRejected() {
+    QueueOperationDTO actual = timelineMapper.refundToTimeline(REFUND_DTO_REJECTED);
+    assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+    assertEquals(USER_ID, actual.getUserId());
+    assertEquals(REWARD_NOTIFICATION_ID, actual.getRewardNotificationId());
+    assertEquals(CRO, actual.getCro());
+    assertEquals("REJECTED_REFUND", actual.getOperationType());
   }
 }

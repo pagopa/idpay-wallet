@@ -40,7 +40,5 @@ public class Wallet {
   @AllArgsConstructor
   public static class RefundHistory{
     private Long feedbackProgressive;
-    private LocalDateTime feedbackDate;
-    private String feedbackStatus;
   }
 }

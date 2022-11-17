@@ -1116,7 +1116,7 @@ class WalletServiceTest {
 
     Mockito.when(
             timelineMapper.deleteInstrumentToTimeline(
-                Mockito.any(DeactivationBodyDTO.class),
+                Mockito.anyString(),
                 Mockito.anyString(),
                 Mockito.anyString(),
                 Mockito.anyString()))
@@ -1165,12 +1165,53 @@ class WalletServiceTest {
     TEST_WALLET.setRefundHistory(null);
     TEST_WALLET.setRefunded(TEST_REFUNDED);
 
+    Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
+
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
     walletService.processRefund(dto);
 
     Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+    Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(TEST_OPERATION_DTO);
+    Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
+  }
+
+  @Test
+  void processRefund_queue_error() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "ACCEPTED",
+            4000L,
+            4000L,
+            LocalDateTime.now(),
+            null,
+            null,
+            1L,
+            LocalDateTime.now(),
+            "CRO");
+
+    TEST_WALLET.setRefundHistory(null);
+    TEST_WALLET.setRefunded(TEST_REFUNDED);
+
+    Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.doThrow(new WalletException(400, ""))
+        .when(timelineProducer)
+        .sendEvent(Mockito.any(QueueOperationDTO.class));
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+    Mockito.verify(errorProducer, Mockito.times(1)).sendEvent(Mockito.any());
   }
 
   @Test
@@ -1192,7 +1233,7 @@ class WalletServiceTest {
             "CRO");
 
     Map<String, RefundHistory> map = new HashMap<>();
-    map.put("NOT_ID", new RefundHistory(1L, LocalDateTime.now(), "ACCEPTED"));
+    map.put("NOT_ID", new RefundHistory(1L));
 
     TEST_WALLET.setRefundHistory(map);
     TEST_WALLET.setRefunded(TEST_ACCRUED);
@@ -1200,9 +1241,13 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
+    Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
+
     walletService.processRefund(dto);
 
     Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+    Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(TEST_OPERATION_DTO);
+    Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 
   @Test
@@ -1224,7 +1269,7 @@ class WalletServiceTest {
             "CRO");
 
     Map<String, RefundHistory> map = new HashMap<>();
-    map.put("NOT_ID", new RefundHistory(2L, LocalDateTime.now(), "ACCEPTED"));
+    map.put("NOT_ID", new RefundHistory(2L));
 
     TEST_WALLET.setRefundHistory(map);
     TEST_WALLET.setRefunded(TEST_ACCRUED);
@@ -1235,6 +1280,8 @@ class WalletServiceTest {
     walletService.processRefund(dto);
 
     Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(TEST_WALLET);
+    Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 
   @Test
@@ -1265,6 +1312,8 @@ class WalletServiceTest {
     walletService.processRefund(dto);
 
     Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+    Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 
   @Test
@@ -1291,5 +1340,7 @@ class WalletServiceTest {
     walletService.processRefund(dto);
 
     Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any(Wallet.class));
+    Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 }
