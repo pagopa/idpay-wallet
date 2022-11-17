@@ -2,8 +2,11 @@ package it.gov.pagopa.wallet.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -27,7 +30,17 @@ public class Wallet {
   private BigDecimal amount;
   private BigDecimal accrued;
   private BigDecimal refunded;
+  private Map<String, RefundHistory> refundHistory;
   private Long nTrx;
   private int nInstr;
   private LocalDateTime requestUnsubscribeDate;
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class RefundHistory{
+    private Long feedbackProgressive;
+    private LocalDateTime feedbackDate;
+    private String feedbackStatus;
+  }
 }

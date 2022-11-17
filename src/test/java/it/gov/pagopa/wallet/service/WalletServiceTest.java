@@ -25,6 +25,7 @@ import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
@@ -41,6 +42,7 @@ import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
+import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -94,7 +96,7 @@ class WalletServiceTest {
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
   private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
-  private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(0.00);
+  private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
   private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
 
   private static final InitiativeDTO INITIATIVE_DTO = new InitiativeDTO();
@@ -1139,5 +1141,155 @@ class WalletServiceTest {
       Assertions.fail();
     }
     assertEquals(0, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void processRefund_fresh_history() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "ACCEPTED",
+            4000L,
+            4000L,
+            LocalDateTime.now(),
+            null,
+            null,
+            1L,
+            LocalDateTime.now(),
+            "CRO");
+
+    TEST_WALLET.setRefundHistory(null);
+    TEST_WALLET.setRefunded(TEST_REFUNDED);
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+  }
+
+  @Test
+  void processRefund_rejected() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "REJECTED",
+            -4000L,
+            4000L,
+            LocalDateTime.now(),null,
+            null,
+            2L,
+            LocalDateTime.now(),
+            "CRO");
+
+    Map<String, RefundHistory> map = new HashMap<>();
+    map.put("NOT_ID", new RefundHistory(1L, LocalDateTime.now(), "ACCEPTED"));
+
+    TEST_WALLET.setRefundHistory(map);
+    TEST_WALLET.setRefunded(TEST_ACCRUED);
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+  }
+
+  @Test
+  void processRefund_skipped() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "REJECTED",
+            0L,
+            4000L,
+            LocalDateTime.now(),null,
+            null,
+            1L,
+            LocalDateTime.now(),
+            "CRO");
+
+    Map<String, RefundHistory> map = new HashMap<>();
+    map.put("NOT_ID", new RefundHistory(2L, LocalDateTime.now(), "ACCEPTED"));
+
+    TEST_WALLET.setRefundHistory(map);
+    TEST_WALLET.setRefunded(TEST_ACCRUED);
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(TEST_WALLET);
+  }
+
+  @Test
+  void processRefund_rejected_not_accepted_before() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "REJECTED",
+            0L,
+            4000L,
+            LocalDateTime.now(),null,
+            null,
+            2L,
+            LocalDateTime.now(),
+            "CRO");
+
+
+    TEST_WALLET.setRefundHistory(null);
+    TEST_WALLET.setRefunded(BigDecimal.valueOf(0.00));
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(TEST_WALLET);
+  }
+
+  @Test
+  void processRefund_rejected_wallet_not_found() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "REJECTED",
+            0L,
+            4000L,
+            LocalDateTime.now(),null,
+            null,
+            2L,
+            LocalDateTime.now(),
+            "CRO");
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any(Wallet.class));
   }
 }
