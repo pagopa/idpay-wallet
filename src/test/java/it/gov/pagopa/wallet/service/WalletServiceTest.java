@@ -1206,6 +1206,38 @@ class WalletServiceTest {
   }
 
   @Test
+  void processRefund_skipped() {
+
+    final RefundDTO dto =
+        new RefundDTO(
+            "NOT_ID",
+            INITIATIVE_ID,
+            USER_ID,
+            "ORG_ID",
+            "REJECTED",
+            0L,
+            4000L,
+            LocalDateTime.now(),null,
+            null,
+            1L,
+            LocalDateTime.now(),
+            "CRO");
+
+    Map<String, RefundHistory> map = new HashMap<>();
+    map.put("NOT_ID", new RefundHistory(2L, LocalDateTime.now(), "ACCEPTED"));
+
+    TEST_WALLET.setRefundHistory(map);
+    TEST_WALLET.setRefunded(TEST_ACCRUED);
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    walletService.processRefund(dto);
+
+    Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(TEST_WALLET);
+  }
+
+  @Test
   void processRefund_rejected_not_accepted_before() {
 
     final RefundDTO dto =
