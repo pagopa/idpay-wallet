@@ -16,6 +16,7 @@ import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
@@ -180,28 +181,28 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void unsubscribe(String initiativeId, String userId) {
-    log.info("---UNSUBSCRIBE---");
+    log.info("[UNSUBSCRIBE] Unsubscribing user");
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     String statusTemp = wallet.getStatus();
     if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       wallet.setStatus(WalletStatus.UNSUBSCRIBED);
       wallet.setRequestUnsubscribeDate(LocalDateTime.now());
       walletRepository.save(wallet);
-      log.info("Wallet disabled");
+      log.info("[UNSUBSCRIBE] Wallet disabled");
       UnsubscribeCallDTO unsubscribeCallDTO =
           new UnsubscribeCallDTO(
               initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
 
       try {
         onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-        log.info("Onboarding disabled");
+        log.info("[UNSUBSCRIBE] Onboarding disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       try {
         paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-        log.info("Payment instruments disabled");
+        log.info("[UNSUBSCRIBE] Payment instruments disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         onboardingRestConnector.rollback(initiativeId, userId);
@@ -215,12 +216,12 @@ public class WalletServiceImpl implements WalletService {
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
       return;
     }
-    log.info("[processTransaction] New trx from Rule Engine");
+    log.info("[PROCESS_TRANSACTION] New trx from Rule Engine");
     rewardTransactionDTO
         .getRewards()
         .forEach(
             (initiativeId, reward) -> {
-              log.info("[processTransaction] Processing initiative: {}", initiativeId);
+              log.info("[PROCESS_TRANSACTION] Processing initiative: {}", initiativeId);
               updateWalletFromTransaction(
                   initiativeId,
                   rewardTransactionDTO,
@@ -244,7 +245,7 @@ public class WalletServiceImpl implements WalletService {
       try {
         timelineProducer.sendEvent(queueOperationDTO);
       } catch (Exception exception) {
-        log.error("[Delete-Instrument-PM] An error has occurred. Sending message to Error queue");
+        log.error("[UPDATE_WALLET] An error has occurred. Sending message to Error queue");
         this.sendToQueueError(exception, queueOperationDTO);
       }
     }
@@ -275,6 +276,11 @@ public class WalletServiceImpl implements WalletService {
       log.error("[PROCESS_ACK] An error has occurred. Sending message to Error queue");
       this.sendToQueueError(e, queueOperationDTO);
     }
+  }
+
+  @Override
+  public void processRefund(RefundDTO refundDTO) {
+    log.info("[PROCESS_REFUND] Processing new refund: {}", refundDTO);
   }
 
   private void sendTransactionToTimeline(
@@ -341,7 +347,6 @@ public class WalletServiceImpl implements WalletService {
       return;
     }
 
-
     walletRepository
         .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
         .ifPresent(
@@ -382,11 +387,11 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void rollbackWallet(String oldStatus, Wallet wallet) {
-    log.info("Wallet, old status: {}", oldStatus);
+    log.info("[ROLLBACK_WALLET] Wallet, old status: {}", oldStatus);
     wallet.setStatus(oldStatus);
     wallet.setRequestUnsubscribeDate(null);
     walletRepository.save(wallet);
-    log.info("Rollback wallet, new status: {}", wallet.getStatus());
+    log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
   private void getInitiative(String initiativeId) {
