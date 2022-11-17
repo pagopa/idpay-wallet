@@ -64,7 +64,7 @@ spring:
                         sasl:
                           jaas:
                             config: ${KAFKA_OUTCOME_SASL_JAAS_CONFIG:}
-        kafka-refund:
+        kafka-reward:
           type: kafka
           environment:
             spring:
@@ -72,11 +72,11 @@ spring:
                 stream:
                   kafka:
                     binder:
-                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST_REWARD:}
                       configuration:
                         sasl:
                           jaas:
-                            config: ${KAFKA_REFUND_SASL_JAAS_CONFIG:}
+                            config: ${KAFKA_REWARD_SASL_JAAS_CONFIG:}
         kafka-re:
           type: kafka
           environment:
@@ -131,10 +131,10 @@ spring:
                             config: ${KAFKA_NOTIFICATION_SASL_JAAS_CONFIG:}
       bindings:
         consumerRefund-in-0:
-          binder: kafka-refund
+          binder: kafka-reward
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
-          destination: ${KAFKA_TOPIC_REFUND:}
-          group: ${KAFKA_REFUND_GROUP_IN:}
+          destination: ${KAFKA_TOPIC_REWARD:}
+          group: ${KAFKA_REWARD_GROUP_IN:}
         consumerIban-in-0:
           binder: kafka-checkiban-outcome
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
