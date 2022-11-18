@@ -342,6 +342,24 @@ public class WalletServiceImpl implements WalletService {
     QueueOperationDTO queueOperationDTO = timelineMapper.refundToTimeline(refundDTO);
 
     sendToTimeline(queueOperationDTO);
+
+    NotificationQueueDTO notificationQueueDTO =
+        NotificationQueueDTO.builder()
+            .operationType("REFUND")
+            .userId(refundDTO.getUserId())
+            .initiativeId(refundDTO.getInitiativeId())
+            .serviceId(wallet.getServiceId())
+            .rewardNotificationId(refundDTO.getRewardNotificationId())
+            .refundReward(refundDTO.getEffectiveRewardCents())
+            .rejectionCode(refundDTO.getRejectionCode())
+            .rejectionReason(refundDTO.getRejectionReason())
+            .refundDate(refundDTO.getExecutionDate())
+            .refundFeedbackProgressive(refundDTO.getFeedbackProgressive())
+            .refundCro(refundDTO.getCro())
+            .status(refundDTO.getStatus())
+            .build();
+
+    sendNotification(notificationQueueDTO);
   }
 
   private void updateWalletFromTransaction(
@@ -432,11 +450,15 @@ public class WalletServiceImpl implements WalletService {
             .status(WalletConstants.STATUS_KO)
             .build();
 
+    sendNotification(notificationQueueDTO);
+  }
+
+  private void sendNotification(NotificationQueueDTO notificationQueueDTO) {
     try {
-      log.info("[SEND_CHECK_IBAN] Sending event to Notification");
+      log.info("[SEND_NOTIFICATION] Sending event to Notification");
       notificationProducer.sendCheckIban(notificationQueueDTO);
     } catch (Exception e) {
-      log.error("[SEND_CHECK_IBAN] An error has occurred. Sending message to Error queue");
+      log.error("[SEND_NOTIFICATION] An error has occurred. Sending message to Error queue");
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(notificationQueueDTO);
       this.sendToQueueError(e, errorMessage, notificationServer, notificationTopic);
     }
@@ -488,7 +510,7 @@ public class WalletServiceImpl implements WalletService {
         .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TYPE, WalletConstants.KAFKA)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_SERVER, server)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TOPIC, topic)
-        .setHeader(WalletConstants.ERROR_MSG_HEADER_DESCRIPTION, WalletConstants.ERROR_TIMELINE)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_DESCRIPTION, WalletConstants.ERROR_QUEUE)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_RETRYABLE, true)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_STACKTRACE, e.getStackTrace())
         .setHeader(WalletConstants.ERROR_MSG_HEADER_CLASS, e.getClass())
