@@ -21,10 +21,9 @@ public class WalletConstants {
   public static final String ERROR_MSG_HEADER_STACKTRACE = "stacktrace";
   public static final String ERROR_MSG_HEADER_CLASS = "rootCauseClass";
   public static final String ERROR_MSG_HEADER_MESSAGE = "rootCauseMessage";
-  public static final String TOPIC_TIMELINE= "idpay-timeline";
   public static final String KAFKA= "kafka";
-  public static final String BROKER_TIMELINE = "cstar-d-idpay-evh-ns-00.servicebus.windows.net:9093";
-  public static final String ERROR_TIMELINE= "error to send new instrument to timeline queue";
+
+  public static final String ERROR_TIMELINE= "Error to sending event to timeline queue";
   public static final String CHANNEL_PM= "PAYMENT-MANAGER";
   public static final String ERROR_LESS_THAN_ZERO = "The field must be greater than zero!";
 
