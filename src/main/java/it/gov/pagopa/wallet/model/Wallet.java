@@ -21,7 +21,6 @@ public class Wallet {
   private String userId;
   private String initiativeId;
   private String initiativeName;
-  private String serviceId;
   private String organizationId;
   private String status;
   private LocalDateTime acceptanceDate;

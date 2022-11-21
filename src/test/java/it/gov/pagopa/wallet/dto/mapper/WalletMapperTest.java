@@ -29,7 +29,6 @@ class WalletMapperTest {
           .endDate(OPERATION_DATE)
           .organizationId(INITIATIVE_ID)
           .userId(USER_ID)
-          .serviceId(INITIATIVE_ID)
           .acceptanceDate(OPERATION_DATE)
           .status(WalletStatus.NOT_REFUNDABLE.name())
           .amount(new BigDecimal(500))

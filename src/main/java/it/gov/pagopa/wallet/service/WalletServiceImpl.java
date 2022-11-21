@@ -348,7 +348,6 @@ public class WalletServiceImpl implements WalletService {
             .operationType("REFUND")
             .userId(refundDTO.getUserId())
             .initiativeId(refundDTO.getInitiativeId())
-            .serviceId(wallet.getServiceId())
             .rewardNotificationId(refundDTO.getRewardNotificationId())
             .refundReward(refundDTO.getEffectiveRewardCents())
             .rejectionCode(refundDTO.getRejectionCode())
@@ -435,17 +434,16 @@ public class WalletServiceImpl implements WalletService {
               setStatus(wallet);
 
               walletRepository.save(wallet);
-              sendCheckIban(iban, wallet);
+              sendCheckIban(iban);
             });
   }
 
-  private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet) {
+  private void sendCheckIban(IbanQueueWalletDTO iban) {
     NotificationQueueDTO notificationQueueDTO =
         NotificationQueueDTO.builder()
             .operationType("CHECKIBAN")
             .userId(iban.getUserId())
             .initiativeId(iban.getInitiativeId())
-            .serviceId(wallet.getServiceId())
             .iban(iban.getIban())
             .status(WalletConstants.STATUS_KO)
             .build();
