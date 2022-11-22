@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,6 @@ public class RefundDTO {
   private String rejectionCode;
   private String rejectionReason;
   private Long feedbackProgressive;
-  private LocalDateTime executionDate;
+  private LocalDate executionDate;
   private String cro;
 }

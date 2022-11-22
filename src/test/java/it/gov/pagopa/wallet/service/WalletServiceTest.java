@@ -1220,7 +1220,7 @@ class WalletServiceTest {
             null,
             null,
             1L,
-            LocalDateTime.now(),
+            LocalDate.now(),
             "CRO");
 
     TEST_WALLET.setRefundHistory(null);
@@ -1254,7 +1254,7 @@ class WalletServiceTest {
             null,
             null,
             1L,
-            LocalDateTime.now(),
+            LocalDate.now(),
             "CRO");
 
     TEST_WALLET.setRefundHistory(null);
@@ -1290,7 +1290,7 @@ class WalletServiceTest {
             LocalDateTime.now(),null,
             null,
             2L,
-            LocalDateTime.now(),
+            LocalDate.now(),
             "CRO");
 
     Map<String, RefundHistory> map = new HashMap<>();
@@ -1326,7 +1326,7 @@ class WalletServiceTest {
             LocalDateTime.now(),null,
             null,
             1L,
-            LocalDateTime.now(),
+            LocalDate.now(),
             "CRO");
 
     Map<String, RefundHistory> map = new HashMap<>();
@@ -1360,7 +1360,7 @@ class WalletServiceTest {
             LocalDateTime.now(),null,
             null,
             2L,
-            LocalDateTime.now(),
+            LocalDate.now(),
             "CRO");
 
 
@@ -1392,7 +1392,7 @@ class WalletServiceTest {
             LocalDateTime.now(),null,
             null,
             2L,
-            LocalDateTime.now(),
+            LocalDate.now(),
             "CRO");
 
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))

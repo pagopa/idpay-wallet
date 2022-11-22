@@ -100,7 +100,7 @@ class TimelineMapperTest {
           null,
           null,
           1L,
-          LocalDateTime.now(),
+          LocalDate.now(),
           CRO);
 
   private static final RefundDTO REFUND_DTO_REJECTED =
@@ -116,7 +116,7 @@ class TimelineMapperTest {
           null,
           null,
           1L,
-          LocalDateTime.now(),
+          LocalDate.now(),
           CRO);
 
   @Autowired TimelineMapper timelineMapper;
