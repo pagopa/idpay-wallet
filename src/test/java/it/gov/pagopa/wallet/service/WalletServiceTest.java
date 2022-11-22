@@ -45,6 +45,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,6 +96,7 @@ class WalletServiceTest {
   private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+  private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
   private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
   private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
   private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
@@ -109,7 +111,7 @@ class WalletServiceTest {
           .initiativeName(INITIATIVE_NAME)
           .acceptanceDate(TEST_DATE)
           .status(WalletStatus.NOT_REFUNDABLE.name())
-          .endDate(TEST_DATE)
+          .endDate(TEST_DATE_ONLY_DATE)
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
@@ -125,7 +127,7 @@ class WalletServiceTest {
           .initiativeName(INITIATIVE_NAME)
           .acceptanceDate(TEST_DATE)
           .status(WalletStatus.NOT_REFUNDABLE.name())
-          .endDate(TEST_DATE)
+          .endDate(TEST_DATE_ONLY_DATE)
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
@@ -138,7 +140,7 @@ class WalletServiceTest {
           .initiativeName(INITIATIVE_NAME)
           .acceptanceDate(TEST_DATE)
           .status(WalletStatus.UNSUBSCRIBED)
-          .endDate(TEST_DATE)
+          .endDate(TEST_DATE_ONLY_DATE)
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
@@ -150,7 +152,7 @@ class WalletServiceTest {
           INITIATIVE_NAME,
           WalletStatus.NOT_REFUNDABLE.name(),
           IBAN_OK,
-          TEST_DATE,
+          TEST_DATE_ONLY_DATE,
           0,
           TEST_AMOUNT,
           TEST_ACCRUED,
@@ -178,26 +180,24 @@ class WalletServiceTest {
           USER_ID,
           INITIATIVE_ID,
           INITIATIVE_ID,
-          TEST_DATE,
+          TEST_DATE_ONLY_DATE,
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_KO,
           TEST_DATE,
           List.of(),
-          new BigDecimal(500),
-          INITIATIVE_ID);
+          new BigDecimal(500));
 
   private static final EvaluationDTO OUTCOME_OK =
       new EvaluationDTO(
           USER_ID,
           INITIATIVE_ID,
           INITIATIVE_ID,
-          TEST_DATE,
+          TEST_DATE_ONLY_DATE,
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
           TEST_DATE,
           List.of(),
-          new BigDecimal(500),
-          INITIATIVE_ID);
+          new BigDecimal(500));
 
   static {
     INITIATIVE_DTO.setStatus("PUBLISHED");

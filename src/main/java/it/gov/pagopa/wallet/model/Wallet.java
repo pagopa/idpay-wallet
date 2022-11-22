@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public class Wallet {
   private String organizationId;
   private String status;
   private LocalDateTime acceptanceDate;
-  private LocalDateTime endDate;
+  private LocalDate endDate;
   private String iban;
   private BigDecimal amount;
   private BigDecimal accrued;

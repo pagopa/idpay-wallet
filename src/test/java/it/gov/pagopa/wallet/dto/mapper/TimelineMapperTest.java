@@ -9,6 +9,7 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -33,18 +34,18 @@ class TimelineMapperTest {
   private static final String CIRCUIT_TYPE = "test_circuit";
   private static final BigDecimal BIG_DECIMAL = BigDecimal.valueOf(0.00);
   private static final LocalDateTime OPERATION_DATE = LocalDateTime.now();
+  private static final LocalDate OPERATION_DATE_ONLY_DATE = LocalDate.now();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
           USER_ID,
           INITIATIVE_ID,
           INITIATIVE_ID,
-          OPERATION_DATE,
+          OPERATION_DATE_ONLY_DATE,
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
           OPERATION_DATE,
           List.of(),
-          new BigDecimal(500),
-          INITIATIVE_ID);
+          new BigDecimal(500));
   private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
       new InstrumentAckDTO(
           INITIATIVE_ID,

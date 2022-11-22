@@ -8,7 +8,7 @@ import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class WalletMapperTest {
   private static final String USER_ID = "test_user";
   private static final String INITIATIVE_ID = "test_initiative";
-  private static final LocalDateTime OPERATION_DATE = LocalDateTime.now();
+  private static final LocalDate OPERATION_DATE = LocalDate.now();
   private static final Wallet WALLET =
       Wallet.builder()
           .initiativeId(INITIATIVE_ID)
@@ -29,7 +29,7 @@ class WalletMapperTest {
           .endDate(OPERATION_DATE)
           .organizationId(INITIATIVE_ID)
           .userId(USER_ID)
-          .acceptanceDate(OPERATION_DATE)
+          .acceptanceDate(OPERATION_DATE.atStartOfDay())
           .status(WalletStatus.NOT_REFUNDABLE.name())
           .amount(new BigDecimal(500))
           .accrued(BigDecimal.valueOf(0.00))
@@ -43,10 +43,9 @@ class WalletMapperTest {
           OPERATION_DATE,
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
-          OPERATION_DATE,
+          OPERATION_DATE.atStartOfDay(),
           List.of(),
-          new BigDecimal(500),
-          INITIATIVE_ID);
+          new BigDecimal(500));
 
   private static final WalletDTO INITIATIVE_DTO =
       WalletDTO.builder()
