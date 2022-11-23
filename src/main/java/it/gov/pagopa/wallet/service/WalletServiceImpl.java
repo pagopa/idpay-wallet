@@ -302,7 +302,7 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processRefund(RefundDTO refundDTO) {
-    log.info("[PROCESS_REFUND] Processing new refund: {}", refundDTO);
+    log.info("[PROCESS_REFUND] Processing new refund");
 
     Wallet wallet =
         walletRepository
@@ -324,7 +324,7 @@ public class WalletServiceImpl implements WalletService {
     if (history.containsKey(refundDTO.getRewardNotificationId())
         && history.get(refundDTO.getRewardNotificationId()).getFeedbackProgressive()
             >= refundDTO.getFeedbackProgressive()) {
-      log.info("[VALIDATE_FEEDBACK] Feedback already processed, skipping message");
+      log.info("[PROCESS_REFUND] Feedback already processed, skipping message");
       return;
     }
 
