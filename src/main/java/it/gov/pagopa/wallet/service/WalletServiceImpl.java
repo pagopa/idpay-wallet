@@ -16,6 +16,7 @@ import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
@@ -31,18 +32,22 @@ import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.model.Wallet;
+import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
@@ -50,6 +55,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class WalletServiceImpl implements WalletService {
+
+  private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
   @Autowired WalletRepository walletRepository;
 
@@ -63,6 +70,21 @@ public class WalletServiceImpl implements WalletService {
   @Autowired ErrorProducer errorProducer;
   @Autowired NotificationProducer notificationProducer;
   @Autowired InitiativeRestConnector initiativeRestConnector;
+  @Value(
+      "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
+  String timelineServer;
+  @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}")
+  String timelineTopic;
+  @Value(
+      "${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}")
+  String notificationServer;
+  @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}")
+  String notificationTopic;
+  @Value(
+      "${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}")
+  String ibanServer;
+  @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}")
+  String ibanTopic;
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -147,13 +169,22 @@ public class WalletServiceImpl implements WalletService {
               description,
               WalletConstants.CHANNEL_APP_IO,
               LocalDateTime.now());
-      ibanProducer.sendIban(ibanQueueDTO);
+
+      try {
+        log.info("[ENROLL_IBAN] Sending event to IBAN");
+        ibanProducer.sendIban(ibanQueueDTO);
+      } catch (Exception e) {
+        log.error("[ENROLL_IBAN] An error has occurred. Sending message to Error queue");
+        final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
+        this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
+      }
     }
 
     setStatus(wallet);
 
     walletRepository.save(wallet);
-    timelineProducer.sendEvent(timelineMapper.ibanToTimeline(initiativeId, userId, iban));
+
+    sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban));
   }
 
   @Override
@@ -174,34 +205,34 @@ public class WalletServiceImpl implements WalletService {
     if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       walletRepository.save(wallet);
-      timelineProducer.sendEvent(timelineMapper.onboardingToTimeline(evaluationDTO));
+      sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
   }
 
   @Override
   public void unsubscribe(String initiativeId, String userId) {
-    log.info("---UNSUBSCRIBE---");
+    log.info("[UNSUBSCRIBE] Unsubscribing user");
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     String statusTemp = wallet.getStatus();
     if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       wallet.setStatus(WalletStatus.UNSUBSCRIBED);
       wallet.setRequestUnsubscribeDate(LocalDateTime.now());
       walletRepository.save(wallet);
-      log.info("Wallet disabled");
+      log.info("[UNSUBSCRIBE] Wallet disabled");
       UnsubscribeCallDTO unsubscribeCallDTO =
           new UnsubscribeCallDTO(
               initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
 
       try {
         onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-        log.info("Onboarding disabled");
+        log.info("[UNSUBSCRIBE] Onboarding disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       try {
         paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-        log.info("Payment instruments disabled");
+        log.info("[UNSUBSCRIBE] Payment instruments disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         onboardingRestConnector.rollback(initiativeId, userId);
@@ -212,15 +243,16 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
+    log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
       return;
     }
-    log.info("[processTransaction] New trx from Rule Engine");
+    log.info("[PROCESS_TRANSACTION] New trx from Rule Engine");
     rewardTransactionDTO
         .getRewards()
         .forEach(
             (initiativeId, reward) -> {
-              log.info("[processTransaction] Processing initiative: {}", initiativeId);
+              log.info("[PROCESS_TRANSACTION] Processing initiative: {}", initiativeId);
               updateWalletFromTransaction(
                   initiativeId,
                   rewardTransactionDTO,
@@ -236,17 +268,14 @@ public class WalletServiceImpl implements WalletService {
       wallet.setNInstr(wallet.getNInstr() - 1);
       this.setStatus(wallet);
       walletRepository.save(wallet);
-      DeactivationBodyDTO dto =
-          new DeactivationBodyDTO(wallet.getUserId(), wallet.getInitiativeId(), "");
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(
-              dto, WalletConstants.CHANNEL_PM, walletPI.getMaskedPan(), walletPI.getBrandLogo());
-      try {
-        timelineProducer.sendEvent(queueOperationDTO);
-      } catch (Exception exception) {
-        log.error("[Delete-Instrument-PM] An error has occurred. Sending message to Error queue");
-        this.sendToQueueError(exception, queueOperationDTO);
-      }
+              wallet.getInitiativeId(),
+              wallet.getUserId(),
+              walletPI.getMaskedPan(),
+              walletPI.getBrandLogo());
+
+      sendToTimeline(queueOperationDTO);
     }
   }
 
@@ -268,19 +297,68 @@ public class WalletServiceImpl implements WalletService {
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
 
-    try {
-      log.info("[PROCESS_ACK] Sending queue message to Timeline");
-      timelineProducer.sendEvent(queueOperationDTO);
-    } catch (Exception e) {
-      log.error("[PROCESS_ACK] An error has occurred. Sending message to Error queue");
-      this.sendToQueueError(e, queueOperationDTO);
-    }
+    sendToTimeline(queueOperationDTO);
   }
 
-  private void sendTransactionToTimeline(
-      String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
-    timelineProducer.sendEvent(
-        timelineMapper.transactionToTimeline(initiativeId, rewardTransaction, accruedReward));
+  @Override
+  public void processRefund(RefundDTO refundDTO) {
+    log.info("[PROCESS_REFUND] Processing new refund");
+
+    Wallet wallet =
+        walletRepository
+            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getUserId())
+            .orElse(null);
+
+    if (wallet == null) {
+      log.info("[PROCESS_REFUND] Wallet not found, skipping message");
+      return;
+    }
+
+    Map<String, RefundHistory> history = wallet.getRefundHistory();
+
+    if (history == null) {
+      history = new HashMap<>();
+      wallet.setRefundHistory(history);
+    }
+
+    if (history.containsKey(refundDTO.getRewardNotificationId())
+        && history.get(refundDTO.getRewardNotificationId()).getFeedbackProgressive()
+            >= refundDTO.getFeedbackProgressive()) {
+      log.info("[PROCESS_REFUND] Feedback already processed, skipping message");
+      return;
+    }
+
+    BigDecimal refunded =
+        BigDecimal.valueOf(refundDTO.getRewardCents())
+            .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN);
+
+    wallet.setRefunded(wallet.getRefunded().add(refunded));
+
+    history.put(
+        refundDTO.getRewardNotificationId(), new RefundHistory(refundDTO.getFeedbackProgressive()));
+
+    walletRepository.save(wallet);
+
+    QueueOperationDTO queueOperationDTO = timelineMapper.refundToTimeline(refundDTO);
+
+    sendToTimeline(queueOperationDTO);
+
+    NotificationQueueDTO notificationQueueDTO =
+        NotificationQueueDTO.builder()
+            .operationType("REFUND")
+            .userId(refundDTO.getUserId())
+            .initiativeId(refundDTO.getInitiativeId())
+            .rewardNotificationId(refundDTO.getRewardNotificationId())
+            .refundReward(refundDTO.getEffectiveRewardCents())
+            .rejectionCode(refundDTO.getRejectionCode())
+            .rejectionReason(refundDTO.getRejectionReason())
+            .refundDate(refundDTO.getExecutionDate())
+            .refundFeedbackProgressive(refundDTO.getFeedbackProgressive())
+            .refundCro(refundDTO.getCro())
+            .status(refundDTO.getStatus())
+            .build();
+
+    sendNotification(notificationQueueDTO);
   }
 
   private void updateWalletFromTransaction(
@@ -315,7 +393,8 @@ public class WalletServiceImpl implements WalletService {
     walletRepository.save(wallet);
 
     log.info("[updateWalletFromTransaction] Sending transaction to Timeline");
-    sendTransactionToTimeline(initiativeId, rewardTransactionDTO, accruedReward);
+    sendToTimeline(
+        timelineMapper.transactionToTimeline(initiativeId, rewardTransactionDTO, accruedReward));
   }
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
@@ -341,7 +420,6 @@ public class WalletServiceImpl implements WalletService {
       return;
     }
 
-
     walletRepository
         .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
         .ifPresent(
@@ -356,21 +434,32 @@ public class WalletServiceImpl implements WalletService {
               setStatus(wallet);
 
               walletRepository.save(wallet);
-              sendCheckIban(iban, wallet);
+              sendCheckIban(iban);
             });
   }
 
-  private void sendCheckIban(IbanQueueWalletDTO iban, Wallet wallet) {
+  private void sendCheckIban(IbanQueueWalletDTO iban) {
     NotificationQueueDTO notificationQueueDTO =
         NotificationQueueDTO.builder()
             .operationType("CHECKIBAN")
             .userId(iban.getUserId())
             .initiativeId(iban.getInitiativeId())
-            .serviceId(wallet.getServiceId())
             .iban(iban.getIban())
             .status(WalletConstants.STATUS_KO)
             .build();
-    notificationProducer.sendCheckIban(notificationQueueDTO);
+
+    sendNotification(notificationQueueDTO);
+  }
+
+  private void sendNotification(NotificationQueueDTO notificationQueueDTO) {
+    try {
+      log.info("[SEND_NOTIFICATION] Sending event to Notification");
+      notificationProducer.sendCheckIban(notificationQueueDTO);
+    } catch (Exception e) {
+      log.error("[SEND_NOTIFICATION] An error has occurred. Sending message to Error queue");
+      final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(notificationQueueDTO);
+      this.sendToQueueError(e, errorMessage, notificationServer, notificationTopic);
+    }
   }
 
   private void formalControl(String iban) {
@@ -382,11 +471,11 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void rollbackWallet(String oldStatus, Wallet wallet) {
-    log.info("Wallet, old status: {}", oldStatus);
+    log.info("[ROLLBACK_WALLET] Wallet, old status: {}", oldStatus);
     wallet.setStatus(oldStatus);
     wallet.setRequestUnsubscribeDate(null);
     walletRepository.save(wallet);
-    log.info("Rollback wallet, new status: {}", wallet.getStatus());
+    log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
   private void getInitiative(String initiativeId) {
@@ -402,17 +491,28 @@ public class WalletServiceImpl implements WalletService {
     }
   }
 
-  private void sendToQueueError(Exception e, QueueOperationDTO queueOperationDTO) {
-    final MessageBuilder<?> errorMessage =
-        MessageBuilder.withPayload(queueOperationDTO)
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TYPE, WalletConstants.KAFKA)
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_SERVER, WalletConstants.BROKER_TIMELINE)
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TOPIC, WalletConstants.TOPIC_TIMELINE)
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_DESCRIPTION, WalletConstants.ERROR_TIMELINE)
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_RETRYABLE, true)
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_STACKTRACE, e.getStackTrace())
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_CLASS, e.getClass())
-            .setHeader(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
+  private void sendToTimeline(QueueOperationDTO queueOperationDTO) {
+    try {
+      log.info("[SEND_TO_TIMELINE] Sending queue message to Timeline");
+      timelineProducer.sendEvent(queueOperationDTO);
+    } catch (Exception exception) {
+      log.error("[SEND_TO_TIMELINE] An error has occurred. Sending message to Error queue");
+      final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(queueOperationDTO);
+      this.sendToQueueError(exception, errorMessage, timelineServer, timelineTopic);
+    }
+  }
+
+  private void sendToQueueError(
+      Exception e, MessageBuilder<?> errorMessage, String server, String topic) {
+    errorMessage
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TYPE, WalletConstants.KAFKA)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_SERVER, server)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TOPIC, topic)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_DESCRIPTION, WalletConstants.ERROR_QUEUE)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_RETRYABLE, true)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_STACKTRACE, e.getStackTrace())
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_CLASS, e.getClass())
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
     errorProducer.sendEvent(errorMessage.build());
   }
 }

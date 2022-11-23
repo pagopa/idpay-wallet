@@ -1,5 +1,3 @@
-iban:
-  uri: ${IBAN_URI}
 logging:
   level:
     it:
@@ -11,16 +9,13 @@ logging:
         cloud: ${LOG_LEVEL_SPRING_CLOUD:WARN}
         data: ${LOG_LEVEL_SPRING_DATA:INFO}
     root: ${LOG_LEVEL_ROOT:INFO}
-onboarding:
-  uri: ${ONBOARDING_URI:}
-payment:
-  instrument:
-    uri: ${PAYMENT_INSTRUMENT_URI:}
 rest-client:
   onboarding:
     serviceCode: idpay-onboarding
+    baseUrl: ${ONBOARDING_URI:}
   payment.instrument:
-      serviceCode: idpay-payment-instrument
+    serviceCode: idpay-payment-instrument
+    baseUrl: ${PAYMENT_INSTRUMENT_URI:}
   initiative:
     serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
@@ -69,6 +64,19 @@ spring:
                         sasl:
                           jaas:
                             config: ${KAFKA_OUTCOME_SASL_JAAS_CONFIG:}
+        kafka-reward:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_REWARD:}
+                      configuration:
+                        sasl:
+                          jaas:
+                            config: ${KAFKA_REWARD_SASL_JAAS_CONFIG:}
         kafka-re:
           type: kafka
           environment:
@@ -122,6 +130,11 @@ spring:
                           jaas:
                             config: ${KAFKA_NOTIFICATION_SASL_JAAS_CONFIG:}
       bindings:
+        consumerRefund-in-0:
+          binder: kafka-reward
+          content-type: ${KAFKA_CONTENT_TYPE:application/json}
+          destination: ${KAFKA_TOPIC_REWARD:}
+          group: ${KAFKA_REWARD_GROUP_IN:}
         consumerIban-in-0:
           binder: kafka-checkiban-outcome
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
@@ -154,7 +167,7 @@ spring:
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
       function:
-        definition: walletQueue;consumerIban;trxConsumer;consumerOutcome
+        definition: walletQueue;consumerIban;trxConsumer;consumerOutcome;consumerRefund
       kafka:
         binder:
           auto-create-topics: false
@@ -165,6 +178,21 @@ spring:
             sasl.mechanism: ${KAFKA_CONFIG_SASL_MECHANISM:PLAIN}
             security.protocol: ${KAFKA_CONFIG_SECURITY_PROTOCOL:SASL_SSL}
         bindings:
+          consumerRefund-in-0:
+            consumer:
+              startOffset: ${KAFKA_REFUND_REQUEST_START_OFFSET:${KAFKA_CONSUMER_CONFIG_START_OFFSET:earliest}}
+              autoCommitOffset: ${KAFKA_REFUND_AUTO_COMMIT:${KAFKA_CONSUMER_CONFIG_AUTO_COMMIT:true}}
+              #enableDlq: ${KAFKA_REFUND_ENABLE_DLQ:${KAFKA_CONSUMER_CONFIG_ENABLE_DLQ:false}}
+              #dlqName: ${KAFKA_REFUND_DLQ_NAME:${KAFKA_CONSUMER_CONFIG_DLQ_NAME:errorTopic}}
+              standardHeaders: ${KAFKA_REFUND_STANDARD_HEADERS:${KAFKA_CONSUMER_CONFIG_STANDARD_HEADERS:both}}
+              configuration:
+                max.poll:
+                  records: ${KAFKA_REFUND_MAX_POLL_SIZE:${KAFKA_CONSUMER_CONFIG_MAX_POLL_SIZE:500}}
+                  interval.ms: ${KAFKA_REFUND_INTERVAL_TIMEOUT_MS:${KAFKA_CONFIG_MAX_POLL_INTERVAL_TIMEOUT_MS:300000}}
+                connections.max.idle.ms: ${KAFKA_REFUND_REQUEST_CONNECTIONS_MAX_IDLE_MS:${KAFKA_CONSUMER_CONFIG_CONNECTIONS_MAX_IDLE_MS:180000}}
+                socket.connection.setup.timeout:
+                  max.ms: ${KAFKA_REFUND_REQUEST_CONNECTION_TIMEOUT_MAX_MS:${KAFKA_CONSUMER_CONFIG_CONNECTION_TIMEOUT_MAX_MS:200000}}
+                  ms: ${KAFKA_REFUND_REQUEST_CONNECTION_TIMEOUT_MS:${KAFKA_CONSUMER_CONFIG_CONNECTION_TIMEOUT_MS:100000}}
           consumerIban-in-0:
             consumer:
               startOffset: ${KAFKA_IBAN_REQUEST_START_OFFSET:${KAFKA_CONSUMER_CONFIG_START_OFFSET:earliest}}

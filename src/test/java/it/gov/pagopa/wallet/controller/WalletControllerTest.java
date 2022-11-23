@@ -17,6 +17,7 @@ import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ class WalletControllerTest {
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
-  private static final LocalDateTime DATE = LocalDateTime.now();
+  private static final LocalDate DATE = LocalDate.now();
   private static final WalletDTO INITIATIVE_DTO_TEST =
       new WalletDTO(
           INITIATIVE_ID,
