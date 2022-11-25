@@ -299,7 +299,7 @@ class WalletServiceTest {
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
             MASKED_PAN,
-            "ADD_INSTRUMENT_KO",
+            "REJECTED_ADD_INSTRUMENT",
             TEST_DATE,
             null);
     Mockito.when(timelineMapper.ackToTimeline(instrumentAckDTO)).thenReturn(TEST_OPERATION_DTO);

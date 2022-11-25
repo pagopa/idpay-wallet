@@ -282,7 +282,7 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void processAck(InstrumentAckDTO instrumentAckDTO) {
 
-    if (!instrumentAckDTO.getOperationType().endsWith("KO")) {
+    if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
       Wallet wallet =
           findByInitiativeIdAndUserId(
@@ -377,9 +377,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     log.info(
-        "[updateWalletFromTransaction] Found wallet for initiative and user: {} {}",
-        initiativeId,
-        rewardTransactionDTO.getUserId());
+        "[updateWalletFromTransaction] Found wallet to update");
     wallet.setNTrx(counters.getTrxNumber());
     log.info("[updateWalletFromTransaction] New value for nTrx: {}", wallet.getNTrx());
     wallet.setAccrued(counters.getTotalReward());
