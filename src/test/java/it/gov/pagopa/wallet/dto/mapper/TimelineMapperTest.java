@@ -27,6 +27,7 @@ class TimelineMapperTest {
   private static final String ORGANIZATION_ID = "organization_id";
   private static final String REWARD_NOTIFICATION_ID = "reward_notification_id";
   private static final String IBAN = "test_iban";
+  private static final String CHANNEL = "APP_IO";
   private static final String CRO = "cro";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
@@ -132,7 +133,7 @@ class TimelineMapperTest {
 
   @Test
   void ibanToTimeline() {
-    QueueOperationDTO actual = timelineMapper.ibanToTimeline(INITIATIVE_ID, USER_ID, IBAN);
+    QueueOperationDTO actual = timelineMapper.ibanToTimeline(INITIATIVE_ID, USER_ID, IBAN, CHANNEL);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("ADD_IBAN", actual.getOperationType());

@@ -146,7 +146,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void enrollIban(String initiativeId, String userId, String iban, String description) {
+  public void enrollIban(String initiativeId, String userId, String iban, String channel, String description) {
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
 
     getInitiative(initiativeId);
@@ -167,7 +167,7 @@ public class WalletServiceImpl implements WalletService {
               initiativeId,
               iban,
               description,
-              WalletConstants.CHANNEL_APP_IO,
+              channel,
               LocalDateTime.now());
 
       try {
@@ -184,7 +184,7 @@ public class WalletServiceImpl implements WalletService {
 
     walletRepository.save(wallet);
 
-    sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban));
+    sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
   }
 
   @Override

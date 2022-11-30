@@ -59,6 +59,7 @@ class WalletControllerTest {
   private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String IBAN_OK = "it99C1234567890123456789012";
   private static final String IBAN_WRONG = "it99C1234567890123456789012222";
+  private static final String CHANNEL = "APP_IO";
   private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
   private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
   private static final String DESCRIPTION_OK = "conto cointestato";
@@ -76,9 +77,9 @@ class WalletControllerTest {
           null,
           null,
           null);
-  private static final IbanBodyDTO IBAN_BODY_DTO = new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK);
+  private static final IbanBodyDTO IBAN_BODY_DTO = new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
-  private static final IbanBodyDTO IBAN_BODY_DTO_EMPTY = new IbanBodyDTO("", "");
+  private static final IbanBodyDTO IBAN_BODY_DTO_EMPTY = new IbanBodyDTO("", "", "");
   private static final EnrollmentStatusDTO ENROLLMENT_STATUS_DTO =
       new EnrollmentStatusDTO(WalletStatus.NOT_REFUNDABLE.name());
   private static final WalletDTO INITIATIVE_DTO =
@@ -316,7 +317,7 @@ class WalletControllerTest {
             new WalletException(
                 HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
     MvcResult res =
         mvc.perform(
@@ -336,11 +337,11 @@ class WalletControllerTest {
 
   @Test
   void enroll_iban_wallet_format() throws Exception {
-    final IbanBodyDTO iban = new IbanBodyDTO(IBAN_WRONG, DESCRIPTION_OK);
+    final IbanBodyDTO iban = new IbanBodyDTO(IBAN_WRONG, DESCRIPTION_OK, CHANNEL);
 
     Mockito.doThrow(new IbanFormatException())
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, DESCRIPTION_OK);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, CHANNEL, DESCRIPTION_OK);
     MvcResult res =
         mvc.perform(
                 MockMvcRequestBuilders.put(
@@ -357,11 +358,11 @@ class WalletControllerTest {
 
   @Test
   void enroll_iban_invalid_digit() throws Exception {
-    final IbanBodyDTO iban = new IbanBodyDTO(IBAN_KO_NOT_IT, DESCRIPTION_OK);
+    final IbanBodyDTO iban = new IbanBodyDTO(IBAN_KO_NOT_IT, DESCRIPTION_OK, CHANNEL);
 
     Mockito.doThrow(new InvalidCheckDigitException())
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, DESCRIPTION_OK);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK);
     MvcResult res =
         mvc.perform(
                 MockMvcRequestBuilders.put(
@@ -378,11 +379,11 @@ class WalletControllerTest {
 
   @Test
   void enroll_iban_not_it() throws Exception {
-    final IbanBodyDTO iban = new IbanBodyDTO(IBAN_WRONG_DIGIT, DESCRIPTION_OK);
+    final IbanBodyDTO iban = new IbanBodyDTO(IBAN_WRONG_DIGIT, DESCRIPTION_OK, CHANNEL);
 
     Mockito.doThrow(new UnsupportedCountryException())
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, DESCRIPTION_OK);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, CHANNEL, DESCRIPTION_OK);
     MvcResult res =
         mvc.perform(
                 MockMvcRequestBuilders.put(
@@ -421,7 +422,7 @@ class WalletControllerTest {
     Mockito.doThrow(
             new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     MvcResult res =
         mvc.perform(
@@ -443,7 +444,7 @@ class WalletControllerTest {
   void enroll_iban_ok() throws Exception {
     Mockito.doNothing()
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     mvc.perform(
             MockMvcRequestBuilders.put(

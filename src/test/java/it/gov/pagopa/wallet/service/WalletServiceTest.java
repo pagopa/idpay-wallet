@@ -87,6 +87,7 @@ class WalletServiceTest {
   private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
+  private static final String CHANNEL = "CHANNEL";
   private static final String ID_WALLET = "TEST_ID_WALLET";
   private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String IBAN_OK = "IT09P3608105138205493205495";
@@ -556,7 +557,7 @@ class WalletServiceTest {
         .thenReturn(INITIATIVE_DTO);
 
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
     } catch (WalletException e) {
       Assertions.fail();
     }
@@ -580,7 +581,7 @@ class WalletServiceTest {
         .sendIban(Mockito.any(IbanQueueDTO.class));
 
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
     } catch (WalletException e) {
       Assertions.fail();
     }
@@ -610,7 +611,7 @@ class WalletServiceTest {
         .save(Mockito.any(Wallet.class));
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
 
-    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     assertEquals(INITIATIVE_ID, TEST_WALLET.getInitiativeId());
     assertEquals(USER_ID, TEST_WALLET.getUserId());
@@ -638,7 +639,7 @@ class WalletServiceTest {
             })
         .when(walletRepositoryMock)
         .save(Mockito.any(Wallet.class));
-    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     assertEquals(INITIATIVE_ID, TEST_WALLET.getInitiativeId());
     assertEquals(USER_ID, TEST_WALLET.getUserId());
@@ -657,7 +658,7 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (UnsupportedCountryException e) {
       assertNotNull(e.getMessage());
@@ -675,7 +676,7 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (IbanFormatException e) {
       assertNotNull(e.getMessage());
@@ -693,7 +694,7 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (InvalidCheckDigitException e) {
       assertNotNull(e.getMessage());
@@ -708,7 +709,7 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
@@ -724,7 +725,7 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
@@ -745,7 +746,7 @@ class WalletServiceTest {
         .getInitiativeBeneficiaryView(INITIATIVE_ID);
 
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
@@ -760,7 +761,7 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO_KO);
     try {
-      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+      walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
       Assertions.fail();
     } catch (WalletException e) {
       assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
@@ -789,7 +790,7 @@ class WalletServiceTest {
         .when(walletRepositoryMock)
         .save(Mockito.any(Wallet.class));
 
-    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
   }
@@ -815,7 +816,7 @@ class WalletServiceTest {
         .when(walletRepositoryMock)
         .save(Mockito.any(Wallet.class));
 
-    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK);
+    walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
   }
