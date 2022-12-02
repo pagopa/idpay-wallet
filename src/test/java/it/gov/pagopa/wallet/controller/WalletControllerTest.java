@@ -328,7 +328,7 @@ class WalletControllerTest {
             new WalletException(
                 HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
         .when(walletServiceMock)
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, DESCRIPTION_OK, CHANNEL);
+        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     MvcResult res =
         mvc.perform(
