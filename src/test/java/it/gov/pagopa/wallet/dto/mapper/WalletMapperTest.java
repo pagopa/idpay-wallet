@@ -59,6 +59,13 @@ class WalletMapperTest {
           .nInstr(0)
           .build();
 
+  private static final WalletDTO ISSUER_INITIATIVE_DTO =
+      WalletDTO.builder()
+          .amount(new BigDecimal(500))
+          .accrued(BigDecimal.valueOf(0.00))
+          .refunded(BigDecimal.valueOf(0.00))
+          .build();
+
   @Autowired WalletMapper walletMapper;
 
   @Test
@@ -73,5 +80,12 @@ class WalletMapperTest {
     WalletDTO actual = walletMapper.toInitiativeDTO(WALLET);
 
     assertEquals(INITIATIVE_DTO, actual);
+  }
+
+  @Test
+  void to_issuer_InitiativeDTO(){
+    WalletDTO actual = walletMapper.toIssuerInitiativeDTO(WALLET);
+
+    assertEquals(ISSUER_INITIATIVE_DTO, actual);
   }
 }

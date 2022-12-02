@@ -93,6 +93,17 @@ class WalletControllerTest {
           new BigDecimal("450.00"),
           new BigDecimal("50.00"),
           new BigDecimal("0.00"));
+  private static final WalletDTO INITIATIVE_ISSUER_DTO =
+      new WalletDTO(
+          null,
+          null,
+          null,
+          null,
+          null,
+          0,
+          new BigDecimal("450.00"),
+          new BigDecimal("50.00"),
+          new BigDecimal("0.00"));
 
   @MockBean WalletService walletServiceMock;
 
@@ -513,6 +524,49 @@ class WalletControllerTest {
     MvcResult res =
         mvc.perform(
                 MockMvcRequestBuilders.get(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andReturn();
+
+    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+    assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
+    assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+  }
+
+  @Test
+  void detail_issuer_ok() throws Exception {
+
+    Mockito.when(walletServiceMock.getWalletDetailIssuer(INITIATIVE_ID, USER_ID))
+        .thenReturn(INITIATIVE_ISSUER_DTO);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.get(BASE_URL + "/initiative/" + INITIATIVE_ID + "/" + USER_ID)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andReturn();
+
+    WalletDTO walletDTO =
+        objectMapper.readValue(res.getResponse().getContentAsString(), WalletDTO.class);
+    assertEquals(INITIATIVE_ISSUER_DTO.getAmount(), walletDTO.getAmount());
+    assertEquals(INITIATIVE_ISSUER_DTO.getAccrued(), walletDTO.getAccrued());
+    assertEquals(INITIATIVE_ISSUER_DTO.getRefunded(), walletDTO.getRefunded());
+  }
+
+  @Test
+  void detail_issuer_not_found() throws Exception {
+
+    Mockito.doThrow(
+            new WalletException(
+                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        .when(walletServiceMock)
+        .getWalletDetailIssuer(INITIATIVE_ID, USER_ID);
+
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.get(BASE_URL + "/initiative/" + INITIATIVE_ID + "/" + USER_ID)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .accept(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
