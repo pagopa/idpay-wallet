@@ -15,5 +15,8 @@ public class IbanBodyDTO {
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String description;
 
+  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
+  String channel;
+
 }
 

@@ -51,8 +51,7 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public ResponseEntity<Void> enrollIban(IbanBodyDTO body, String initiativeId, String userId) {
-    walletService.enrollIban(initiativeId, userId, body.getIban(), body.getDescription());
-
+    walletService.enrollIban(initiativeId, userId, body.getIban(), body.getChannel(), body.getDescription());
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
