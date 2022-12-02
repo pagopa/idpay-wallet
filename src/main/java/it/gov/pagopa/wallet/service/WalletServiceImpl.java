@@ -94,14 +94,23 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public WalletDTO getWalletDetail(String initiativeId, String userId) {
-    Wallet wallet =
-        walletRepository
-            .findByInitiativeIdAndUserId(initiativeId, userId)
-            .orElseThrow(
-                () ->
-                    new WalletException(
-                        HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+    Wallet wallet = getWallet(initiativeId, userId);
     return walletMapper.toInitiativeDTO(wallet);
+  }
+
+  @Override
+  public WalletDTO getWalletDetailIssuer(String initiativeId, String userId) {
+    Wallet wallet = getWallet(initiativeId, userId);
+    return walletMapper.toIssuerInitiativeDTO(wallet);
+  }
+
+  private Wallet getWallet(String initiativeId, String userId) {
+    return walletRepository
+        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .orElseThrow(
+            () ->
+                new WalletException(
+                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
   }
 
   @Override

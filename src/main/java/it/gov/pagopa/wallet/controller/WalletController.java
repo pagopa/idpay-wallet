@@ -40,6 +40,10 @@ public interface WalletController {
   ResponseEntity<WalletDTO> walletDetail(
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
+  @GetMapping("/initiative/{initiativeId}/{userId}")
+  ResponseEntity<WalletDTO> walletIssuerDetail(
+      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+
   @PutMapping("/updateWallet")
   ResponseEntity<Void> updateWallet(
       @Valid @RequestBody WalletPIBodyDTO body);

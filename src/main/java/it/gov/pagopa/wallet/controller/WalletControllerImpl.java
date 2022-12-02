@@ -44,6 +44,12 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  public ResponseEntity<WalletDTO> walletIssuerDetail(String initiativeId, String userId) {
+    WalletDTO walletDTO = walletService.getWalletDetailIssuer(initiativeId, userId);
+    return new ResponseEntity<>(walletDTO, HttpStatus.OK);
+  }
+
+  @Override
   public ResponseEntity<Void> updateWallet(WalletPIBodyDTO body) {
     walletService.updateWallet(body);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);

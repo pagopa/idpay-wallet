@@ -117,6 +117,13 @@ class WalletServiceTest {
           .refunded(TEST_REFUNDED)
           .build();
 
+  private static final Wallet TEST_WALLET_ISSUER =
+      Wallet.builder()
+          .amount(TEST_AMOUNT)
+          .accrued(TEST_ACCRUED)
+          .refunded(TEST_REFUNDED)
+          .build();
+
   private static final QueueOperationDTO TEST_OPERATION_DTO =
       QueueOperationDTO.builder().userId(USER_ID).build();
 
@@ -153,6 +160,18 @@ class WalletServiceTest {
           WalletStatus.NOT_REFUNDABLE.name(),
           IBAN_OK,
           TEST_DATE_ONLY_DATE,
+          0,
+          TEST_AMOUNT,
+          TEST_ACCRUED,
+          TEST_REFUNDED);
+
+  private static final WalletDTO WALLET_ISSUER_DTO =
+      new WalletDTO(
+          null,
+          null,
+          null,
+          null,
+          null,
           0,
           TEST_AMOUNT,
           TEST_ACCRUED,
@@ -856,6 +875,34 @@ class WalletServiceTest {
     }
   }
 
+  @Test
+  void getWalletDetail_issuer_ok() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET_ISSUER));
+
+    Mockito.when(walletMapper.toIssuerInitiativeDTO(Mockito.any(Wallet.class))).thenReturn(WALLET_ISSUER_DTO);
+    try {
+      WalletDTO actual = walletService.getWalletDetailIssuer(INITIATIVE_ID, USER_ID);
+      assertEquals(WALLET_DTO.getAmount(), actual.getAmount());
+      assertEquals(WALLET_DTO.getAccrued(), actual.getAccrued());
+      assertEquals(WALLET_DTO.getRefunded(), actual.getRefunded());
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void getWalletDetail_issuer_ko() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
+    try {
+      walletService.getWalletDetailIssuer(INITIATIVE_ID, USER_ID);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.NOT_FOUND.value(), e.getCode());
+      assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, e.getMessage());
+    }
+  }
   @Test
   void getInitiativeList_ok() {
     TEST_WALLET.setIban(IBAN_OK);
