@@ -23,6 +23,7 @@ import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
@@ -1451,5 +1452,61 @@ class WalletServiceTest {
     Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any(Wallet.class));
     Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any(QueueOperationDTO.class));
     Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
+  }
+
+  @Test
+  void enrollInstrumentIssuer_ok() {
+
+    final InstrumentIssuerDTO instrument =
+        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    TEST_WALLET.setIban(null);
+    TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+    TEST_WALLET.setNInstr(0);
+
+    Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+        .thenReturn(INITIATIVE_DTO);
+
+    Mockito.doNothing()
+        .when(paymentInstrumentRestConnector)
+        .enrollInstrumentIssuer(Mockito.any(InstrumentIssuerDTO.class));
+
+    try {
+      walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+    assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
+    assertEquals(0, TEST_WALLET.getNInstr());
+  }
+
+  @Test
+  void enrollInstrumentIssuer_ko_feignexception() {
+
+    final InstrumentIssuerDTO instrument =
+        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+        .thenReturn(INITIATIVE_DTO);
+
+    Request request =
+        Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
+
+    Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+        .when(paymentInstrumentRestConnector)
+        .enrollInstrumentIssuer(Mockito.any(InstrumentIssuerDTO.class));
+
+    try {
+      walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
+      Assertions.fail();
+    } catch (WalletException e) {
+      assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+    }
   }
 }

@@ -14,6 +14,7 @@ import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
@@ -59,9 +60,7 @@ public class WalletServiceImpl implements WalletService {
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
   @Autowired WalletRepository walletRepository;
-
   @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-
   @Autowired OnboardingRestConnector onboardingRestConnector;
   @Autowired IbanProducer ibanProducer;
   @Autowired TimelineProducer timelineProducer;
@@ -70,19 +69,25 @@ public class WalletServiceImpl implements WalletService {
   @Autowired ErrorProducer errorProducer;
   @Autowired NotificationProducer notificationProducer;
   @Autowired InitiativeRestConnector initiativeRestConnector;
+
   @Value(
       "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
   String timelineServer;
+
   @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}")
   String timelineTopic;
+
   @Value(
       "${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}")
   String notificationServer;
+
   @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}")
   String notificationTopic;
+
   @Value(
       "${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}")
   String ibanServer;
+
   @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}")
   String ibanTopic;
 
@@ -155,7 +160,8 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void enrollIban(String initiativeId, String userId, String iban, String channel, String description) {
+  public void enrollIban(
+      String initiativeId, String userId, String iban, String channel, String description) {
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
 
     getInitiative(initiativeId);
@@ -171,13 +177,7 @@ public class WalletServiceImpl implements WalletService {
     if (wallet.getIban() == null || !(wallet.getIban().equals(iban))) {
       wallet.setIban(iban);
       IbanQueueDTO ibanQueueDTO =
-          new IbanQueueDTO(
-              userId,
-              initiativeId,
-              iban,
-              description,
-              channel,
-              LocalDateTime.now());
+          new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
 
       try {
         log.info("[ENROLL_IBAN] Sending event to IBAN");
@@ -370,6 +370,29 @@ public class WalletServiceImpl implements WalletService {
     sendNotification(notificationQueueDTO);
   }
 
+  @Override
+  public void enrollInstrumentIssuer(
+      String initiativeId, String userId, InstrumentIssuerDTO body) {
+    log.info("[ENROLL_INSTRUMENT_ISSUER] Checking the status of initiative {}", initiativeId);
+
+    getInitiative(initiativeId);
+
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      throw new WalletException(
+          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    }
+
+    try {
+      log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
+      paymentInstrumentRestConnector.enrollInstrumentIssuer(body);
+    } catch (FeignException e) {
+      log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
+      throw new WalletException(e.status(), e.getMessage());
+    }
+  }
+
   private void updateWalletFromTransaction(
       String initiativeId,
       RewardTransactionDTO rewardTransactionDTO,
@@ -385,8 +408,7 @@ public class WalletServiceImpl implements WalletService {
       return;
     }
 
-    log.info(
-        "[updateWalletFromTransaction] Found wallet to update");
+    log.info("[updateWalletFromTransaction] Found wallet to update");
     wallet.setNTrx(counters.getTrxNumber());
     log.info("[updateWalletFromTransaction] New value for nTrx: {}", wallet.getNTrx());
     wallet.setAccrued(counters.getTotalReward());
