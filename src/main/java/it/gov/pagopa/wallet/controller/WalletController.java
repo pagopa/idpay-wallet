@@ -4,6 +4,7 @@ import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import javax.validation.Valid;
@@ -63,4 +64,10 @@ public interface WalletController {
 
   @PutMapping("/acknowledge")
   ResponseEntity<Void> processAck(@Valid @RequestBody InstrumentAckDTO body);
+
+  @PutMapping("/{initiativeId}/{userId}/instruments")
+  ResponseEntity<Void> enrollInstrumentIssuer(
+      @Valid @RequestBody InstrumentIssuerDTO body,
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId);
 }
