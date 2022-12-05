@@ -92,7 +92,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         Query.query(Criteria
             .where(FIELD_INITIATIVE_ID).is(initiativeId)
             .and(FIELD_USER_ID).is(userId)),
-        new Update().inc(FIELD_REFUNDED, refunded).set(FIELD_HISTORY, history),
+        new Update().set(FIELD_REFUNDED, refunded).set(FIELD_HISTORY, history),
         Wallet.class);
   }
 
