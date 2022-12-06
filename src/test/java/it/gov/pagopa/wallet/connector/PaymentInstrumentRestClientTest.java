@@ -91,7 +91,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_issuer_test() {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
 
     try {
       restConnector.enrollInstrumentIssuer(instrument);

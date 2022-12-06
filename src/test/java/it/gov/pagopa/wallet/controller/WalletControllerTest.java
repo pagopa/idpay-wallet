@@ -754,7 +754,7 @@ class WalletControllerTest {
   void enroll_instrument_issuer_ok() throws Exception {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
 
     Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
 
@@ -772,7 +772,7 @@ class WalletControllerTest {
   void enroll_instrument_issuer_initiative_ko() throws Exception {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
 
     Mockito.doThrow(
             new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
@@ -800,7 +800,7 @@ class WalletControllerTest {
   void enroll_instrument_issuer_wallet_not_found() throws Exception {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
 
     Mockito.doThrow(
             new WalletException(
@@ -828,7 +828,7 @@ class WalletControllerTest {
   @Test
   void enroll_instrument_issuer_empty_body() throws Exception {
 
-    final InstrumentIssuerDTO instrument = new InstrumentIssuerDTO("", "", 22, "", "", "", "", "");
+    final InstrumentIssuerDTO instrument = new InstrumentIssuerDTO("", "", "", "");
 
     MvcResult res =
         mvc.perform(

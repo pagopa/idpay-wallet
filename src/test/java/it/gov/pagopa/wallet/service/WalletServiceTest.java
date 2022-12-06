@@ -1499,7 +1499,7 @@ class WalletServiceTest {
   void enrollInstrumentIssuer_ok() {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
 
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
@@ -1528,7 +1528,7 @@ class WalletServiceTest {
   void enrollInstrumentIssuer_ko_feignexception() {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("PGP", CHANNEL, 22, "Jan", "PP", "ABI", "VISA", "");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
 
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));

@@ -10,24 +10,12 @@ import lombok.Getter;
 public class InstrumentIssuerDTO {
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String pgpPan;
+  String hpan;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String channel;
 
-  int expireYear;
+  String brandLogo;
 
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String expireMonth;
-
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String type;
-
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String issuerAbiCode;
-
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String brand;
-
-  String holder;
+  String maskedPan;
 }
