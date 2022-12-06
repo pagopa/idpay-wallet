@@ -23,6 +23,7 @@ import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
 import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
@@ -1513,7 +1514,7 @@ class WalletServiceTest {
 
     Mockito.doNothing()
         .when(paymentInstrumentRestConnector)
-        .enrollInstrumentIssuer(Mockito.any(InstrumentIssuerDTO.class));
+        .enrollInstrumentIssuer(Mockito.any(InstrumentIssuerCallDTO.class));
 
     try {
       walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
@@ -1541,7 +1542,7 @@ class WalletServiceTest {
 
     Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
         .when(paymentInstrumentRestConnector)
-        .enrollInstrumentIssuer(Mockito.any(InstrumentIssuerDTO.class));
+        .enrollInstrumentIssuer(Mockito.any(InstrumentIssuerCallDTO.class));
 
     try {
       walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);

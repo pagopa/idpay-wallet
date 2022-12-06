@@ -14,6 +14,7 @@ import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
 import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
@@ -277,12 +278,16 @@ public class WalletServiceImpl implements WalletService {
   public void updateWallet(WalletPIBodyDTO walletPIDTO) {
     log.info("[UPDATE_WALLET] New revoke from PM");
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
-      Wallet wallet = walletUpdatesRepository.decreaseInstrumentNumber(walletPI.getInitiativeId(), walletPI.getUserId());
-      if(wallet == null){
-        log.info("[UPDATE_WALLET] Wallet with initiativeId {} not found", walletPI.getInitiativeId());
+      Wallet wallet =
+          walletUpdatesRepository.decreaseInstrumentNumber(
+              walletPI.getInitiativeId(), walletPI.getUserId());
+      if (wallet == null) {
+        log.info(
+            "[UPDATE_WALLET] Wallet with initiativeId {} not found", walletPI.getInitiativeId());
         continue;
       }
-      walletUpdatesRepository.setStatus(walletPI.getInitiativeId(), walletPI.getUserId(), setStatus(wallet));
+      walletUpdatesRepository.setStatus(
+          walletPI.getInitiativeId(), walletPI.getUserId(), setStatus(wallet));
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(
               wallet.getInitiativeId(),
@@ -354,7 +359,11 @@ public class WalletServiceImpl implements WalletService {
     history.put(
         refundDTO.getRewardNotificationId(), new RefundHistory(refundDTO.getFeedbackProgressive()));
 
-    walletUpdatesRepository.processRefund(refundDTO.getInitiativeId(), refundDTO.getUserId(), wallet.getRefunded().add(refunded), history);
+    walletUpdatesRepository.processRefund(
+        refundDTO.getInitiativeId(),
+        refundDTO.getUserId(),
+        wallet.getRefunded().add(refunded),
+        history);
 
     QueueOperationDTO queueOperationDTO = timelineMapper.refundToTimeline(refundDTO);
 
@@ -391,9 +400,19 @@ public class WalletServiceImpl implements WalletService {
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
 
+    InstrumentIssuerCallDTO instrumentIssuerCallDTO =
+        InstrumentIssuerCallDTO.builder()
+            .initiativeId(initiativeId)
+            .userId(userId)
+            .hpan(body.getHpan())
+            .channel(body.getChannel())
+            .brandLogo(body.getBrandLogo())
+            .maskedPan(body.getMaskedPan())
+            .build();
+
     try {
       log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
-      paymentInstrumentRestConnector.enrollInstrumentIssuer(body);
+      paymentInstrumentRestConnector.enrollInstrumentIssuer(instrumentIssuerCallDTO);
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
       throw new WalletException(e.status(), e.getMessage());
