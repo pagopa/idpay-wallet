@@ -6,6 +6,8 @@ import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -81,6 +83,19 @@ class PaymentInstrumentRestClientTest {
 
     try {
       restConnector.disableAllInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void enroll_instrument_issuer_test() {
+
+    final InstrumentIssuerCallDTO instrument =
+        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "***");
+
+    try {
+      restConnector.enrollInstrumentIssuer(instrument);
     } catch (Exception e) {
       Assertions.fail();
     }

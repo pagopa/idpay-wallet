@@ -38,4 +38,12 @@ public class WalletMapper {
         .iban(wallet.getIban())
         .build();
   }
+
+  public WalletDTO toIssuerInitiativeDTO(Wallet wallet){
+    return WalletDTO.builder()
+        .amount(wallet.getAmount())
+        .accrued(wallet.getAccrued())
+        .refunded(wallet.getRefunded())
+        .build();
+  }
 }

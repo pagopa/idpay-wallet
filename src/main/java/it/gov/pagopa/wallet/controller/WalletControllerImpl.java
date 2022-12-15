@@ -4,6 +4,7 @@ import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
 import it.gov.pagopa.wallet.dto.IbanBodyDTO;
 import it.gov.pagopa.wallet.dto.InitiativeListDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import it.gov.pagopa.wallet.service.WalletService;
@@ -44,6 +45,12 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  public ResponseEntity<WalletDTO> walletIssuerDetail(String initiativeId, String userId) {
+    WalletDTO walletDTO = walletService.getWalletDetailIssuer(initiativeId, userId);
+    return new ResponseEntity<>(walletDTO, HttpStatus.OK);
+  }
+
+  @Override
   public ResponseEntity<Void> updateWallet(WalletPIBodyDTO body) {
     walletService.updateWallet(body);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -51,8 +58,7 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public ResponseEntity<Void> enrollIban(IbanBodyDTO body, String initiativeId, String userId) {
-    walletService.enrollIban(initiativeId, userId, body.getIban(), body.getDescription());
-
+    walletService.enrollIban(initiativeId, userId, body.getIban(), body.getChannel(), body.getDescription());
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
@@ -72,5 +78,12 @@ public class WalletControllerImpl implements WalletController {
   public ResponseEntity<Void> processAck(InstrumentAckDTO body) {
     walletService.processAck(body);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<Void> enrollInstrumentIssuer(InstrumentIssuerDTO body, String initiativeId,
+      String userId) {
+    walletService.enrollInstrumentIssuer(initiativeId, userId, body);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }

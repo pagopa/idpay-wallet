@@ -69,11 +69,11 @@ public class TimelineMapper {
         .build();
   }
 
-  public QueueOperationDTO ibanToTimeline(String initiativeId, String userId, String iban) {
+  public QueueOperationDTO ibanToTimeline(String initiativeId, String userId, String iban, String channel) {
     return QueueOperationDTO.builder()
         .initiativeId(initiativeId)
         .userId(userId)
-        .channel(WalletConstants.CHANNEL_APP_IO)
+        .channel(channel)
         .iban(iban)
         .operationType("ADD_IBAN")
         .operationDate(LocalDateTime.now())
