@@ -44,6 +44,7 @@ class WalletMapperTest {
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
           OPERATION_DATE.atStartOfDay(),
+          OPERATION_DATE.atStartOfDay(),
           List.of(),
           new BigDecimal(500));
 
