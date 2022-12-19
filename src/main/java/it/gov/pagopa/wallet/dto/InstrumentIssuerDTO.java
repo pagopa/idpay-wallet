@@ -7,16 +7,15 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class IbanBodyDTO {
+public class InstrumentIssuerDTO {
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String iban;
-
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
-  String description;
+  String hpan;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String channel;
 
-}
+  String brandLogo;
 
+  String maskedPan;
+}

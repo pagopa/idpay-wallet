@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.connector;
 
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient(
     name = "${rest-client.payment.instrument.serviceCode}",
-    url = "${payment.instrument.uri}")
+    url = "${rest-client.payment.instrument.baseUrl}")
 public interface PaymentInstrumentRestClient {
 
   @PutMapping(
@@ -34,4 +35,9 @@ public interface PaymentInstrumentRestClient {
   @ResponseBody
 void deleteInstrument(
       @RequestBody DeactivationBodyDTO body);
+
+  @PutMapping(
+      value = "/idpay/instrument/hb/enroll",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);
 }

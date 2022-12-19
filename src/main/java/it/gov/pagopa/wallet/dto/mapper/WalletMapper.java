@@ -17,7 +17,6 @@ public class WalletMapper {
         .endDate(evaluationDTO.getInitiativeEndDate())
         .organizationId(evaluationDTO.getOrganizationId())
         .userId(evaluationDTO.getUserId())
-        .serviceId(evaluationDTO.getServiceId())
         .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
         .status(WalletStatus.NOT_REFUNDABLE.name())
         .amount(evaluationDTO.getBeneficiaryBudget())
@@ -35,8 +34,16 @@ public class WalletMapper {
         .amount(wallet.getAmount())
         .accrued(wallet.getAccrued())
         .refunded(wallet.getRefunded())
-        .nInstr(String.valueOf(wallet.getNInstr()))
+        .nInstr(wallet.getNInstr())
         .iban(wallet.getIban())
+        .build();
+  }
+
+  public WalletDTO toIssuerInitiativeDTO(Wallet wallet){
+    return WalletDTO.builder()
+        .amount(wallet.getAmount())
+        .accrued(wallet.getAccrued())
+        .refunded(wallet.getRefunded())
         .build();
   }
 }

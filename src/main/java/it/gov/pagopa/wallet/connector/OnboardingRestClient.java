@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient(
     name = "${rest-client.onboarding.serviceCode}",
-    url = "${onboarding.uri}")
+    url = "${rest-client.onboarding.baseUrl}")
 public interface OnboardingRestClient {
 
   @DeleteMapping(
