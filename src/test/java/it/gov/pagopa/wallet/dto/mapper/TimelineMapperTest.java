@@ -45,6 +45,7 @@ class TimelineMapperTest {
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
           OPERATION_DATE,
+          OPERATION_DATE,
           List.of(),
           new BigDecimal(500));
   private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =

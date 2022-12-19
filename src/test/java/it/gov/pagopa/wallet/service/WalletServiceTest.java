@@ -196,6 +196,7 @@ class WalletServiceTest {
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_KO,
           TEST_DATE,
+          TEST_DATE,
           List.of(),
           new BigDecimal(500));
 
@@ -207,6 +208,7 @@ class WalletServiceTest {
           TEST_DATE_ONLY_DATE,
           INITIATIVE_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
+          TEST_DATE,
           TEST_DATE,
           List.of(),
           new BigDecimal(500));
