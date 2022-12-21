@@ -182,9 +182,11 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     formalControl(iban);
-    wallet = walletUpdatesRepository.enrollIban(initiativeId, userId, iban);
+    wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
+
+    walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
 
     try {
       log.info("[ENROLL_IBAN] Sending event to IBAN");
@@ -194,8 +196,6 @@ public class WalletServiceImpl implements WalletService {
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
       this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
     }
-
-    walletUpdatesRepository.setStatus(initiativeId, userId, setStatus(wallet));
 
     sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
   }
@@ -279,14 +279,16 @@ public class WalletServiceImpl implements WalletService {
     log.info("[UPDATE_WALLET] New revoke from PM");
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
-          walletUpdatesRepository.decreaseInstrumentNumber(
-              walletPI.getInitiativeId(), walletPI.getUserId());
+          walletRepository
+              .findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId())
+              .orElse(null);
       if (wallet == null) {
         log.info(
             "[UPDATE_WALLET] Wallet with initiativeId {} not found", walletPI.getInitiativeId());
         continue;
       }
-      walletUpdatesRepository.setStatus(
+      wallet.setNInstr(wallet.getNInstr() - 1);
+      walletUpdatesRepository.decreaseInstrumentNumber(
           walletPI.getInitiativeId(), walletPI.getUserId(), setStatus(wallet));
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(
@@ -305,10 +307,10 @@ public class WalletServiceImpl implements WalletService {
     if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
       Wallet wallet =
-          walletUpdatesRepository.updateInstrumentNumber(
-              instrumentAckDTO.getInitiativeId(),
-              instrumentAckDTO.getUserId(),
-              instrumentAckDTO.getNinstr());
+          walletRepository
+              .findByInitiativeIdAndUserId(
+                  instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId())
+              .orElse(null);
 
       if (wallet == null) {
         log.error("[PROCESS_ACK] Wallet not found");
@@ -316,8 +318,13 @@ public class WalletServiceImpl implements WalletService {
             HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND);
       }
 
-      walletUpdatesRepository.setStatus(
-          instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId(), setStatus(wallet));
+      wallet.setNInstr(instrumentAckDTO.getNinstr());
+
+      walletUpdatesRepository.updateInstrumentNumber(
+          instrumentAckDTO.getInitiativeId(),
+          instrumentAckDTO.getUserId(),
+          instrumentAckDTO.getNinstr(),
+          setStatus(wallet));
     }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
@@ -467,16 +474,26 @@ public class WalletServiceImpl implements WalletService {
     }
 
     Wallet wallet =
-        walletUpdatesRepository.deleteIban(
-            iban.getInitiativeId(), iban.getUserId(), iban.getIban());
+        walletRepository
+            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
+            .orElse(null);
 
     if (wallet == null) {
+      log.warn(
+          "[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
+      return;
+    }
+
+    if(!wallet.getIban().equals(iban.getIban())){
       log.warn(
           "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
       return;
     }
 
-    walletUpdatesRepository.setStatus(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
+    wallet.setIban(null);
+
+    walletUpdatesRepository.deleteIban(
+        iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
     sendCheckIban(iban);
   }
 
