@@ -215,11 +215,15 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
+    long startTime = System.currentTimeMillis();
     if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
+    log.info(
+        "[PERFORMANCE_LOG] [CREATE_WALLET] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
@@ -256,6 +260,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
       return;
@@ -272,10 +278,15 @@ public class WalletServiceImpl implements WalletService {
                   reward.getCounters(),
                   reward.getAccruedReward());
             });
+    log.info(
+        "[PERFORMANCE_LOG] [PROCESS_TRANSACTION] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
   public void updateWallet(WalletPIBodyDTO walletPIDTO) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[UPDATE_WALLET] New revoke from PM");
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
@@ -299,10 +310,15 @@ public class WalletServiceImpl implements WalletService {
 
       sendToTimeline(queueOperationDTO);
     }
+    log.info(
+        "[PERFORMANCE_LOG] [UPDATE_WALLET] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
   public void processAck(InstrumentAckDTO instrumentAckDTO) {
+
+    log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument", instrumentAckDTO.getOperationType());
 
     if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
@@ -334,6 +350,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processRefund(RefundDTO refundDTO) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[PROCESS_REFUND] Processing new refund");
 
     Wallet wallet =
@@ -392,6 +410,10 @@ public class WalletServiceImpl implements WalletService {
             .build();
 
     sendNotification(notificationQueueDTO);
+
+    log.info(
+        "[PERFORMANCE_LOG] [PROCESS_REFUND] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
@@ -468,6 +490,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void deleteOperation(IbanQueueWalletDTO iban) {
+    long startTime = System.currentTimeMillis();
+
     if (!iban.getStatus().equals("KO")) {
       log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
       return;
@@ -479,12 +503,11 @@ public class WalletServiceImpl implements WalletService {
             .orElse(null);
 
     if (wallet == null) {
-      log.warn(
-          "[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
+      log.warn("[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
       return;
     }
 
-    if(!wallet.getIban().equals(iban.getIban())){
+    if (!iban.getIban().equals(wallet.getIban())) {
       log.warn(
           "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
       return;
@@ -492,9 +515,12 @@ public class WalletServiceImpl implements WalletService {
 
     wallet.setIban(null);
 
-    walletUpdatesRepository.deleteIban(
-        iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
+    walletUpdatesRepository.deleteIban(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
     sendCheckIban(iban);
+
+    log.info(
+        "[PERFORMANCE_LOG] [CHECK_IBAN_OUTCOME] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban) {
