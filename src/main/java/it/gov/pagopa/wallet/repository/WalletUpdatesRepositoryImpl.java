@@ -51,17 +51,16 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
   }
 
   @Override
-  public Wallet enrollIban(String initiativeId, String userId, String iban) {
+  public void enrollIban(String initiativeId, String userId, String iban, String status) {
     log.trace(
         "[ENROLL_IBAN] Deleting IBAN from wallet with initiativeId: {}",
         initiativeId);
 
-    return mongoTemplate.findAndModify(
+    mongoTemplate.updateFirst(
         Query.query(Criteria
             .where(FIELD_INITIATIVE_ID).is(initiativeId)
             .and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_IBAN, iban),
-        FindAndModifyOptions.options().returnNew(true),
+        new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status),
         Wallet.class);
   }
 

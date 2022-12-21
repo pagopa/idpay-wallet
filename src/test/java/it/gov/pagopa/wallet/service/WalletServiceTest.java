@@ -596,9 +596,6 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
 
-    Mockito.when(walletUpdatesRepositoryMock.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
-
     Mockito.doAnswer(
             invocationOnMock -> {
               TEST_WALLET.setIban(IBAN_OK);
@@ -606,7 +603,7 @@ class WalletServiceTest {
               return null;
             })
         .when(walletUpdatesRepositoryMock)
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK),Mockito.anyString());
 
     try {
       walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
@@ -629,9 +626,6 @@ class WalletServiceTest {
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
 
-    Mockito.when(walletUpdatesRepositoryMock.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
-
     Mockito.doAnswer(
             invocationOnMock -> {
               TEST_WALLET.setIban(IBAN_OK);
@@ -639,7 +633,7 @@ class WalletServiceTest {
               return null;
             })
         .when(walletUpdatesRepositoryMock)
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK),Mockito.anyString());
 
     Mockito.doThrow(new WalletException(400, ""))
         .when(ibanProducer)
@@ -664,9 +658,6 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.when(walletUpdatesRepositoryMock.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
-
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
 
@@ -677,7 +668,7 @@ class WalletServiceTest {
               return null;
             })
         .when(walletUpdatesRepositoryMock)
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK),Mockito.anyString());
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
 
     walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
@@ -698,16 +689,13 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.when(walletUpdatesRepositoryMock.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
-
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
 
     walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
-        .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK);
+        .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK),Mockito.anyString());
   }
 
   @Test
@@ -842,9 +830,6 @@ class WalletServiceTest {
     Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
         .thenReturn(Optional.of(TEST_WALLET));
 
-    Mockito.when(walletUpdatesRepositoryMock.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
-
     Mockito.when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
         .thenReturn(INITIATIVE_DTO);
 
@@ -854,7 +839,7 @@ class WalletServiceTest {
               return null;
             })
         .when(walletUpdatesRepositoryMock)
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK),Mockito.anyString());
 
     walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 

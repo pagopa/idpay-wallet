@@ -182,9 +182,11 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     formalControl(iban);
-    wallet = walletUpdatesRepository.enrollIban(initiativeId, userId, iban);
+    wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
+
+    walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
 
     try {
       log.info("[ENROLL_IBAN] Sending event to IBAN");
@@ -194,8 +196,6 @@ public class WalletServiceImpl implements WalletService {
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
       this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
     }
-
-    walletUpdatesRepository.setStatus(initiativeId, userId, setStatus(wallet));
 
     sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
   }
