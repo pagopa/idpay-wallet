@@ -182,9 +182,11 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     formalControl(iban);
-    wallet = walletUpdatesRepository.enrollIban(initiativeId, userId, iban);
+    wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
+
+    walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
 
     try {
       log.info("[ENROLL_IBAN] Sending event to IBAN");
@@ -194,8 +196,6 @@ public class WalletServiceImpl implements WalletService {
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
       this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
     }
-
-    walletUpdatesRepository.setStatus(initiativeId, userId, setStatus(wallet));
 
     sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
   }
@@ -215,11 +215,15 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
+    long startTime = System.currentTimeMillis();
     if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
+    log.info(
+        "[PERFORMANCE_LOG] [CREATE_WALLET] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
@@ -256,6 +260,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
       return;
@@ -272,21 +278,28 @@ public class WalletServiceImpl implements WalletService {
                   reward.getCounters(),
                   reward.getAccruedReward());
             });
+    log.info(
+        "[PERFORMANCE_LOG] [PROCESS_TRANSACTION] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
   public void updateWallet(WalletPIBodyDTO walletPIDTO) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[UPDATE_WALLET] New revoke from PM");
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
-          walletUpdatesRepository.decreaseInstrumentNumber(
-              walletPI.getInitiativeId(), walletPI.getUserId());
+          walletRepository
+              .findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId())
+              .orElse(null);
       if (wallet == null) {
         log.info(
             "[UPDATE_WALLET] Wallet with initiativeId {} not found", walletPI.getInitiativeId());
         continue;
       }
-      walletUpdatesRepository.setStatus(
+      wallet.setNInstr(wallet.getNInstr() - 1);
+      walletUpdatesRepository.decreaseInstrumentNumber(
           walletPI.getInitiativeId(), walletPI.getUserId(), setStatus(wallet));
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(
@@ -297,18 +310,23 @@ public class WalletServiceImpl implements WalletService {
 
       sendToTimeline(queueOperationDTO);
     }
+    log.info(
+        "[PERFORMANCE_LOG] [UPDATE_WALLET] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
   public void processAck(InstrumentAckDTO instrumentAckDTO) {
 
+    log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument", instrumentAckDTO.getOperationType());
+
     if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
       Wallet wallet =
-          walletUpdatesRepository.updateInstrumentNumber(
-              instrumentAckDTO.getInitiativeId(),
-              instrumentAckDTO.getUserId(),
-              instrumentAckDTO.getNinstr());
+          walletRepository
+              .findByInitiativeIdAndUserId(
+                  instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId())
+              .orElse(null);
 
       if (wallet == null) {
         log.error("[PROCESS_ACK] Wallet not found");
@@ -316,8 +334,13 @@ public class WalletServiceImpl implements WalletService {
             HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND);
       }
 
-      walletUpdatesRepository.setStatus(
-          instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId(), setStatus(wallet));
+      wallet.setNInstr(instrumentAckDTO.getNinstr());
+
+      walletUpdatesRepository.updateInstrumentNumber(
+          instrumentAckDTO.getInitiativeId(),
+          instrumentAckDTO.getUserId(),
+          instrumentAckDTO.getNinstr(),
+          setStatus(wallet));
     }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
@@ -327,6 +350,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processRefund(RefundDTO refundDTO) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[PROCESS_REFUND] Processing new refund");
 
     Wallet wallet =
@@ -385,6 +410,10 @@ public class WalletServiceImpl implements WalletService {
             .build();
 
     sendNotification(notificationQueueDTO);
+
+    log.info(
+        "[PERFORMANCE_LOG] [PROCESS_REFUND] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   @Override
@@ -461,23 +490,37 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void deleteOperation(IbanQueueWalletDTO iban) {
+    long startTime = System.currentTimeMillis();
+
     if (!iban.getStatus().equals("KO")) {
       log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
       return;
     }
 
     Wallet wallet =
-        walletUpdatesRepository.deleteIban(
-            iban.getInitiativeId(), iban.getUserId(), iban.getIban());
+        walletRepository
+            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
+            .orElse(null);
 
     if (wallet == null) {
+      log.warn("[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
+      return;
+    }
+
+    if (!iban.getIban().equals(wallet.getIban())) {
       log.warn(
           "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
       return;
     }
 
-    walletUpdatesRepository.setStatus(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
+    wallet.setIban(null);
+
+    walletUpdatesRepository.deleteIban(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
     sendCheckIban(iban);
+
+    log.info(
+        "[PERFORMANCE_LOG] [CHECK_IBAN_OUTCOME] Time occurred to perform business logic: {} ms",
+        System.currentTimeMillis() - startTime);
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban) {
