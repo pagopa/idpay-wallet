@@ -474,16 +474,26 @@ public class WalletServiceImpl implements WalletService {
     }
 
     Wallet wallet =
-        walletUpdatesRepository.deleteIban(
-            iban.getInitiativeId(), iban.getUserId(), iban.getIban());
+        walletRepository
+            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
+            .orElse(null);
 
     if (wallet == null) {
+      log.warn(
+          "[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
+      return;
+    }
+
+    if(!wallet.getIban().equals(iban.getIban())){
       log.warn(
           "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
       return;
     }
 
-    walletUpdatesRepository.setStatus(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
+    wallet.setIban(null);
+
+    walletUpdatesRepository.deleteIban(
+        iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
     sendCheckIban(iban);
   }
 

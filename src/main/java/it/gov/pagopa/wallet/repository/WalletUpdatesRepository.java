@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public interface WalletUpdatesRepository {
-  Wallet deleteIban(String initiativeId, String userId, String iban);
+  void deleteIban(String initiativeId, String userId, String status);
   void enrollIban(String initiativeId, String userId, String iban, String status);
   Wallet rewardTransaction(String initiativeId, String userId, BigDecimal amount, BigDecimal accrued, Long nTrx);
   void processRefund(String initiativeId, String userId, BigDecimal refunded, Map<String, RefundHistory> history);

@@ -951,8 +951,8 @@ class WalletServiceTest {
     IbanQueueWalletDTO iban =
         new IbanQueueWalletDTO(
             USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString());
-    Mockito.when(walletUpdatesRepositoryMock.deleteIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
     Mockito.doThrow(new WalletException(400, ""))
         .when(notificationProducer)
@@ -964,7 +964,7 @@ class WalletServiceTest {
       Assertions.fail();
     }
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .deleteIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
     Mockito.verify(errorProducer, Mockito.times(1)).sendEvent(Mockito.any());
   }
 
@@ -974,8 +974,8 @@ class WalletServiceTest {
     IbanQueueWalletDTO iban =
         new IbanQueueWalletDTO(
             USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString());
-    Mockito.when(walletUpdatesRepositoryMock.deleteIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(TEST_WALLET);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
     Mockito.doNothing()
         .when(notificationProducer)
@@ -986,16 +986,16 @@ class WalletServiceTest {
       Assertions.fail();
     }
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .deleteIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
   }
 
   @Test
-  void deleteOperation_ok_duplicate() {
+  void deleteOperation_not_found() {
     IbanQueueWalletDTO iban =
         new IbanQueueWalletDTO(
             USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString());
-    Mockito.when(walletUpdatesRepositoryMock.deleteIban(INITIATIVE_ID, USER_ID, IBAN_OK))
-        .thenReturn(null);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
 
     try {
       walletService.deleteOperation(iban);
@@ -1004,7 +1004,25 @@ class WalletServiceTest {
     }
 
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .deleteIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+  }
+
+  @Test
+  void deleteOperation_duplicate() {
+    IbanQueueWalletDTO iban =
+        new IbanQueueWalletDTO(
+            USER_ID, INITIATIVE_ID, IBAN_OK_OTHER, STATUS_KO, LocalDateTime.now().toString());
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
+
+    try {
+      walletService.deleteOperation(iban);
+    } catch (WalletException e) {
+      Assertions.fail();
+    }
+
+    Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
+        .deleteIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
   }
 
   @Test
@@ -1017,8 +1035,6 @@ class WalletServiceTest {
 
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
         .deleteIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
-    Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
   }
 
   @Test
