@@ -268,8 +268,8 @@ class WalletServiceTest {
 
   @Test
   void processAck() {
-    Mockito.when(walletUpdatesRepositoryMock.updateInstrumentNumber(INITIATIVE_ID, USER_ID, 1))
-        .thenReturn(TEST_WALLET);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
     TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
     TEST_WALLET.setNInstr(0);
@@ -295,14 +295,14 @@ class WalletServiceTest {
       Assertions.fail();
     }
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .updateInstrumentNumber(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyInt(), Mockito.anyString());
     Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 
   @Test
   void processAck_not_found() {
-    Mockito.when(walletUpdatesRepositoryMock.updateInstrumentNumber(INITIATIVE_ID, USER_ID, 1))
-        .thenReturn(null);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
 
     TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
     TEST_WALLET.setNInstr(0);
@@ -350,14 +350,14 @@ class WalletServiceTest {
       Assertions.fail();
     }
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .updateInstrumentNumber(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyInt(), Mockito.anyString());
     Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
   }
 
   @Test
   void processAck_queue_error() {
-    Mockito.when(walletUpdatesRepositoryMock.updateInstrumentNumber(INITIATIVE_ID, USER_ID, 1))
-        .thenReturn(TEST_WALLET);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
     Mockito.doThrow(new WalletException(400, ""))
         .when(timelineProducer)

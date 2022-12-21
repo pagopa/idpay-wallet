@@ -96,17 +96,16 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
   }
 
   @Override
-  public Wallet updateInstrumentNumber(String initiativeId, String userId, int nInstr){
+  public void updateInstrumentNumber(String initiativeId, String userId, int nInstr, String status){
     log.trace(
         "[UPDATE_INSTRUMENT_NUMBER] Updating Wallet [nInstr: {}]",
         nInstr);
 
-    return mongoTemplate.findAndModify(
+    mongoTemplate.updateFirst(
         Query.query(Criteria
             .where(FIELD_INITIATIVE_ID).is(initiativeId)
             .and(FIELD_USER_ID).is(userId)),
         new Update().set(FIELD_NINSTR, nInstr),
-        FindAndModifyOptions.options().returnNew(true),
         Wallet.class);
   }
 

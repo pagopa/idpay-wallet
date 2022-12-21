@@ -279,8 +279,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[UPDATE_WALLET] New revoke from PM");
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
-          walletRepository.findByInitiativeIdAndUserId(
-              walletPI.getInitiativeId(), walletPI.getUserId()).orElse(null);
+          walletRepository
+              .findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId())
+              .orElse(null);
       if (wallet == null) {
         log.info(
             "[UPDATE_WALLET] Wallet with initiativeId {} not found", walletPI.getInitiativeId());
@@ -306,10 +307,10 @@ public class WalletServiceImpl implements WalletService {
     if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
       Wallet wallet =
-          walletUpdatesRepository.updateInstrumentNumber(
-              instrumentAckDTO.getInitiativeId(),
-              instrumentAckDTO.getUserId(),
-              instrumentAckDTO.getNinstr());
+          walletRepository
+              .findByInitiativeIdAndUserId(
+                  instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId())
+              .orElse(null);
 
       if (wallet == null) {
         log.error("[PROCESS_ACK] Wallet not found");
@@ -317,8 +318,13 @@ public class WalletServiceImpl implements WalletService {
             HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND);
       }
 
-      walletUpdatesRepository.setStatus(
-          instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId(), setStatus(wallet));
+      wallet.setNInstr(instrumentAckDTO.getNinstr());
+
+      walletUpdatesRepository.updateInstrumentNumber(
+          instrumentAckDTO.getInitiativeId(),
+          instrumentAckDTO.getUserId(),
+          instrumentAckDTO.getNinstr(),
+          setStatus(wallet));
     }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
