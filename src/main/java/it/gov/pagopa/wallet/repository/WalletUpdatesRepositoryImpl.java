@@ -111,15 +111,4 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status),
         Wallet.class);
   }
-
-  @Override
-  public void setStatus(String initiativeId, String userId, String status) {
-    log.trace("[SET_STATUS] Updating Wallet [status: {}]", status);
-
-    mongoTemplate.updateFirst(
-        Query.query(
-            Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_STATUS, status),
-        Wallet.class);
-  }
 }
