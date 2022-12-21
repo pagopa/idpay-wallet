@@ -1177,8 +1177,8 @@ class WalletServiceTest {
 
   @Test
   void update_wallet_ok() {
-    Mockito.when(walletUpdatesRepositoryMock.decreaseInstrumentNumber(INITIATIVE_ID, USER_ID))
-        .thenReturn(TEST_WALLET);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
     TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
     TEST_WALLET.setNInstr(1);
@@ -1192,7 +1192,7 @@ class WalletServiceTest {
               return null;
             })
         .when(walletUpdatesRepositoryMock)
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .decreaseInstrumentNumber(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
 
     try {
       List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
@@ -1207,8 +1207,8 @@ class WalletServiceTest {
 
   @Test
   void update_wallet_empty() {
-    Mockito.when(walletUpdatesRepositoryMock.decreaseInstrumentNumber(INITIATIVE_ID, USER_ID))
-        .thenReturn(null);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.empty());
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
 
@@ -1221,13 +1221,13 @@ class WalletServiceTest {
       Assertions.fail();
     }
     Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .decreaseInstrumentNumber(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
   }
 
   @Test
   void update_wallet_ok_queue_error() {
-    Mockito.when(walletUpdatesRepositoryMock.decreaseInstrumentNumber(INITIATIVE_ID, USER_ID))
-        .thenReturn(TEST_WALLET);
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        .thenReturn(Optional.of(TEST_WALLET));
 
     Mockito.doAnswer(
             invocationOnMock -> {
@@ -1236,7 +1236,7 @@ class WalletServiceTest {
               return null;
             })
         .when(walletUpdatesRepositoryMock)
-        .setStatus(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
+        .decreaseInstrumentNumber(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString());
 
     Mockito.when(
             timelineMapper.deleteInstrumentToTimeline(

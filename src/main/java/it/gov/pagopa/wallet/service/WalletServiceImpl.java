@@ -279,14 +279,15 @@ public class WalletServiceImpl implements WalletService {
     log.info("[UPDATE_WALLET] New revoke from PM");
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
-          walletUpdatesRepository.decreaseInstrumentNumber(
-              walletPI.getInitiativeId(), walletPI.getUserId());
+          walletRepository.findByInitiativeIdAndUserId(
+              walletPI.getInitiativeId(), walletPI.getUserId()).orElse(null);
       if (wallet == null) {
         log.info(
             "[UPDATE_WALLET] Wallet with initiativeId {} not found", walletPI.getInitiativeId());
         continue;
       }
-      walletUpdatesRepository.setStatus(
+      wallet.setNInstr(wallet.getNInstr() - 1);
+      walletUpdatesRepository.decreaseInstrumentNumber(
           walletPI.getInitiativeId(), walletPI.getUserId(), setStatus(wallet));
       QueueOperationDTO queueOperationDTO =
           timelineMapper.deleteInstrumentToTimeline(

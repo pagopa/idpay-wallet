@@ -111,16 +111,15 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
   }
 
   @Override
-  public Wallet decreaseInstrumentNumber(String initiativeId, String userId) {
+  public void decreaseInstrumentNumber(String initiativeId, String userId, String status) {
     log.trace(
         "[DECREASE_INSTRUMENT_NUMBER] Updating Wallet");
 
-    return mongoTemplate.findAndModify(
+    mongoTemplate.updateFirst(
         Query.query(Criteria
             .where(FIELD_INITIATIVE_ID).is(initiativeId)
             .and(FIELD_USER_ID).is(userId)),
-        new Update().inc(FIELD_NINSTR, -1),
-        FindAndModifyOptions.options().returnNew(true),
+        new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status),
         Wallet.class);
   }
 
