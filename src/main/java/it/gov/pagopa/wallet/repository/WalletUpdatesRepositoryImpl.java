@@ -97,7 +97,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_NINSTR, nInstr),
+        new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status),
         Wallet.class);
   }
 
