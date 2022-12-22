@@ -47,6 +47,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
+import it.gov.pagopa.wallet.utils.Utilities;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -55,7 +56,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.catalina.User;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
@@ -86,6 +86,7 @@ class WalletServiceTest {
   @MockBean WalletMapper walletMapper;
   @MockBean TimelineMapper timelineMapper;
   @Autowired WalletService walletService;
+  @MockBean Utilities utilities;
 
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
@@ -288,6 +289,8 @@ class WalletServiceTest {
             TEST_DATE,
             1);
     Mockito.when(timelineMapper.ackToTimeline(instrumentAckDTO)).thenReturn(TEST_OPERATION_DTO);
+
+
 
     try {
       walletService.processAck(instrumentAckDTO);
