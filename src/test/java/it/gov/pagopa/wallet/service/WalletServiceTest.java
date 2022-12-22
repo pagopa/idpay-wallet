@@ -86,7 +86,7 @@ class WalletServiceTest {
   @MockBean WalletMapper walletMapper;
   @MockBean TimelineMapper timelineMapper;
   @Autowired WalletService walletService;
-  @Autowired Utilities utilities;
+  @MockBean Utilities utilities;
 
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
