@@ -42,6 +42,9 @@ class UtilitiesTest {
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
 
+  private static final String IDWALLET = "IDWALLET";
+
+
   @MockBean
   Logger logger;
   @Autowired
@@ -75,7 +78,25 @@ class UtilitiesTest {
 
   @Test
   void logEnrollInstrument_ok(){
-    utilities.logInstrumentAdded(USER_ID,INITIATIVE_ID,CHANNEL);
+    utilities.logEnrollmentInstrument(USER_ID,INITIATIVE_ID,IDWALLET);
+    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+  }
+
+  @Test
+  void logEnrollInstrumentIssuer_ok(){
+    utilities.logEnrollmentInstrumentIssuer(USER_ID,INITIATIVE_ID,CHANNEL);
+    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+  }
+
+  @Test
+  void logEnrollIban_ok(){
+    utilities.logEnrollmentIban(USER_ID,INITIATIVE_ID,CHANNEL);
+    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+  }
+
+  @Test
+  void logDeleteInstrument_ok(){
+    utilities.logInstrumentDeleted(USER_ID,INITIATIVE_ID);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
 

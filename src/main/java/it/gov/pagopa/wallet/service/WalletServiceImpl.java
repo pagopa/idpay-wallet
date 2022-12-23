@@ -138,6 +138,7 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrument(String initiativeId, String userId, String idWallet) {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
+    utilities.logEnrollmentInstrument(userId,initiativeId,idWallet);
 
     getInitiative(initiativeId);
 
@@ -162,6 +163,7 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void deleteInstrument(String initiativeId, String userId, String instrumentId) {
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
+    utilities.logInstrumentDeleted(userId,initiativeId);
 
     getInitiative(initiativeId);
 
@@ -180,6 +182,7 @@ public class WalletServiceImpl implements WalletService {
   public void enrollIban(
       String initiativeId, String userId, String iban, String channel, String description) {
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
+    utilities.logEnrollmentIban(userId,initiativeId,channel);
 
     getInitiative(initiativeId);
 
@@ -362,7 +365,6 @@ public class WalletServiceImpl implements WalletService {
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
 
-    utilities.logInstrumentAdded(instrumentAckDTO.getUserId(),instrumentAckDTO.getInitiativeId(),instrumentAckDTO.getChannel());
 
     sendToTimeline(queueOperationDTO);
   }
@@ -438,6 +440,7 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrumentIssuer(String initiativeId, String userId, InstrumentIssuerDTO body) {
     log.info("[ENROLL_INSTRUMENT_ISSUER] Checking the status of initiative {}", initiativeId);
+    utilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
 
     getInitiative(initiativeId);
 
