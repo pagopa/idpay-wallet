@@ -51,27 +51,27 @@ public class Utilities {
   }
 
   public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet) {
-    String testLog = this.buildLogWithIdWallet("Request for association of a instrument to a initiative from APP IO", userId, initiativeId, idWallet);
+    String testLog = this.buildLogWithIdWallet("Request for association of a instrument to a initiative from APP IO ", userId, initiativeId, idWallet);
     logger.info(testLog);
   }
 
   public void logEnrollmentInstrumentIssuer(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of a instrument to a initiative from ISSUER", userId, initiativeId, channel);
+    String testLog = this.buildLogWithChannel("Request for association of a instrument to a initiative from ISSUER ", userId, initiativeId, channel);
     logger.info(testLog);
   }
 
   public void logEnrollmentIban(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of a IBAN to a initiative", userId, initiativeId, channel);
+    String testLog = this.buildLogWithChannel("Request for association of a IBAN to a initiative ", userId, initiativeId, channel);
     logger.info(testLog);
   }
 
   public void logInstrumentDeleted(String userId, String initiativeId) {
-    String testLog = this.buildLog("Request to delete a instrument from a initiative", userId, initiativeId);
+    String testLog = this.buildLog("Request to delete a instrument from a initiative ", userId, initiativeId);
     logger.info(testLog);
   }
 
   public void logUnsubscribe(String userId, String initiativeId) {
-    String testLog = this.buildLog("Request of unsubscription from initiative", userId, initiativeId);
+    String testLog = this.buildLog("Request of unsubscription from initiative ", userId, initiativeId);
     logger.info(testLog);
   }
 }
