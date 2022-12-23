@@ -27,11 +27,17 @@ public class Utilities {
   private static final String USER = "suser=";
   private static final String CS1 = "cs1Label=iniziativeId cs1=";
   private static final String CS2 = "cs2Label=channel cs2=";
+  private static final String CS3 = "cs3Label=idWallet cs3=";
+
   final Logger logger = Logger.getLogger("AUDIT");
 
 
   private String buildLogWithChannel(String eventLog, String userId, String initiativeId, String channel) {
     return CEF + MSG + eventLog + " " + USER + userId + " " + CS1 + initiativeId + " " + CS2 + channel;
+  }
+
+  private String buildLogWithIdWallet(String eventLog, String userId, String initiativeId, String idWallet) {
+    return CEF + MSG + eventLog + " " + USER + userId + " " + CS1 + initiativeId + " " + CS3 + idWallet;
   }
 
   private String buildLog(String eventLog, String userId, String initiativeId) {
@@ -44,8 +50,23 @@ public class Utilities {
     logger.info(testLog);
   }
 
-  public void logInstrumentAdded(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Instrument added to Wallet", userId, initiativeId, channel);
+  public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet) {
+    String testLog = this.buildLogWithIdWallet("Request for association of a instrument to a initiative from APP IO", userId, initiativeId, idWallet);
+    logger.info(testLog);
+  }
+
+  public void logEnrollmentInstrumentIssuer(String userId, String initiativeId, String channel) {
+    String testLog = this.buildLogWithChannel("Request for association of a instrument to a initiative from ISSUER", userId, initiativeId, channel);
+    logger.info(testLog);
+  }
+
+  public void logEnrollmentIban(String userId, String initiativeId, String channel) {
+    String testLog = this.buildLogWithChannel("Request for association of a IBAN to a initiative", userId, initiativeId, channel);
+    logger.info(testLog);
+  }
+
+  public void logInstrumentDeleted(String userId, String initiativeId) {
+    String testLog = this.buildLog("Request to delete a instrument from a initiative", userId, initiativeId);
     logger.info(testLog);
   }
 
