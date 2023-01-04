@@ -141,9 +141,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
     utilities.logEnrollmentInstrument(userId,initiativeId,idWallet);
 
-    getInitiative(initiativeId);
-
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       throw new WalletException(
@@ -166,9 +166,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
     utilities.logInstrumentDeleted(userId,initiativeId);
 
-    getInitiative(initiativeId);
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    findByInitiativeIdAndUserId(initiativeId, userId);
+    checkEndDate(wallet.getEndDate());
 
     DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId);
 
@@ -185,9 +185,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
     utilities.logEnrollmentIban(userId,initiativeId,channel);
 
-    getInitiative(initiativeId);
-
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
@@ -443,9 +443,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ENROLL_INSTRUMENT_ISSUER] Checking the status of initiative {}", initiativeId);
     utilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
 
-    getInitiative(initiativeId);
-
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       throw new WalletException(
@@ -586,15 +586,11 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
-  private void getInitiative(String initiativeId) {
+  private void checkEndDate(LocalDate endDate) {
     try {
       LocalDate requestDate = LocalDate.now();
 
-      InitiativeDTO initiativeDTO =
-          initiativeRestConnector.getInitiativeBeneficiaryView(initiativeId);
-      if (requestDate.isBefore(initiativeDTO.getGeneral()
-          .getStartDate()) || requestDate.isAfter(initiativeDTO.getGeneral()
-          .getEndDate())) {
+      if (requestDate.isAfter(endDate)) {
         throw new WalletException(
             HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO);
       }
