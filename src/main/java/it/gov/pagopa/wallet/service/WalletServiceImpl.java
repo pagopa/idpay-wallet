@@ -40,6 +40,7 @@ import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.Utilities;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -587,9 +588,13 @@ public class WalletServiceImpl implements WalletService {
 
   private void getInitiative(String initiativeId) {
     try {
+      LocalDate requestDate = LocalDate.now();
+
       InitiativeDTO initiativeDTO =
           initiativeRestConnector.getInitiativeBeneficiaryView(initiativeId);
-      if (!initiativeDTO.getStatus().equals("PUBLISHED")) {
+      if (requestDate.isBefore(initiativeDTO.getGeneral()
+          .getStartDate()) || requestDate.isAfter(initiativeDTO.getGeneral()
+          .getEndDate())) {
         throw new WalletException(
             HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO);
       }
