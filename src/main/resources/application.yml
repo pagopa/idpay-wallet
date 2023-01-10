@@ -9,6 +9,9 @@ logging:
         cloud: ${LOG_LEVEL_SPRING_CLOUD:WARN}
         data: ${LOG_LEVEL_SPRING_DATA:INFO}
     root: ${LOG_LEVEL_ROOT:INFO}
+management.endpoints:
+  web:
+    exposure.include: info, health
 rest-client:
   onboarding:
     serviceCode: idpay-onboarding
@@ -21,7 +24,7 @@ rest-client:
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
 spring:
   application:
-    name: idpay-wallet
+    name: "@project.artifactId@"
   cloud:
     stream:
       binders:
