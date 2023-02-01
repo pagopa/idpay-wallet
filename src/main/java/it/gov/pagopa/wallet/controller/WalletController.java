@@ -47,7 +47,7 @@ public interface WalletController {
 
   @PutMapping("/updateWallet")
   ResponseEntity<Void> updateWallet(
-      @Valid @RequestBody WalletPIBodyDTO body);
+      @RequestBody WalletPIBodyDTO body);
 
   @PutMapping("/{initiativeId}/{userId}/iban")
   ResponseEntity<Void> enrollIban(
