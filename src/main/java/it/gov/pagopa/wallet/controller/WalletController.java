@@ -47,7 +47,7 @@ public interface WalletController {
 
   @PutMapping("/updateWallet")
   ResponseEntity<Void> updateWallet(
-      @RequestBody WalletPIBodyDTO body);
+      @Valid @RequestBody WalletPIBodyDTO body);
 
   @PutMapping("/{initiativeId}/{userId}/iban")
   ResponseEntity<Void> enrollIban(
@@ -63,7 +63,7 @@ public interface WalletController {
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   @PutMapping("/acknowledge")
-  ResponseEntity<Void> processAck(@Valid @RequestBody InstrumentAckDTO body);
+  ResponseEntity<Void> processAck(@RequestBody InstrumentAckDTO body);
 
   @PutMapping("/{initiativeId}/{userId}/instruments")
   ResponseEntity<Void> enrollInstrumentIssuer(
