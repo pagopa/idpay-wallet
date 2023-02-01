@@ -22,10 +22,8 @@ public class InstrumentAckDTO {
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String channel;
 
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String brandLogo;
 
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String maskedPan;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
