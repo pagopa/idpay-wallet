@@ -37,8 +37,10 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
+import it.gov.pagopa.wallet.utils.Utilities;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,17 +63,30 @@ public class WalletServiceImpl implements WalletService {
 
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
-  @Autowired WalletRepository walletRepository;
-  @Autowired WalletUpdatesRepository walletUpdatesRepository;
-  @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-  @Autowired OnboardingRestConnector onboardingRestConnector;
-  @Autowired IbanProducer ibanProducer;
-  @Autowired TimelineProducer timelineProducer;
-  @Autowired WalletMapper walletMapper;
-  @Autowired TimelineMapper timelineMapper;
-  @Autowired ErrorProducer errorProducer;
-  @Autowired NotificationProducer notificationProducer;
-  @Autowired InitiativeRestConnector initiativeRestConnector;
+  @Autowired
+  WalletRepository walletRepository;
+  @Autowired
+  WalletUpdatesRepository walletUpdatesRepository;
+  @Autowired
+  PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  @Autowired
+  OnboardingRestConnector onboardingRestConnector;
+  @Autowired
+  IbanProducer ibanProducer;
+  @Autowired
+  TimelineProducer timelineProducer;
+  @Autowired
+  WalletMapper walletMapper;
+  @Autowired
+  TimelineMapper timelineMapper;
+  @Autowired
+  ErrorProducer errorProducer;
+  @Autowired
+  NotificationProducer notificationProducer;
+  @Autowired
+  InitiativeRestConnector initiativeRestConnector;
+  @Autowired
+  Utilities utilities;
 
   @Value(
       "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
@@ -124,10 +139,11 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrument(String initiativeId, String userId, String idWallet) {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
-
-    getInitiative(initiativeId);
+    utilities.logEnrollmentInstrument(userId,initiativeId,idWallet);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       throw new WalletException(
@@ -148,10 +164,11 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void deleteInstrument(String initiativeId, String userId, String instrumentId) {
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
+    utilities.logInstrumentDeleted(userId,initiativeId);
 
-    getInitiative(initiativeId);
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    findByInitiativeIdAndUserId(initiativeId, userId);
+    checkEndDate(wallet.getEndDate());
 
     DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId);
 
@@ -166,10 +183,11 @@ public class WalletServiceImpl implements WalletService {
   public void enrollIban(
       String initiativeId, String userId, String iban, String channel, String description) {
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
-
-    getInitiative(initiativeId);
+    utilities.logEnrollmentIban(userId,initiativeId,channel);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
@@ -224,11 +242,13 @@ public class WalletServiceImpl implements WalletService {
     log.info(
         "[PERFORMANCE_LOG] [CREATE_WALLET] Time occurred to perform business logic: {} ms",
         System.currentTimeMillis() - startTime);
+    utilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
 
   @Override
   public void unsubscribe(String initiativeId, String userId) {
     log.info("[UNSUBSCRIBE] Unsubscribing user");
+    utilities.logUnsubscribe(userId,initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     String statusTemp = wallet.getStatus();
     if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
@@ -318,7 +338,8 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void processAck(InstrumentAckDTO instrumentAckDTO) {
 
-    log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument", instrumentAckDTO.getOperationType());
+    log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument",
+        instrumentAckDTO.getOperationType());
 
     if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
@@ -344,6 +365,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
+
 
     sendToTimeline(queueOperationDTO);
   }
@@ -372,7 +394,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (history.containsKey(refundDTO.getRewardNotificationId())
         && history.get(refundDTO.getRewardNotificationId()).getFeedbackProgressive()
-            >= refundDTO.getFeedbackProgressive()) {
+        >= refundDTO.getFeedbackProgressive()) {
       log.info("[PROCESS_REFUND] Feedback already processed, skipping message");
       return;
     }
@@ -419,10 +441,11 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollInstrumentIssuer(String initiativeId, String userId, InstrumentIssuerDTO body) {
     log.info("[ENROLL_INSTRUMENT_ISSUER] Checking the status of initiative {}", initiativeId);
-
-    getInitiative(initiativeId);
+    utilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       throw new WalletException(
@@ -455,14 +478,14 @@ public class WalletServiceImpl implements WalletService {
       BigDecimal accruedReward) {
 
     if (walletUpdatesRepository.rewardTransaction(
-            initiativeId,
-            rewardTransactionDTO.getUserId(),
-            counters
-                .getInitiativeBudget()
-                .subtract(counters.getTotalReward())
-                .setScale(2, RoundingMode.HALF_DOWN),
-            counters.getTotalReward(),
-            counters.getTrxNumber())
+        initiativeId,
+        rewardTransactionDTO.getUserId(),
+        counters
+            .getInitiativeBudget()
+            .subtract(counters.getTotalReward())
+            .setScale(2, RoundingMode.HALF_DOWN),
+        counters.getTotalReward(),
+        counters.getTrxNumber())
         == null) {
       log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
       return;
@@ -563,11 +586,11 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
-  private void getInitiative(String initiativeId) {
+  private void checkEndDate(LocalDate endDate) {
     try {
-      InitiativeDTO initiativeDTO =
-          initiativeRestConnector.getInitiativeBeneficiaryView(initiativeId);
-      if (!initiativeDTO.getStatus().equals("PUBLISHED")) {
+      LocalDate requestDate = LocalDate.now();
+
+      if (requestDate.isAfter(endDate)) {
         throw new WalletException(
             HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO);
       }

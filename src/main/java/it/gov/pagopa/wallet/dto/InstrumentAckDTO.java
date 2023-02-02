@@ -5,12 +5,14 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class InstrumentAckDTO {
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
@@ -22,10 +24,8 @@ public class InstrumentAckDTO {
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String channel;
 
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String brandLogo;
 
-  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String maskedPan;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
@@ -35,4 +35,7 @@ public class InstrumentAckDTO {
 
   @Min(value = 0, message = WalletConstants.ERROR_LESS_THAN_ZERO)
   Integer ninstr;
+
+
+
 }
