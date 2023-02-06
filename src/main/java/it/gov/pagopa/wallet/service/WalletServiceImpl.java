@@ -282,8 +282,8 @@ public class WalletServiceImpl implements WalletService {
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
     long startTime = System.currentTimeMillis();
 
-    log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
+      log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
       return;
     }
     log.info("[PROCESS_TRANSACTION] New trx from Rule Engine");
