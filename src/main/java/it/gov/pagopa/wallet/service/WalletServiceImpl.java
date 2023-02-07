@@ -340,6 +340,7 @@ public class WalletServiceImpl implements WalletService {
 
     log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument",
         instrumentAckDTO.getOperationType());
+    log.info(instrumentAckDTO.toString());
 
     if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
 
