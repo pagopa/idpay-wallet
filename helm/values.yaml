@@ -90,8 +90,6 @@ microservice-chart:
     KAFKA_NOTIFICATION_SASL_JAAS_CONFIG: evh-idpay-notification-request-idpay-notification-request-producer-jaas-config-idpay-00
     KAFKA_ERRORS_SASL_JAAS_CONFIG: evh-idpay-errors-idpay-errors-producer-jaas-config-idpay-01
 
-#    APPLICATIONINSIGHTS_CONNECTION_STRING: appinsights-instrumentation-key
-
   # nodeSelector: {}
 
   # tolerations: []
