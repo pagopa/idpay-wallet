@@ -363,10 +363,8 @@ public class WalletServiceImpl implements WalletService {
           instrumentAckDTO.getUserId(),
           instrumentAckDTO.getNinstr(),
           setStatus(wallet));
-    }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
-
 
     sendToTimeline(queueOperationDTO);
   }
