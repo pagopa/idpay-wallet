@@ -341,8 +341,8 @@ public class WalletServiceImpl implements WalletService {
     log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument",
         instrumentAckDTO.getOperationType());
     log.info(instrumentAckDTO.toString());
-
-    if (!instrumentAckDTO.getOperationType().startsWith("REJECTED_")) {
+    log.info(instrumentAckDTO.getOperationType());
+    log.info(String.valueOf(instrumentAckDTO.getNinstr()));
 
       Wallet wallet =
           walletRepository
