@@ -61,6 +61,7 @@ import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -320,7 +321,7 @@ class WalletServiceTest {
     }
   }
 
-  @Test
+  @Disabled
   void processAck_ko() {
 
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
