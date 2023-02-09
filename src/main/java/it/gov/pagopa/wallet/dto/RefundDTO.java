@@ -8,6 +8,8 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class RefundDTO {
+  private String id;
+  private String externalId;
   private String rewardNotificationId;
   private String initiativeId;
   private String userId;
