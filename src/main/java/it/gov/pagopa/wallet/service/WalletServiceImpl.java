@@ -386,6 +386,7 @@ public class WalletServiceImpl implements WalletService {
       }
 
       if (!instrumentAckDTO.getOperationType().equals(WalletConstants.REJECTED_ADD_INSTRUMENT)){
+        wallet.setNInstr(instrumentAckDTO.getNinstr());
         walletUpdatesRepository.updateInstrumentNumber(
                 instrumentAckDTO.getInitiativeId(),
                 instrumentAckDTO.getUserId(),
