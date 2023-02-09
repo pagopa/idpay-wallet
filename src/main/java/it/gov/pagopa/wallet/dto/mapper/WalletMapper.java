@@ -36,6 +36,7 @@ public class WalletMapper {
         .refunded(wallet.getRefunded())
         .nInstr(wallet.getNInstr())
         .iban(wallet.getIban())
+        .lastCounterUpdate(wallet.getLastCounterUpdate())
         .build();
   }
 
@@ -44,6 +45,7 @@ public class WalletMapper {
         .amount(wallet.getAmount())
         .accrued(wallet.getAccrued())
         .refunded(wallet.getRefunded())
+        .lastCounterUpdate(wallet.getLastCounterUpdate())
         .build();
   }
 }

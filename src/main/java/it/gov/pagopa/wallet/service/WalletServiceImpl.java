@@ -24,7 +24,6 @@ import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import it.gov.pagopa.wallet.dto.WalletPIDTO;
-import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -236,6 +235,7 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
     if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
+      wallet.setLastCounterUpdate(LocalDateTime.now());
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
@@ -340,9 +340,6 @@ public class WalletServiceImpl implements WalletService {
 
     log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument",
         instrumentAckDTO.getOperationType());
-    log.info(instrumentAckDTO.toString());
-    log.info(instrumentAckDTO.getOperationType());
-    log.info(String.valueOf(instrumentAckDTO.getNinstr()));
 
       Wallet wallet =
           walletRepository
@@ -356,13 +353,13 @@ public class WalletServiceImpl implements WalletService {
             HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND);
       }
 
-      wallet.setNInstr(instrumentAckDTO.getNinstr());
-
-      walletUpdatesRepository.updateInstrumentNumber(
-          instrumentAckDTO.getInitiativeId(),
-          instrumentAckDTO.getUserId(),
-          instrumentAckDTO.getNinstr(),
-          setStatus(wallet));
+      if (!instrumentAckDTO.getOperationType().equals(WalletConstants.REJECTED_ADD_INSTRUMENT)){
+        walletUpdatesRepository.updateInstrumentNumber(
+                instrumentAckDTO.getInitiativeId(),
+                instrumentAckDTO.getUserId(),
+                instrumentAckDTO.getNinstr(),
+                setStatus(wallet));
+      }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
 
