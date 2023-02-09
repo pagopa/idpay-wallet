@@ -26,6 +26,7 @@ public class WalletConstants {
   public static final String ERROR_QUEUE= "Error to sending event to queue";
   public static final String CHANNEL_PM= "PAYMENT-MANAGER";
   public static final String ERROR_LESS_THAN_ZERO = "The field must be greater than zero!";
-
+  public static final String REJECTED_ADD_INSTRUMENT = "REJECTED_ADD_INSTRUMENT";
+  public static final String ADD_INSTRUMENT = "ADD_INSTRUMENT";
   private WalletConstants(){}
 }

@@ -7,7 +7,26 @@ import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.dto.Counters;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
+import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
+import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
+import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
+import it.gov.pagopa.wallet.dto.RewardDTO;
+import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
+import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletPIDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -25,7 +44,6 @@ import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -95,18 +113,19 @@ class WalletServiceTest {
     private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
     private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
 
-    private static final Wallet TEST_WALLET =
-            Wallet.builder()
-                    .userId(USER_ID)
-                    .initiativeId(INITIATIVE_ID)
-                    .initiativeName(INITIATIVE_NAME)
-                    .acceptanceDate(TEST_DATE)
-                    .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
-                    .build();
+  private static final Wallet TEST_WALLET =
+      Wallet.builder()
+          .userId(USER_ID)
+          .initiativeId(INITIATIVE_ID)
+          .initiativeName(INITIATIVE_NAME)
+          .acceptanceDate(TEST_DATE)
+          .status(WalletStatus.NOT_REFUNDABLE.name())
+          .endDate(TEST_DATE_ONLY_DATE)
+          .amount(TEST_AMOUNT)
+          .accrued(TEST_ACCRUED)
+          .refunded(TEST_REFUNDED)
+          .lastCounterUpdate(TEST_DATE)
+          .build();
 
     private static final Wallet TEST_WALLET_ISSUER =
             Wallet.builder().amount(TEST_AMOUNT).accrued(TEST_ACCRUED).refunded(TEST_REFUNDED).build();
@@ -114,18 +133,19 @@ class WalletServiceTest {
     private static final QueueOperationDTO TEST_OPERATION_DTO =
             QueueOperationDTO.builder().userId(USER_ID).build();
 
-    private static final Wallet TEST_WALLET_2 =
-            Wallet.builder()
-                    .userId(USER_ID)
-                    .initiativeId(INITIATIVE_ID)
-                    .initiativeName(INITIATIVE_NAME)
-                    .acceptanceDate(TEST_DATE)
-                    .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
-                    .build();
+  private static final Wallet TEST_WALLET_2 =
+      Wallet.builder()
+          .userId(USER_ID)
+          .initiativeId(INITIATIVE_ID)
+          .initiativeName(INITIATIVE_NAME)
+          .acceptanceDate(TEST_DATE)
+          .status(WalletStatus.NOT_REFUNDABLE.name())
+          .endDate(TEST_DATE_ONLY_DATE)
+          .amount(TEST_AMOUNT)
+          .accrued(TEST_ACCRUED)
+          .refunded(TEST_REFUNDED)
+          .lastCounterUpdate(TEST_DATE)
+          .build();
 
     private static final Wallet TEST_WALLET_UNSUBSCRIBED =
             Wallet.builder()
@@ -140,20 +160,21 @@ class WalletServiceTest {
                     .refunded(TEST_REFUNDED)
                     .build();
 
-    private static final WalletDTO WALLET_DTO =
-            new WalletDTO(
-                    INITIATIVE_ID,
-                    INITIATIVE_NAME,
-                    WalletStatus.NOT_REFUNDABLE.name(),
-                    IBAN_OK,
-                    TEST_DATE_ONLY_DATE,
-                    0,
-                    TEST_AMOUNT,
-                    TEST_ACCRUED,
-                    TEST_REFUNDED);
+  private static final WalletDTO WALLET_DTO =
+      new WalletDTO(
+          INITIATIVE_ID,
+          INITIATIVE_NAME,
+          WalletStatus.NOT_REFUNDABLE.name(),
+          IBAN_OK,
+          TEST_DATE_ONLY_DATE,
+          0,
+          TEST_AMOUNT,
+          TEST_ACCRUED,
+          TEST_REFUNDED,
+          TEST_DATE);
 
-    private static final WalletDTO WALLET_ISSUER_DTO =
-            new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED);
+  private static final WalletDTO WALLET_ISSUER_DTO =
+      new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
 
     private static final RewardDTO REWARD_DTO =
             RewardDTO.builder()
@@ -305,22 +326,22 @@ class WalletServiceTest {
         }
     }
 
-    @Disabled
-    void processAck_ko() {
-
-        Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
-        Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
-        final InstrumentAckDTO instrumentAckDTO =
-                new InstrumentAckDTO(
-                        INITIATIVE_ID,
-                        USER_ID,
-                        WalletConstants.CHANNEL_APP_IO,
-                        BRAND_LOGO,
-                        MASKED_PAN,
-                        "REJECTED_ADD_INSTRUMENT",
-                        TEST_DATE,
-                        null);
-        Mockito.when(timelineMapper.ackToTimeline(instrumentAckDTO)).thenReturn(TEST_OPERATION_DTO);
+  @Test
+  void processAck_ko() {
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(Mockito.anyString(),Mockito.anyString())).thenReturn(Optional.of(TEST_WALLET));
+    Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
+    Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
+    final InstrumentAckDTO instrumentAckDTO =
+        new InstrumentAckDTO(
+            INITIATIVE_ID,
+            USER_ID,
+            WalletConstants.CHANNEL_APP_IO,
+            BRAND_LOGO,
+            MASKED_PAN,
+            "REJECTED_ADD_INSTRUMENT",
+            TEST_DATE,
+            null);
+    Mockito.when(timelineMapper.ackToTimeline(instrumentAckDTO)).thenReturn(TEST_OPERATION_DTO);
 
         try {
             walletService.processAck(instrumentAckDTO);
@@ -825,12 +846,13 @@ class WalletServiceTest {
         assertEquals(WALLET_DTO.getStatus(), actual.getStatus());
     }
 
-    @Test
-    void createWallet() {
-        walletService.createWallet(OUTCOME_OK);
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
-    }
+  @Test
+  void createWallet() {
+    Mockito.when(walletMapper.map(Mockito.any())).thenReturn(TEST_WALLET);
+    walletService.createWallet(OUTCOME_OK);
+    Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(Mockito.any());
+    Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+  }
 
     @Test
     void createWallet_doNoting() {

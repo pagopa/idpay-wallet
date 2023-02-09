@@ -24,7 +24,6 @@ import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import it.gov.pagopa.wallet.dto.WalletPIDTO;
-import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -61,7 +60,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class WalletServiceImpl implements WalletService {
 
+  public static final String SERVICE_ENROLL_IBAN = "ENROLL_IBAN";
+  public static final String SERVICE_UNSUBSCRIBE = "UNSUBSCRIBE";
+  public static final String SERVICE_CHECK_IBAN_OUTCOME = "CHECK_IBAN_OUTCOME";
+  public static final String SERVICE_ENROLL_INSTRUMENT_ISSUER = "ENROLL_INSTRUMENT_ISSUER";
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
+  public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
 
   @Autowired
   WalletRepository walletRepository;
@@ -111,19 +115,25 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    performanceLog(startTime, "GET_ENROLLMENT_STATUS");
     return new EnrollmentStatusDTO(wallet.getStatus());
   }
 
   @Override
   public WalletDTO getWalletDetail(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
     Wallet wallet = getWallet(initiativeId, userId);
+    performanceLog(startTime, "GET_WALLET_DETAIL");
     return walletMapper.toInitiativeDTO(wallet);
   }
 
   @Override
   public WalletDTO getWalletDetailIssuer(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
     Wallet wallet = getWallet(initiativeId, userId);
+    performanceLog(startTime, "GET_WALLET_DETAIL_ISSUER");
     return walletMapper.toIssuerInitiativeDTO(wallet);
   }
 
@@ -138,6 +148,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void enrollInstrument(String initiativeId, String userId, String idWallet) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
     utilities.logEnrollmentInstrument(userId,initiativeId,idWallet);
 
@@ -155,14 +167,18 @@ public class WalletServiceImpl implements WalletService {
     try {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrument(dto);
+      performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
+      performanceLog(startTime, "ENROLL_INSTRUMENT");
       throw new WalletException(e.status(), e.getMessage());
     }
   }
 
   @Override
   public void deleteInstrument(String initiativeId, String userId, String instrumentId) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
     utilities.logInstrumentDeleted(userId,initiativeId);
 
@@ -174,7 +190,9 @@ public class WalletServiceImpl implements WalletService {
 
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
+      performanceLog(startTime, "DELETE_INSTRUMENT");
     } catch (FeignException e) {
+      performanceLog(startTime, "DELETE_INSTRUMENT");
       throw new WalletException(e.status(), e.getMessage());
     }
   }
@@ -182,6 +200,8 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void enrollIban(
       String initiativeId, String userId, String iban, String channel, String description) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
     utilities.logEnrollmentIban(userId,initiativeId,channel);
 
@@ -189,12 +209,14 @@ public class WalletServiceImpl implements WalletService {
 
     checkEndDate(wallet.getEndDate());
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
 
     if (wallet.getIban() != null && (wallet.getIban().equals(iban))) {
       log.info("[ENROLL_IBAN] The IBAN matches with the one already enrolled");
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
       return;
     }
 
@@ -213,13 +235,16 @@ public class WalletServiceImpl implements WalletService {
       log.error("[ENROLL_IBAN] An error has occurred. Sending message to Error queue");
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
       this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
     }
 
     sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
+    performanceLog(startTime, SERVICE_ENROLL_IBAN);
   }
 
   @Override
   public InitiativeListDTO getInitiativeList(String userId) {
+    long startTime = System.currentTimeMillis();
     List<Wallet> walletList = walletRepository.findByUserId(userId);
     InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
     List<WalletDTO> walletDTOList = new ArrayList<>();
@@ -228,6 +253,8 @@ public class WalletServiceImpl implements WalletService {
       walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
     }
     initiativeListDTO.setInitiativeList(walletDTOList);
+
+    performanceLog(startTime, "GET_INITIATIVE_LIST");
     return initiativeListDTO;
   }
 
@@ -236,17 +263,19 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
     if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
       Wallet wallet = walletMapper.map(evaluationDTO);
+      wallet.setLastCounterUpdate(LocalDateTime.now());
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
-    log.info(
-        "[PERFORMANCE_LOG] [CREATE_WALLET] Time occurred to perform business logic: {} ms",
-        System.currentTimeMillis() - startTime);
+
+    performanceLog(startTime, "CREATE_WALLET");
     utilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
 
   @Override
   public void unsubscribe(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[UNSUBSCRIBE] Unsubscribing user");
     utilities.logUnsubscribe(userId,initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
@@ -265,6 +294,7 @@ public class WalletServiceImpl implements WalletService {
         log.info("[UNSUBSCRIBE] Onboarding disabled");
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
+        performanceLog(startTime, SERVICE_UNSUBSCRIBE);
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       try {
@@ -273,9 +303,11 @@ public class WalletServiceImpl implements WalletService {
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         onboardingRestConnector.rollback(initiativeId, userId);
+        performanceLog(startTime, SERVICE_UNSUBSCRIBE);
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
     }
+    performanceLog(startTime, SERVICE_UNSUBSCRIBE);
   }
 
   @Override
@@ -284,6 +316,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
       log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
+      performanceLog(startTime, "PROCESS_TRANSACTION");
       return;
     }
     log.info("[PROCESS_TRANSACTION] New trx from Rule Engine");
@@ -298,9 +331,7 @@ public class WalletServiceImpl implements WalletService {
                   reward.getCounters(),
                   reward.getAccruedReward());
             });
-    log.info(
-        "[PERFORMANCE_LOG] [PROCESS_TRANSACTION] Time occurred to perform business logic: {} ms",
-        System.currentTimeMillis() - startTime);
+    performanceLog(startTime, "PROCESS_TRANSACTION");
   }
 
   @Override
@@ -330,19 +361,16 @@ public class WalletServiceImpl implements WalletService {
 
       sendToTimeline(queueOperationDTO);
     }
-    log.info(
-        "[PERFORMANCE_LOG] [UPDATE_WALLET] Time occurred to perform business logic: {} ms",
-        System.currentTimeMillis() - startTime);
+    performanceLog(startTime, "UPDATE_WALLET");
   }
 
   @Override
   public void processAck(InstrumentAckDTO instrumentAckDTO) {
 
+    long startTime = System.currentTimeMillis();
+
     log.info("[PROCESS_ACK] Processing new ack {} from PaymentInstrument",
         instrumentAckDTO.getOperationType());
-    log.info(instrumentAckDTO.toString());
-    log.info(instrumentAckDTO.getOperationType());
-    log.info(String.valueOf(instrumentAckDTO.getNinstr()));
 
       Wallet wallet =
           walletRepository
@@ -352,21 +380,24 @@ public class WalletServiceImpl implements WalletService {
 
       if (wallet == null) {
         log.error("[PROCESS_ACK] Wallet not found");
+        performanceLog(startTime, "PROCESS_ACK");
         throw new WalletException(
             HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND);
       }
 
-      wallet.setNInstr(instrumentAckDTO.getNinstr());
-
-      walletUpdatesRepository.updateInstrumentNumber(
-          instrumentAckDTO.getInitiativeId(),
-          instrumentAckDTO.getUserId(),
-          instrumentAckDTO.getNinstr(),
-          setStatus(wallet));
+      if (!instrumentAckDTO.getOperationType().equals(WalletConstants.REJECTED_ADD_INSTRUMENT)){
+        wallet.setNInstr(instrumentAckDTO.getNinstr());
+        walletUpdatesRepository.updateInstrumentNumber(
+                instrumentAckDTO.getInitiativeId(),
+                instrumentAckDTO.getUserId(),
+                instrumentAckDTO.getNinstr(),
+                setStatus(wallet));
+      }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
 
     sendToTimeline(queueOperationDTO);
+    performanceLog(startTime, "PROCESS_ACK");
   }
 
   @Override
@@ -382,6 +413,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (wallet == null) {
       log.info("[PROCESS_REFUND] Wallet not found, skipping message");
+      performanceLog(startTime, SERVICE_PROCESS_REFUND);
       return;
     }
 
@@ -395,6 +427,7 @@ public class WalletServiceImpl implements WalletService {
         && history.get(refundDTO.getRewardNotificationId()).getFeedbackProgressive()
         >= refundDTO.getFeedbackProgressive()) {
       log.info("[PROCESS_REFUND] Feedback already processed, skipping message");
+      performanceLog(startTime, SERVICE_PROCESS_REFUND);
       return;
     }
 
@@ -432,13 +465,13 @@ public class WalletServiceImpl implements WalletService {
 
     sendNotification(notificationQueueDTO);
 
-    log.info(
-        "[PERFORMANCE_LOG] [PROCESS_REFUND] Time occurred to perform business logic: {} ms",
-        System.currentTimeMillis() - startTime);
+    performanceLog(startTime, SERVICE_PROCESS_REFUND);
   }
 
   @Override
   public void enrollInstrumentIssuer(String initiativeId, String userId, InstrumentIssuerDTO body) {
+    long startTime = System.currentTimeMillis();
+
     log.info("[ENROLL_INSTRUMENT_ISSUER] Checking the status of initiative {}", initiativeId);
     utilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
 
@@ -447,6 +480,7 @@ public class WalletServiceImpl implements WalletService {
     checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
@@ -464,8 +498,10 @@ public class WalletServiceImpl implements WalletService {
     try {
       log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentIssuer(instrumentIssuerCallDTO);
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
       throw new WalletException(e.status(), e.getMessage());
     }
   }
@@ -516,6 +552,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (!iban.getStatus().equals("KO")) {
       log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
+      performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
       return;
     }
 
@@ -526,12 +563,14 @@ public class WalletServiceImpl implements WalletService {
 
     if (wallet == null) {
       log.warn("[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
+      performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
       return;
     }
 
     if (!iban.getIban().equals(wallet.getIban())) {
       log.warn(
           "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
+      performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
       return;
     }
 
@@ -540,9 +579,7 @@ public class WalletServiceImpl implements WalletService {
     walletUpdatesRepository.deleteIban(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
     sendCheckIban(iban);
 
-    log.info(
-        "[PERFORMANCE_LOG] [CHECK_IBAN_OUTCOME] Time occurred to perform business logic: {} ms",
-        System.currentTimeMillis() - startTime);
+    performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban) {
@@ -621,5 +658,12 @@ public class WalletServiceImpl implements WalletService {
         .setHeader(WalletConstants.ERROR_MSG_HEADER_CLASS, e.getClass())
         .setHeader(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
     errorProducer.sendEvent(errorMessage.build());
+  }
+
+  private void performanceLog(long startTime, String service){
+    log.info(
+        "[PERFORMANCE_LOG] [{}] Time occurred to perform business logic: {} ms",
+        service,
+        System.currentTimeMillis() - startTime);
   }
 }

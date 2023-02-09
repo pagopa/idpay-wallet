@@ -9,6 +9,7 @@ import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,8 @@ class WalletMapperTest {
   private static final String USER_ID = "test_user";
   private static final String INITIATIVE_ID = "test_initiative";
   private static final LocalDate OPERATION_DATE = LocalDate.now();
+  private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+
   private static final Wallet WALLET =
       Wallet.builder()
           .initiativeId(INITIATIVE_ID)
@@ -34,6 +37,7 @@ class WalletMapperTest {
           .amount(new BigDecimal(500))
           .accrued(BigDecimal.valueOf(0.00))
           .refunded(BigDecimal.valueOf(0.00))
+          .lastCounterUpdate(TEST_DATE)
           .build();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
@@ -58,6 +62,7 @@ class WalletMapperTest {
           .accrued(BigDecimal.valueOf(0.00))
           .refunded(BigDecimal.valueOf(0.00))
           .nInstr(0)
+          .lastCounterUpdate(TEST_DATE)
           .build();
 
   private static final WalletDTO ISSUER_INITIATIVE_DTO =
@@ -65,6 +70,7 @@ class WalletMapperTest {
           .amount(new BigDecimal(500))
           .accrued(BigDecimal.valueOf(0.00))
           .refunded(BigDecimal.valueOf(0.00))
+          .lastCounterUpdate(TEST_DATE)
           .build();
 
   @Autowired WalletMapper walletMapper;
@@ -72,7 +78,7 @@ class WalletMapperTest {
   @Test
   void map() {
     Wallet actual = walletMapper.map(EVALUATION_DTO);
-
+    actual.setLastCounterUpdate(TEST_DATE);
     assertEquals(WALLET, actual);
   }
 
