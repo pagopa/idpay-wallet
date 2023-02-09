@@ -25,7 +25,6 @@ import java.util.List;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -68,6 +67,8 @@ class WalletControllerTest {
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
   private static final LocalDate DATE = LocalDate.now();
+  private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+
   private static final WalletDTO INITIATIVE_DTO_TEST =
       new WalletDTO(
           INITIATIVE_ID,
@@ -78,7 +79,8 @@ class WalletControllerTest {
           0,
           null,
           null,
-          null);
+          null,
+          TEST_DATE);
   private static final IbanBodyDTO IBAN_BODY_DTO =
       new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -95,7 +97,8 @@ class WalletControllerTest {
           1,
           new BigDecimal("450.00"),
           new BigDecimal("50.00"),
-          new BigDecimal("0.00"));
+          new BigDecimal("0.00"),
+          TEST_DATE);
   private static final WalletDTO INITIATIVE_ISSUER_DTO =
       new WalletDTO(
           null,
@@ -106,7 +109,8 @@ class WalletControllerTest {
           0,
           new BigDecimal("450.00"),
           new BigDecimal("50.00"),
-          new BigDecimal("0.00"));
+          new BigDecimal("0.00"),
+          TEST_DATE);
 
   @MockBean WalletService walletServiceMock;
 
@@ -693,55 +697,6 @@ class WalletControllerTest {
     assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
   }
 
-  @Disabled
-  void processAck_ko_empty_body() throws Exception {
-
-    final InstrumentAckDTO instrumentAckDTO =
-        new InstrumentAckDTO(
-            INITIATIVE_ID,
-            "",
-            WalletConstants.CHANNEL_APP_IO,
-            BRAND_LOGO,
-            MASKED_PAN,
-            "ADD_INSTRUMENT",
-            LocalDateTime.now(),
-            -1);
-
-    MvcResult res =
-        mvc.perform(
-                MockMvcRequestBuilders.put(BASE_URL + PROCESS_ACK_URL)
-                    .content(objectMapper.writeValueAsString(instrumentAckDTO))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .accept(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andReturn();
-
-    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
-    assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
-  }
-
-  @Disabled
-  void processAck_ko_negative_ninstr() throws Exception {
-
-    final InstrumentAckDTO instrumentAckDTO =
-        InstrumentAckDTO.builder().build();
-
-    MvcResult res =
-        mvc.perform(
-                MockMvcRequestBuilders.put(BASE_URL + PROCESS_ACK_URL)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(objectMapper.writeValueAsString(instrumentAckDTO))
-                    .accept(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andReturn();
-
-    ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-    assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
-    assertTrue(error.getMessage().contains(WalletConstants.ERROR_LESS_THAN_ZERO));
-  }
 
   @Test
   void enroll_instrument_issuer_ok() throws Exception {

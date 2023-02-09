@@ -34,8 +34,6 @@ import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
 import it.gov.pagopa.wallet.dto.WalletPIDTO;
-import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
-import it.gov.pagopa.wallet.dto.initiative.InitiativeGeneralDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -120,6 +118,7 @@ class WalletServiceTest {
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
+          .lastCounterUpdate(TEST_DATE)
           .build();
 
   private static final Wallet TEST_WALLET_ISSUER =
@@ -139,6 +138,7 @@ class WalletServiceTest {
           .amount(TEST_AMOUNT)
           .accrued(TEST_ACCRUED)
           .refunded(TEST_REFUNDED)
+          .lastCounterUpdate(TEST_DATE)
           .build();
 
   private static final Wallet TEST_WALLET_UNSUBSCRIBED =
@@ -164,10 +164,11 @@ class WalletServiceTest {
           0,
           TEST_AMOUNT,
           TEST_ACCRUED,
-          TEST_REFUNDED);
+          TEST_REFUNDED,
+          TEST_DATE);
 
   private static final WalletDTO WALLET_ISSUER_DTO =
-      new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED);
+      new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
 
   private static final RewardDTO REWARD_DTO =
       RewardDTO.builder()
@@ -322,7 +323,7 @@ class WalletServiceTest {
 
   @Test
   void processAck_ko() {
-
+    Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(Mockito.anyString(),Mockito.anyString())).thenReturn(Optional.of(TEST_WALLET));
     Mockito.doNothing().when(timelineProducer).sendEvent(Mockito.any(QueueOperationDTO.class));
     Mockito.doNothing().when(errorProducer).sendEvent(Mockito.any());
     final InstrumentAckDTO instrumentAckDTO =
@@ -842,6 +843,7 @@ class WalletServiceTest {
 
   @Test
   void createWallet() {
+    Mockito.when(walletMapper.map(Mockito.any())).thenReturn(TEST_WALLET);
     walletService.createWallet(OUTCOME_OK);
     Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(Mockito.any());
     Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());

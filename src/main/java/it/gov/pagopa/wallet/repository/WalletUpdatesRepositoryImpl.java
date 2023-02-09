@@ -4,6 +4,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.Fields;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -27,7 +28,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
   private static final String FIELD_NTRX = Fields.nTrx;
   private static final String FIELD_NINSTR = Fields.nInstr;
   private static final String FIELD_HISTORY = Fields.refundHistory;
-
+  private static final String FIELD_LAST_COUNTER_UPDATE = Fields.lastCounterUpdate;
   private final MongoTemplate mongoTemplate;
 
   public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
@@ -71,7 +72,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     return mongoTemplate.findAndModify(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx),
+        new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx)
+                    .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()),
         FindAndModifyOptions.options().returnNew(true),
         Wallet.class);
   }
