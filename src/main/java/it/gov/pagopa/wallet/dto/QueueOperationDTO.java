@@ -19,6 +19,8 @@ public class QueueOperationDTO {
 
   private String rewardNotificationId;
 
+  private String eventId;
+
   private String brandLogo;
 
   private String maskedPan;
