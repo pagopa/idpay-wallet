@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
+import java.time.ZoneId;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,7 +25,7 @@ public class TimelineMapper {
                 .userId(rewardTransaction.getUserId())
                 .operationType(
                         rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
-                .operationDate(rewardTransaction.getTrxDate().toLocalDateTime())
+                .operationDate(rewardTransaction.getTrxDate().atZoneSameInstant(ZoneId.of("Europe/Rome")).toLocalDateTime())
                 .maskedPan(rewardTransaction.getMaskedPan())
                 .instrumentId(rewardTransaction.getInstrumentId())
                 .brandLogo(rewardTransaction.getBrandLogo())
