@@ -172,7 +172,7 @@ spring:
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
       function:
-        definition: walletQueue;consumerIban;trxConsumer;consumerOutcome;consumerRefund
+        definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund
       kafka:
         binder:
           auto-create-topics: false
