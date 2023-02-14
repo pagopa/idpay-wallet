@@ -21,57 +21,83 @@ public class Utilities {
     }
   }
 
-  private static final String CEF = String.format("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2|vs=172.16.151.21:80 event=Wallet srcip=%s srcport=17548 dstip=172.16.128.37 dstport=82",
-      SRCIP);
+  private static final String CEF = String.format("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s", SRCIP);
   private static final String MSG = " msg=";
   private static final String USER = "suser=";
-  private static final String CS1 = "cs1Label=iniziativeId cs1=";
-  private static final String CS2 = "cs2Label=channel cs2=";
-  private static final String CS3 = "cs3Label=idWallet cs3=";
+  private static final String INITIATIVE_ID = "initiativeId";
+  private static final String CHANNEL = "channel";
+  private static final String ID_WALLET = "idWallet";
 
   final Logger logger = Logger.getLogger("AUDIT");
 
 
   private String buildLogWithChannel(String eventLog, String userId, String initiativeId, String channel) {
-    return CEF + MSG + eventLog + " " + USER + userId + " " + CS1 + initiativeId + " " + CS2 + channel;
+    return CEF + MSG + eventLog + " " + USER + userId + " " + INITIATIVE_ID + initiativeId + " " + CHANNEL + channel;
   }
 
   private String buildLogWithIdWallet(String eventLog, String userId, String initiativeId, String idWallet) {
-    return CEF + MSG + eventLog + " " + USER + userId + " " + CS1 + initiativeId + " " + CS3 + idWallet;
+    return CEF + MSG + eventLog + " " + USER + userId + " " + INITIATIVE_ID + initiativeId + " " + ID_WALLET + idWallet;
   }
 
   private String buildLog(String eventLog, String userId, String initiativeId) {
-    return CEF + MSG + eventLog + " " + USER + userId + " " + CS1 + initiativeId;
+    return CEF + MSG + eventLog + " " + USER + userId + " " + INITIATIVE_ID + initiativeId;
   }
 
   public void logCreatedWallet(String userId, String initiativeId) {
-    String testLog = this.buildLog("Wallet's citizen created ", userId,
-        initiativeId);
+    String testLog = this.buildLog("Wallet's citizen created ", userId, initiativeId);
     logger.info(testLog);
   }
 
   public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet) {
-    String testLog = this.buildLogWithIdWallet("Request for association of a instrument to a initiative from APP IO ", userId, initiativeId, idWallet);
+    String testLog = this.buildLogWithIdWallet("Request for association of an instrument to an initiative from APP IO ", userId, initiativeId, idWallet);
     logger.info(testLog);
   }
 
   public void logEnrollmentInstrumentIssuer(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of a instrument to a initiative from ISSUER ", userId, initiativeId, channel);
+    String testLog = this.buildLogWithChannel("Request for association of an instrument to an initiative from ISSUER ", userId, initiativeId, channel);
+    logger.info(testLog);
+  }
+  public void logEnrollmentInstrumentKO(String userId, String initiativeId, String idWallet, String msg) {
+    String testLog = this.buildLogWithIdWallet("Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, idWallet);
     logger.info(testLog);
   }
 
   public void logEnrollmentIban(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of a IBAN to a initiative ", userId, initiativeId, channel);
+    String testLog = this.buildLogWithChannel("Request for association of an IBAN to an initiative ", userId, initiativeId, channel);
+    logger.info(testLog);
+  }
+  public void logEnrollmentIbanKO(String msg, String userId, String initiativeId, String channel) {
+    String testLog = this.buildLogWithChannel("Request for association of an IBAN to an initiative failed: " + msg, userId, initiativeId, channel);
+    logger.info(testLog);
+  }
+  public void logEnrollmentIbanValidationKO(String iban) {
+    String testLog = CEF + MSG + String.format("The iban %s is not valid", iban);
+    logger.info(testLog);
+  }
+  public void logEnrollmentIbanComplete(String userId, String initiativeId, String iban) {
+    String testLog = this.buildLog(String.format("The iban %s was associated to initiative ", iban), userId, initiativeId);
+    logger.info(testLog);
+  }
+  public void logIbanDeleted(String userId, String initiativeId, String iban) {
+    String testLog = this.buildLog(String.format("The iban %s was disassociated from initiative ", iban), userId, initiativeId);
+    logger.info(testLog);
+  }
+  public void logIbanDeletedKO(String userId, String initiativeId, String iban, String msg) {
+    String testLog = this.buildLog(String.format("Request to delete iban %s from initiative failed:", iban) + msg, userId, initiativeId);
     logger.info(testLog);
   }
 
   public void logInstrumentDeleted(String userId, String initiativeId) {
-    String testLog = this.buildLog("Request to delete a instrument from a initiative ", userId, initiativeId);
+    String testLog = this.buildLog("Request to delete an instrument from an initiative ", userId, initiativeId);
     logger.info(testLog);
   }
 
   public void logUnsubscribe(String userId, String initiativeId) {
     String testLog = this.buildLog("Request of unsubscription from initiative ", userId, initiativeId);
+    logger.info(testLog);
+  }
+  public void logUnsubscribeKO(String userId, String initiativeId, String msg) {
+    String testLog = this.buildLog("Request of unsubscription from initiative failed " + msg, userId, initiativeId);
     logger.info(testLog);
   }
 }
