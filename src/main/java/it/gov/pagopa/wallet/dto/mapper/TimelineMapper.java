@@ -39,13 +39,14 @@ public class TimelineMapper {
     }
 
     public QueueOperationDTO deleteInstrumentToTimeline(
-            String initiativeId, String userId, String maskedPan, String brandLogo) {
+            String initiativeId, String userId, String maskedPan, String brandLogo, String circuitType) {
         return QueueOperationDTO.builder()
                 .initiativeId(initiativeId)
                 .userId(userId)
                 .channel(WalletConstants.CHANNEL_PM)
                 .maskedPan(maskedPan)
                 .brandLogo(brandLogo)
+                .circuitType(circuitType)
                 .operationType("DELETE_INSTRUMENT")
                 .operationDate(LocalDateTime.now())
                 .build();
