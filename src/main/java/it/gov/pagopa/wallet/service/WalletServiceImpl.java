@@ -36,7 +36,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
-import it.gov.pagopa.wallet.utils.Utilities;
+import it.gov.pagopa.wallet.utils.AuditUtilities;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -90,7 +90,7 @@ public class WalletServiceImpl implements WalletService {
   @Autowired
   InitiativeRestConnector initiativeRestConnector;
   @Autowired
-  Utilities utilities;
+  AuditUtilities auditUtilities;
 
   @Value(
       "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
@@ -151,14 +151,14 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
-    utilities.logEnrollmentInstrument(userId,initiativeId,idWallet);
+    auditUtilities.logEnrollmentInstrument(userId,initiativeId,idWallet);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-      utilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "wallet in status unsubscribed");
+      auditUtilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "wallet in status unsubscribed");
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
@@ -171,7 +171,7 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
-      utilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "error in payment instrument request");
+      auditUtilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT");
       throw new WalletException(e.status(), e.getMessage());
     }
@@ -182,7 +182,7 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
-    utilities.logInstrumentDeleted(userId,initiativeId);
+    auditUtilities.logInstrumentDeleted(userId,initiativeId);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
@@ -205,14 +205,14 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_IBAN] Checking the status of initiative {}", initiativeId);
-    utilities.logEnrollmentIban(userId,initiativeId,channel);
+    auditUtilities.logEnrollmentIban(userId,initiativeId,channel);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     checkEndDate(wallet.getEndDate());
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
-      utilities.logEnrollmentIbanKO("wallet in status unsubscribed", userId, initiativeId, channel);
+      auditUtilities.logEnrollmentIbanKO("wallet in status unsubscribed", userId, initiativeId, channel);
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
@@ -220,7 +220,7 @@ public class WalletServiceImpl implements WalletService {
     if (wallet.getIban() != null && (wallet.getIban().equals(iban))) {
       log.info("[ENROLL_IBAN] The IBAN matches with the one already enrolled");
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
-      utilities.logEnrollmentIbanKO("the IBAN matches with the one already enrolled", userId, initiativeId, channel);
+      auditUtilities.logEnrollmentIbanKO("the IBAN matches with the one already enrolled", userId, initiativeId, channel);
       return;
     }
 
@@ -231,14 +231,14 @@ public class WalletServiceImpl implements WalletService {
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
 
     walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
-    utilities.logEnrollmentIbanComplete(userId, initiativeId, iban);
+    auditUtilities.logEnrollmentIbanComplete(userId, initiativeId, iban);
 
     try {
       log.info("[ENROLL_IBAN] Sending event to IBAN");
       ibanProducer.sendIban(ibanQueueDTO);
     } catch (Exception e) {
       log.error("[ENROLL_IBAN] An error has occurred. Sending message to Error queue");
-      utilities.logEnrollmentIbanKO("error in sending request to checkIban", userId, initiativeId, channel);
+      auditUtilities.logEnrollmentIbanKO("error in sending request to checkIban", userId, initiativeId, channel);
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
       this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
@@ -275,7 +275,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     performanceLog(startTime, "CREATE_WALLET");
-    utilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
+    auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
 
   @Override
@@ -283,7 +283,7 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[UNSUBSCRIBE] Unsubscribing user");
-    utilities.logUnsubscribe(userId,initiativeId);
+    auditUtilities.logUnsubscribe(userId,initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     String statusTemp = wallet.getStatus();
     if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
@@ -301,7 +301,7 @@ public class WalletServiceImpl implements WalletService {
       } catch (FeignException e) {
         this.rollbackWallet(statusTemp, wallet);
         performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-        utilities.logUnsubscribeKO(userId, initiativeId, "request of disabling onboarding failed");
+        auditUtilities.logUnsubscribeKO(userId, initiativeId, "request of disabling onboarding failed");
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       try {
@@ -311,7 +311,7 @@ public class WalletServiceImpl implements WalletService {
         this.rollbackWallet(statusTemp, wallet);
         onboardingRestConnector.rollback(initiativeId, userId);
         performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-        utilities.logUnsubscribeKO(userId, initiativeId, "request of disabling all payment instruments failed");
+        auditUtilities.logUnsubscribeKO(userId, initiativeId, "request of disabling all payment instruments failed");
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
     }
@@ -482,7 +482,7 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT_ISSUER] Checking the status of initiative {}", initiativeId);
-    utilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
+    auditUtilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
@@ -573,7 +573,7 @@ public class WalletServiceImpl implements WalletService {
     if (wallet == null) {
       log.warn("[CHECK_IBAN_OUTCOME] Wallet not found. Skipping message");
       performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
-      utilities.logIbanDeletedKO(iban.getUserId(), iban.getInitiativeId(), iban.getIban(), "wallet not found");
+      auditUtilities.logIbanDeletedKO(iban.getUserId(), iban.getInitiativeId(), iban.getIban(), "wallet not found");
       return;
     }
 
@@ -581,7 +581,7 @@ public class WalletServiceImpl implements WalletService {
       log.warn(
           "[CHECK_IBAN_OUTCOME] The IBAN contained in the message is different from the IBAN currently enrolled.");
       performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
-      utilities.logIbanDeletedKO(iban.getUserId(), iban.getInitiativeId(), iban.getIban(), "iban mismatch");
+      auditUtilities.logIbanDeletedKO(iban.getUserId(), iban.getInitiativeId(), iban.getIban(), "iban mismatch");
       return;
     }
 
@@ -589,7 +589,7 @@ public class WalletServiceImpl implements WalletService {
 
     walletUpdatesRepository.deleteIban(iban.getInitiativeId(), iban.getUserId(), setStatus(wallet));
     sendCheckIban(iban);
-    utilities.logIbanDeleted(iban.getUserId(), iban.getInitiativeId(), iban.getIban());
+    auditUtilities.logIbanDeleted(iban.getUserId(), iban.getInitiativeId(), iban.getIban());
 
     performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
   }
@@ -622,7 +622,7 @@ public class WalletServiceImpl implements WalletService {
     Iban ibanValidator = Iban.valueOf(iban);
     IbanUtil.validate(iban);
     if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
-      utilities.logEnrollmentIbanValidationKO(iban);
+      auditUtilities.logEnrollmentIbanValidationKO(iban);
       throw new UnsupportedCountryException(iban + " Iban is not italian");
     }
   }

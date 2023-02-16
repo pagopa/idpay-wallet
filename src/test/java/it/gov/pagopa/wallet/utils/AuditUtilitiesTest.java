@@ -25,8 +25,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = {Utilities.class,InetAddress.class})
-class UtilitiesTest {
+@ContextConfiguration(classes = {AuditUtilities.class,InetAddress.class})
+class AuditUtilitiesTest {
   private static final String SRCIP;
 
   static {
@@ -48,7 +48,7 @@ class UtilitiesTest {
   @MockBean
   Logger logger;
   @Autowired
-  Utilities utilities;
+  AuditUtilities auditUtilities;
   @MockBean
   InetAddress inetAddress;
   MemoryAppender memoryAppender;
@@ -66,70 +66,70 @@ class UtilitiesTest {
 
   @Test
   void logCreateWallet_ok(){
-    utilities.logCreatedWallet(USER_ID,INITIATIVE_ID);
+    auditUtilities.logCreatedWallet(USER_ID,INITIATIVE_ID);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
 
   @Test
   void logUnsubscribe_ok(){
-    utilities.logUnsubscribe(USER_ID,INITIATIVE_ID);
+    auditUtilities.logUnsubscribe(USER_ID,INITIATIVE_ID);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logUnsubscribeKO_ok(){
-    utilities.logUnsubscribeKO(USER_ID,INITIATIVE_ID,MSG);
+    auditUtilities.logUnsubscribeKO(USER_ID,INITIATIVE_ID,MSG);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logEnrollInstrument_ok(){
-    utilities.logEnrollmentInstrument(USER_ID,INITIATIVE_ID,IDWALLET);
+    auditUtilities.logEnrollmentInstrument(USER_ID,INITIATIVE_ID,IDWALLET);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
 
   @Test
   void logEnrollInstrumentIssuer_ok(){
-    utilities.logEnrollmentInstrumentIssuer(USER_ID,INITIATIVE_ID,CHANNEL);
+    auditUtilities.logEnrollmentInstrumentIssuer(USER_ID,INITIATIVE_ID,CHANNEL);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logEnrollmentInstrumentKO_ok(){
-    utilities.logEnrollmentInstrumentKO(USER_ID,INITIATIVE_ID,CHANNEL,MSG);
+    auditUtilities.logEnrollmentInstrumentKO(USER_ID,INITIATIVE_ID,CHANNEL,MSG);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logEnrollIban_ok(){
-    utilities.logEnrollmentIban(USER_ID,INITIATIVE_ID,CHANNEL);
+    auditUtilities.logEnrollmentIban(USER_ID,INITIATIVE_ID,CHANNEL);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logEnrollIbanKO_ok(){
-    utilities.logEnrollmentIbanKO(MSG, USER_ID,INITIATIVE_ID,CHANNEL);
+    auditUtilities.logEnrollmentIbanKO(MSG, USER_ID,INITIATIVE_ID,CHANNEL);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logEnrollmentIbanValidationKOO_ok(){
-    utilities.logEnrollmentIbanValidationKO(MSG);
+    auditUtilities.logEnrollmentIbanValidationKO(MSG);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logEnrollmentIbanComplete_ok(){
-    utilities.logEnrollmentIbanComplete(USER_ID,INITIATIVE_ID, MSG);
+    auditUtilities.logEnrollmentIbanComplete(USER_ID,INITIATIVE_ID, MSG);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
 
   @Test
   void logIbanDeleted_ok(){
-    utilities.logIbanDeleted(USER_ID,INITIATIVE_ID,MSG);
+    auditUtilities.logIbanDeleted(USER_ID,INITIATIVE_ID,MSG);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logIbanDeletedKO_ok(){
-    utilities.logIbanDeletedKO(USER_ID,INITIATIVE_ID,MSG,MSG);
+    auditUtilities.logIbanDeletedKO(USER_ID,INITIATIVE_ID,MSG,MSG);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
   @Test
   void logDeleteInstrument_ok(){
-    utilities.logInstrumentDeleted(USER_ID,INITIATIVE_ID);
+    auditUtilities.logInstrumentDeleted(USER_ID,INITIATIVE_ID);
     assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
   }
 

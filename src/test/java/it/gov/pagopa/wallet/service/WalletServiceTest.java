@@ -39,7 +39,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
-import it.gov.pagopa.wallet.utils.Utilities;
+import it.gov.pagopa.wallet.utils.AuditUtilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
@@ -91,7 +91,7 @@ class WalletServiceTest {
     @Autowired
     WalletService walletService;
     @MockBean
-    Utilities utilities;
+    AuditUtilities auditUtilities;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
