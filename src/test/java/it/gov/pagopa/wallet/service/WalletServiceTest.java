@@ -98,6 +98,8 @@ class WalletServiceTest {
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
     private static final String MASKED_PAN = "masked_pan";
     private static final String BRAND_LOGO = "brand_logo";
+    private static final String CIRCUIT_TYPE = "circuit_type";
+
     private static final String CHANNEL = "CHANNEL";
     private static final String ID_WALLET = "TEST_ID_WALLET";
     private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
@@ -281,6 +283,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -313,6 +316,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -337,6 +341,7 @@ class WalletServiceTest {
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
+            CIRCUIT_TYPE,
             MASKED_PAN,
             "REJECTED_ADD_INSTRUMENT",
             TEST_DATE,
@@ -370,6 +375,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,

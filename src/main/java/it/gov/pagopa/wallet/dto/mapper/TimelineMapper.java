@@ -58,6 +58,7 @@ public class TimelineMapper {
                 .channel(dto.getChannel())
                 .maskedPan(dto.getMaskedPan())
                 .brandLogo(dto.getBrandLogo())
+                .circuitType(dto.getCircuitType())
                 .operationType(dto.getOperationType())
                 .operationDate(dto.getOperationDate())
                 .build();

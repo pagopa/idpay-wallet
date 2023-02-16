@@ -58,6 +58,7 @@ class TimelineMapperTest {
                     USER_ID,
                     WalletConstants.CHANNEL_APP_IO,
                     BRAND_LOGO,
+                    CIRCUIT_TYPE,
                     MASKED_PAN,
                     "ADD_INSTRUMENT",
                     OPERATION_DATE,

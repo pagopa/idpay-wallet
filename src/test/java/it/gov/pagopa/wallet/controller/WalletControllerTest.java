@@ -66,6 +66,8 @@ class WalletControllerTest {
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
+  private static final String CIRCUIT_TYPE = "circuit_type";
+
   private static final LocalDate DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
 
@@ -647,6 +649,7 @@ class WalletControllerTest {
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
             MASKED_PAN,
+            CIRCUIT_TYPE,
             "ADD_INSTRUMENT",
             LocalDateTime.now(),
             1);
@@ -671,6 +674,7 @@ class WalletControllerTest {
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
+            CIRCUIT_TYPE,
             MASKED_PAN,
             "ADD_INSTRUMENT",
             LocalDateTime.now(),
