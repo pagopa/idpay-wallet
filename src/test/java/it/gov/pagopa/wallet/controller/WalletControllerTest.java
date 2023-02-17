@@ -66,6 +66,8 @@ class WalletControllerTest {
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
+  private static final String CIRCUIT_TYPE = "circuit_type";
+
   private static final LocalDate DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
 
@@ -589,7 +591,7 @@ class WalletControllerTest {
   @Test
   void update_wallet_ok() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO);
+    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE);
     List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
     walletPIDTOList.add(walletPIDTO);
     WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
@@ -647,6 +649,7 @@ class WalletControllerTest {
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
             MASKED_PAN,
+            CIRCUIT_TYPE,
             "ADD_INSTRUMENT",
             LocalDateTime.now(),
             1);
@@ -671,6 +674,7 @@ class WalletControllerTest {
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
+            CIRCUIT_TYPE,
             MASKED_PAN,
             "ADD_INSTRUMENT",
             LocalDateTime.now(),
