@@ -53,9 +53,8 @@ spring:
                     binder:
                       brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
                       configuration:
-                        sasl:
-                          jaas:
-                            config: ${KAFKA_IBAN_SASL_JAAS_CONFIG:}
+                        sasl.jaas.config: ${KAFKA_IBAN_SASL_JAAS_CONFIG:}
+                        key.serializer: org.apache.kafka.common.serialization.StringSerializer
         kafka-outcome:
           type: kafka
           environment:
