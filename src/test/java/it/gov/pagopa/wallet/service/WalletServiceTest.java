@@ -283,6 +283,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        BRAND_LOGO,
                         CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
@@ -316,6 +317,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        BRAND_LOGO,
                         CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
@@ -340,6 +342,7 @@ class WalletServiceTest {
             INITIATIVE_ID,
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
+            BRAND_LOGO,
             BRAND_LOGO,
             CIRCUIT_TYPE,
             MASKED_PAN,
@@ -374,6 +377,7 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
+                        BRAND_LOGO,
                         BRAND_LOGO,
                         CIRCUIT_TYPE,
                         MASKED_PAN,
@@ -1133,7 +1137,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO, CIRCUIT_TYPE));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1151,7 +1155,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO, CIRCUIT_TYPE));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1177,7 +1181,7 @@ class WalletServiceTest {
 
         Mockito.when(
                         timelineMapper.deleteInstrumentToTimeline(
-                                Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                                Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(TEST_OPERATION_DTO);
 
         Mockito.doThrow(new WalletException(400, ""))
@@ -1192,7 +1196,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO, CIRCUIT_TYPE));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1436,7 +1440,7 @@ class WalletServiceTest {
     void enrollInstrumentIssuer_ok() {
 
         final InstrumentIssuerDTO instrument =
-                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -1465,7 +1469,7 @@ class WalletServiceTest {
         TEST_WALLET.setEndDate(LocalDate.MAX);
 
         final InstrumentIssuerDTO instrument =
-                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));

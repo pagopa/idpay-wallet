@@ -591,7 +591,7 @@ class WalletControllerTest {
   @Test
   void update_wallet_ok() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE);
+    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO, CIRCUIT_TYPE);
     List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
     walletPIDTOList.add(walletPIDTO);
     WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
@@ -648,6 +648,7 @@ class WalletControllerTest {
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
+            BRAND_LOGO,
             MASKED_PAN,
             CIRCUIT_TYPE,
             "ADD_INSTRUMENT",
@@ -673,6 +674,7 @@ class WalletControllerTest {
             INITIATIVE_ID,
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
+            BRAND_LOGO,
             BRAND_LOGO,
             CIRCUIT_TYPE,
             MASKED_PAN,
@@ -706,7 +708,7 @@ class WalletControllerTest {
   void enroll_instrument_issuer_ok() throws Exception {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
     Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
 
@@ -724,7 +726,7 @@ class WalletControllerTest {
   void enroll_instrument_issuer_initiative_ko() throws Exception {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
     Mockito.doThrow(
             new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
@@ -752,7 +754,7 @@ class WalletControllerTest {
   void enroll_instrument_issuer_wallet_not_found() throws Exception {
 
     final InstrumentIssuerDTO instrument =
-        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+        new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
     Mockito.doThrow(
             new WalletException(
@@ -780,7 +782,7 @@ class WalletControllerTest {
   @Test
   void enroll_instrument_issuer_empty_body() throws Exception {
 
-    final InstrumentIssuerDTO instrument = new InstrumentIssuerDTO("", "", "", "");
+    final InstrumentIssuerDTO instrument = new InstrumentIssuerDTO("", "", "", "", "");
 
     MvcResult res =
         mvc.perform(
