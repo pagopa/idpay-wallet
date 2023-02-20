@@ -22,8 +22,7 @@ public class IbanProducer {
 
   public static Message<IbanQueueDTO> buildMessage(IbanQueueDTO ibanQueueDTO){
     return MessageBuilder.withPayload(ibanQueueDTO)
-            .setHeader(KafkaHeaders.MESSAGE_KEY,ibanQueueDTO.getUserId())
-            .setHeader(KafkaHeaders.MESSAGE_KEY,ibanQueueDTO.getInitiativeId())
+            .setHeader(KafkaHeaders.MESSAGE_KEY,"%s_%s".formatted(ibanQueueDTO.getUserId(), ibanQueueDTO.getInitiativeId()))
             .build();
   }
 }
