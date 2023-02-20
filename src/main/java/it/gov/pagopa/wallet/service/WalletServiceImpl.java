@@ -36,7 +36,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
-import it.gov.pagopa.wallet.utils.Utilities;
+import it.gov.pagopa.wallet.utils.AuditUtilities;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -90,7 +90,7 @@ public class WalletServiceImpl implements WalletService {
   @Autowired
   InitiativeRestConnector initiativeRestConnector;
   @Autowired
-  Utilities utilities;
+  AuditUtilities utilities;
 
   @Value(
       "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
@@ -365,7 +365,8 @@ public class WalletServiceImpl implements WalletService {
               wallet.getInitiativeId(),
               wallet.getUserId(),
               walletPI.getMaskedPan(),
-              walletPI.getBrandLogo());
+              walletPI.getBrandLogo(),
+              walletPI.getCircuitType());
 
       sendToTimeline(queueOperationDTO);
     }
