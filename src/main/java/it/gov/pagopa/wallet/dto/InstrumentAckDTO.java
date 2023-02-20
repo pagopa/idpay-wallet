@@ -28,6 +28,8 @@ public class InstrumentAckDTO {
 
   String brandLogo;
 
+  String circuitType;
+
   String maskedPan;
 
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)

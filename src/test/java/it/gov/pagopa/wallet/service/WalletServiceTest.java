@@ -39,7 +39,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
-import it.gov.pagopa.wallet.utils.Utilities;
+import it.gov.pagopa.wallet.utils.AuditUtilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
@@ -91,13 +91,15 @@ class WalletServiceTest {
     @Autowired
     WalletService walletService;
     @MockBean
-    Utilities utilities;
+    AuditUtilities auditUtilities;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
     private static final String MASKED_PAN = "masked_pan";
     private static final String BRAND_LOGO = "brand_logo";
+    private static final String CIRCUIT_TYPE = "circuit_type";
+
     private static final String CHANNEL = "CHANNEL";
     private static final String ID_WALLET = "TEST_ID_WALLET";
     private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
@@ -281,6 +283,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -313,6 +316,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -337,6 +341,7 @@ class WalletServiceTest {
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
+            CIRCUIT_TYPE,
             MASKED_PAN,
             "REJECTED_ADD_INSTRUMENT",
             TEST_DATE,
@@ -370,6 +375,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
+                        CIRCUIT_TYPE,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -1127,7 +1133,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1145,7 +1151,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1171,7 +1177,7 @@ class WalletServiceTest {
 
         Mockito.when(
                         timelineMapper.deleteInstrumentToTimeline(
-                                Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                                Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(TEST_OPERATION_DTO);
 
         Mockito.doThrow(new WalletException(400, ""))
@@ -1186,7 +1192,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {

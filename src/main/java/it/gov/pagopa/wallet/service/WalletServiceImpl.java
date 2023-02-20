@@ -237,7 +237,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[ENROLL_IBAN] Sending event to IBAN");
       ibanProducer.sendIban(ibanQueueDTO);
     } catch (Exception e) {
-      log.error("[ENROLL_IBAN] An error has occurred. Sending message to Error queue", e);
+      log.error("[ENROLL_IBAN] An error has occurred. Sending message to Error queue");
       utilities.logEnrollmentIbanKO("error in sending request to checkIban", userId, initiativeId, channel);
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
       this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
