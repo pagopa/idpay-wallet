@@ -92,7 +92,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_issuer_test() {
 
     final InstrumentIssuerCallDTO instrument =
-        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "***");
+        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "VISA", "***");
 
     try {
       restConnector.enrollInstrumentIssuer(instrument);

@@ -29,6 +29,7 @@ public class TimelineMapper {
                 .maskedPan(rewardTransaction.getMaskedPan())
                 .instrumentId(rewardTransaction.getInstrumentId())
                 .brandLogo(rewardTransaction.getBrandLogo())
+                .brand(rewardTransaction.getBrand())
                 .circuitType(rewardTransaction.getCircuitType())
                 .amount(rewardTransaction.getAmount())
                 .effectiveAmount(rewardTransaction.getEffectiveAmount())
@@ -39,13 +40,14 @@ public class TimelineMapper {
     }
 
     public QueueOperationDTO deleteInstrumentToTimeline(
-            String initiativeId, String userId, String maskedPan, String brandLogo, String circuitType) {
+            String initiativeId, String userId, String maskedPan, String brandLogo, String brand, String circuitType) {
         return QueueOperationDTO.builder()
                 .initiativeId(initiativeId)
                 .userId(userId)
                 .channel(WalletConstants.CHANNEL_PM)
                 .maskedPan(maskedPan)
                 .brandLogo(brandLogo)
+                .brand(brand)
                 .circuitType(circuitType)
                 .operationType("DELETE_INSTRUMENT")
                 .operationDate(LocalDateTime.now())
@@ -59,6 +61,7 @@ public class TimelineMapper {
                 .channel(dto.getChannel())
                 .maskedPan(dto.getMaskedPan())
                 .brandLogo(dto.getBrandLogo())
+                .brand(dto.getBrand())
                 .circuitType(dto.getCircuitType())
                 .operationType(dto.getOperationType())
                 .operationDate(dto.getOperationDate())
