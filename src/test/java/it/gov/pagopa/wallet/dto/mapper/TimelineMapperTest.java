@@ -59,7 +59,6 @@ class TimelineMapperTest {
                     WalletConstants.CHANNEL_APP_IO,
                     BRAND_LOGO,
                     BRAND_LOGO,
-                    CIRCUIT_TYPE,
                     MASKED_PAN,
                     "ADD_INSTRUMENT",
                     OPERATION_DATE,
@@ -169,7 +168,7 @@ class TimelineMapperTest {
     @Test
     void deleteInstrumentToTimeline() {
         QueueOperationDTO actual =
-                timelineMapper.deleteInstrumentToTimeline(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO, CIRCUIT_TYPE);
+                timelineMapper.deleteInstrumentToTimeline(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO);
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(INITIATIVE_ID, actual.getInitiativeId());
         assertEquals("DELETE_INSTRUMENT", actual.getOperationType());

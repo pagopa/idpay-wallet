@@ -366,8 +366,7 @@ public class WalletServiceImpl implements WalletService {
               wallet.getUserId(),
               walletPI.getMaskedPan(),
               walletPI.getBrandLogo(),
-              walletPI.getBrand(),
-              walletPI.getCircuitType());
+              walletPI.getBrand());
 
       sendToTimeline(queueOperationDTO);
     }

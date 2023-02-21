@@ -16,5 +16,4 @@ public class WalletPIDTO {
   private String maskedPan;
   private String brandLogo;
   private String brand;
-  private String circuitType;
 }

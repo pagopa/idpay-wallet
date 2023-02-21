@@ -591,7 +591,7 @@ class WalletControllerTest {
   @Test
   void update_wallet_ok() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO, CIRCUIT_TYPE);
+    WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO);
     List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
     walletPIDTOList.add(walletPIDTO);
     WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
@@ -650,7 +650,6 @@ class WalletControllerTest {
             BRAND_LOGO,
             BRAND_LOGO,
             MASKED_PAN,
-            CIRCUIT_TYPE,
             "ADD_INSTRUMENT",
             LocalDateTime.now(),
             1);
@@ -676,7 +675,6 @@ class WalletControllerTest {
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
             BRAND_LOGO,
-            CIRCUIT_TYPE,
             MASKED_PAN,
             "ADD_INSTRUMENT",
             LocalDateTime.now(),
