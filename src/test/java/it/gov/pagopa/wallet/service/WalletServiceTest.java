@@ -283,7 +283,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
-                        CIRCUIT_TYPE,
+                        BRAND_LOGO,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -316,7 +316,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
-                        CIRCUIT_TYPE,
+                        BRAND_LOGO,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -341,7 +341,7 @@ class WalletServiceTest {
             USER_ID,
             WalletConstants.CHANNEL_APP_IO,
             BRAND_LOGO,
-            CIRCUIT_TYPE,
+            BRAND_LOGO,
             MASKED_PAN,
             "REJECTED_ADD_INSTRUMENT",
             TEST_DATE,
@@ -375,7 +375,7 @@ class WalletServiceTest {
                         USER_ID,
                         WalletConstants.CHANNEL_APP_IO,
                         BRAND_LOGO,
-                        CIRCUIT_TYPE,
+                        BRAND_LOGO,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
                         TEST_DATE,
@@ -1133,7 +1133,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1151,7 +1151,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1192,7 +1192,7 @@ class WalletServiceTest {
 
         try {
             List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
-            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, CIRCUIT_TYPE));
+            walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO));
             WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
             walletService.updateWallet(walletPIBodyDTO);
         } catch (WalletException e) {
@@ -1436,7 +1436,7 @@ class WalletServiceTest {
     void enrollInstrumentIssuer_ok() {
 
         final InstrumentIssuerDTO instrument =
-                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -1465,7 +1465,7 @@ class WalletServiceTest {
         TEST_WALLET.setEndDate(LocalDate.MAX);
 
         final InstrumentIssuerDTO instrument =
-                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "***");
+                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));

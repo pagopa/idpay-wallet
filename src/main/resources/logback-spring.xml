@@ -21,12 +21,20 @@
     </appender>
 
 
-    <appender name="AUDIT"
+    <appender name="SYNC_AUDIT"
       class="ch.qos.logback.core.ConsoleAppender">
         <encoder
           class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%msg%n</pattern>
         </encoder>
+    </appender>
+
+    <appender name="AUDIT"
+              class="ch.qos.logback.classic.AsyncAppender">
+        <neverBlock>true</neverBlock>
+        <queueSize>20000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="SYNC_AUDIT"/>
     </appender>
 
 
