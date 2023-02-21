@@ -29,6 +29,7 @@ public class TimelineMapper {
                 .maskedPan(rewardTransaction.getMaskedPan())
                 .instrumentId(rewardTransaction.getInstrumentId())
                 .brandLogo(rewardTransaction.getBrandLogo())
+                .brand(rewardTransaction.getBrand())
                 .circuitType(rewardTransaction.getCircuitType())
                 .amount(rewardTransaction.getAmount())
                 .effectiveAmount(rewardTransaction.getEffectiveAmount())
