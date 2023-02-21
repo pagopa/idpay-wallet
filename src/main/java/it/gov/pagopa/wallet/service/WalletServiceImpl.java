@@ -501,6 +501,7 @@ public class WalletServiceImpl implements WalletService {
             .hpan(body.getHpan())
             .channel(body.getChannel())
             .brandLogo(body.getBrandLogo())
+            .brand(body.getBrand())
             .maskedPan(body.getMaskedPan())
             .build();
 
