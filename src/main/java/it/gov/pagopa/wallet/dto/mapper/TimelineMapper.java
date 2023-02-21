@@ -40,7 +40,7 @@ public class TimelineMapper {
     }
 
     public QueueOperationDTO deleteInstrumentToTimeline(
-            String initiativeId, String userId, String maskedPan, String brandLogo, String brand, String circuitType) {
+            String initiativeId, String userId, String maskedPan, String brandLogo, String brand) {
         return QueueOperationDTO.builder()
                 .initiativeId(initiativeId)
                 .userId(userId)
@@ -48,7 +48,6 @@ public class TimelineMapper {
                 .maskedPan(maskedPan)
                 .brandLogo(brandLogo)
                 .brand(brand)
-                .circuitType(circuitType)
                 .operationType("DELETE_INSTRUMENT")
                 .operationDate(LocalDateTime.now())
                 .build();
@@ -62,7 +61,6 @@ public class TimelineMapper {
                 .maskedPan(dto.getMaskedPan())
                 .brandLogo(dto.getBrandLogo())
                 .brand(dto.getBrand())
-                .circuitType(dto.getCircuitType())
                 .operationType(dto.getOperationType())
                 .operationDate(dto.getOperationDate())
                 .build();
