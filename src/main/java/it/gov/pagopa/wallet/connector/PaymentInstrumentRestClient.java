@@ -1,15 +1,9 @@
 package it.gov.pagopa.wallet.connector;
 
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
     name = "${rest-client.payment.instrument.serviceCode}",
@@ -40,4 +34,10 @@ void deleteInstrument(
       value = "/idpay/instrument/hb/enroll",
       produces = MediaType.APPLICATION_JSON_VALUE)
   void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);
+
+  @GetMapping(
+          value = "/instrument/initiatives/{idWallet}/detail",
+          produces = MediaType.APPLICATION_JSON_VALUE)
+  InstrumentDetailDTO getInstrumentInitiativesDetail(@PathVariable("idWallet") String idWallet);
+
 }
