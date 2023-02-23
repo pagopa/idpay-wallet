@@ -5,15 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.ErrorDTO;
-import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.service.WalletService;
@@ -66,7 +58,7 @@ class WalletControllerTest {
   private static final String DESCRIPTION_OK = "conto cointestato";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
-  private static final String CIRCUIT_TYPE = "circuit_type";
+  private static final String BRAND = "brand";
 
   private static final LocalDate DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
@@ -795,5 +787,19 @@ class WalletControllerTest {
     ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
 
     assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+  }
+
+  @Test
+  void instrument_detail_on_initiative_ok() throws Exception {
+    Mockito.when(walletServiceMock.getInitiativesWithInstrument(ID_WALLET, USER_ID))
+            .thenReturn(new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, new ArrayList<>()));
+
+    mvc.perform(
+                    MockMvcRequestBuilders.get(
+                                    BASE_URL + "/instrument/" + ID_WALLET + "/" + USER_ID + "/" + "initiatives")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andReturn();
   }
 }
