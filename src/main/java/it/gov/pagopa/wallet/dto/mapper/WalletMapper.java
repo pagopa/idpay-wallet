@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
+import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -54,17 +55,16 @@ public class WalletMapper {
     return InstrumentStatusOnInitiativeDTO.builder()
             .initiativeId(wallet.getInitiativeId())
             .initiativeName(wallet.getInitiativeName())
+            .status(WalletConstants.INSTRUMENT_STATUS_DEFAULT)
             .build();
   }
 
-  public InstrumentOnInitiativesDTO instrumentOnInitiativesDTO(String idWallet,
-                                                               InstrumentDetailDTO instrumentDetailDTO,
-                                                               List<InstrumentStatusOnInitiativeDTO> instrumentStatusOnInitiativeDTO){
+  public InstrumentOnInitiativesDTO toInstrumentOnInitiativesDTO(String idWallet,
+                                                                 InstrumentDetailDTO instrumentDetailDTO,
+                                                                 List<InstrumentStatusOnInitiativeDTO> instrumentStatusOnInitiativeDTO){
     return InstrumentOnInitiativesDTO.builder()
             .idWallet(idWallet)
-            .idInstrument(instrumentDetailDTO.getIdInstrument())
             .maskedPan(instrumentDetailDTO.getMaskedPan())
-            .brandLogo(instrumentDetailDTO.getBrandLogo())
             .brand(instrumentDetailDTO.getBrand())
             .initiativeList(instrumentStatusOnInitiativeDTO).build();
   }

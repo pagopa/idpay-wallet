@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
@@ -673,14 +672,11 @@ public class WalletServiceImpl implements WalletService {
     List<InstrumentStatusOnInitiativeDTO> instrumentStatusOnInitiativeDTO = new ArrayList<>();
 
     log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
-    if (initiativeListDTO.getInitiativeList().isEmpty()) {
-      throw new WalletException(
-              HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_NOT_FOUND);
-    }
-
-    for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
-      if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED) && LocalDate.now().isBefore(wallet.getEndDate())) {
-        instrumentStatusOnInitiativeDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));
+    if (!initiativeListDTO.getInitiativeList().isEmpty()) {
+      for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
+        if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED) && !wallet.getEndDate().isBefore(LocalDate.now())) {
+          instrumentStatusOnInitiativeDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));
+        }
       }
     }
 
@@ -688,24 +684,27 @@ public class WalletServiceImpl implements WalletService {
     try {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Calling Payment Instrument");
       InstrumentDetailDTO instrumentDetailDTO = paymentInstrumentRestConnector.getInstrumentInitiativesDetail(idWallet);
-      if (!instrumentDetailDTO.getInitiativeList().isEmpty()) {
+      if (!instrumentStatusOnInitiativeDTO.isEmpty() && !instrumentDetailDTO.getInitiativeList().isEmpty()) {
         List<StatusOnInitiativeDTO> instrStatusList = instrumentDetailDTO.getInitiativeList();
 
-        Map<String, InstrumentStatusOnInitiativeDTO> map1 = instrumentStatusOnInitiativeDTO.stream()
+        Map<String, InstrumentStatusOnInitiativeDTO> activeInitiativesMap = instrumentStatusOnInitiativeDTO.stream()
                 .collect(Collectors.toMap(InstrumentStatusOnInitiativeDTO::getInitiativeId, Function.identity()));
 
-        Map<String, StatusOnInitiativeDTO> map2 = instrStatusList.stream()
+        Map<String, StatusOnInitiativeDTO> instrumentStatusOnInitiativeMap = instrStatusList.stream()
                 .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity()));
 
         log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Updating initiatives list with payment status");
-        instrumentStatusOnInitiativeDTO = Stream.concat(map1.keySet().stream(),
-                        map2.keySet().stream()).distinct()
-                .map(key -> new InstrumentStatusOnInitiativeDTO(key, map1.get(key).getInitiativeName(),
-                        (map2.get(key).getStatus() != null ? map2.get(key).getStatus() : WalletConstants.INSTRUMENT_STATUS_DEFAULT)))
+        instrumentStatusOnInitiativeDTO = activeInitiativesMap.keySet().stream()
+                .map(key -> new InstrumentStatusOnInitiativeDTO(key,
+                        activeInitiativesMap.get(key).getInitiativeName(),
+                        (instrumentStatusOnInitiativeMap.get(key) != null && instrumentStatusOnInitiativeMap.get(key).getStatus() != null ?
+                                instrumentStatusOnInitiativeMap.get(key).getStatus() : WalletConstants.INSTRUMENT_STATUS_DEFAULT),
+                        (instrumentStatusOnInitiativeMap.get(key) != null ? instrumentStatusOnInitiativeMap.get(key).getIdInstrument() : null)))
                 .toList();
       }
+
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
-      return walletMapper.instrumentOnInitiativesDTO(idWallet, instrumentDetailDTO, instrumentStatusOnInitiativeDTO);
+      return walletMapper.toInstrumentOnInitiativesDTO(idWallet, instrumentDetailDTO, instrumentStatusOnInitiativeDTO);
     } catch (FeignException e) {
       log.error("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Error in Payment Instrument Request");
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");

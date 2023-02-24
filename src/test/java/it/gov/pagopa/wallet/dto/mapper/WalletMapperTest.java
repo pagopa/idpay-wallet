@@ -3,13 +3,13 @@ package it.gov.pagopa.wallet.dto.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class WalletMapperTest {
   private static final String USER_ID = "test_user";
   private static final String INITIATIVE_ID = "test_initiative";
+  private static final String ID_WALLET = "ID_WALLET";
   private static final LocalDate OPERATION_DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
 
@@ -94,5 +95,27 @@ class WalletMapperTest {
     WalletDTO actual = walletMapper.toIssuerInitiativeDTO(WALLET);
 
     assertEquals(ISSUER_INITIATIVE_DTO, actual);
+  }
+
+  @Test
+  void toInstrStatusOnInitiativeDTO(){
+    InstrumentStatusOnInitiativeDTO actual = walletMapper.toInstrStatusOnInitiativeDTO(INITIATIVE_DTO);
+
+    assertEquals(INITIATIVE_DTO.getInitiativeId(), actual.getInitiativeId());
+    assertEquals(INITIATIVE_DTO.getInitiativeName(), actual.getInitiativeName());
+    assertEquals(WalletConstants.INSTRUMENT_STATUS_DEFAULT, actual.getStatus());
+  }
+
+  @Test
+  void toInstrumentOnInitiativesDTO(){
+    InstrumentDetailDTO instrDetail = new InstrumentDetailDTO("", "", new ArrayList<>());
+    List<InstrumentStatusOnInitiativeDTO> initiativeList = new ArrayList<>();
+    InstrumentOnInitiativesDTO actual = walletMapper.toInstrumentOnInitiativesDTO(ID_WALLET,
+            instrDetail, initiativeList);
+
+    assertEquals(ID_WALLET, actual.getIdWallet());
+    assertEquals(instrDetail.getMaskedPan(), actual.getMaskedPan());
+    assertEquals(instrDetail.getBrand(), actual.getBrand());
+    assertEquals(initiativeList, actual.getInitiativeList());
   }
 }

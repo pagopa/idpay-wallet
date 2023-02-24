@@ -36,8 +36,9 @@ void deleteInstrument(
   void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);
 
   @GetMapping(
-          value = "/instrument/initiatives/{idWallet}/detail",
+          value = "/idpay/instrument/initiatives/{idWallet}/detail",
           produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
   InstrumentDetailDTO getInstrumentInitiativesDetail(@PathVariable("idWallet") String idWallet);
 
 }

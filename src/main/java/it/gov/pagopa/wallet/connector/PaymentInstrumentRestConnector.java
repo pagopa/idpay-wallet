@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.connector;
 
 import it.gov.pagopa.wallet.dto.*;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public interface PaymentInstrumentRestConnector {
@@ -13,5 +14,5 @@ public interface PaymentInstrumentRestConnector {
 
   void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);
 
-  InstrumentDetailDTO getInstrumentInitiativesDetail(String idWallet);
+  InstrumentDetailDTO getInstrumentInitiativesDetail(@PathVariable("idWallet") String idWallet);
 }

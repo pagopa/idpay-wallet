@@ -1,18 +1,19 @@
 package it.gov.pagopa.wallet.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
+@Data
 @AllArgsConstructor
 public class InstrumentDetailDTO {
-
-    String idInstrument;
+    @JsonProperty("maskedPan")
     String maskedPan;
-    String brandLogo;
+    @JsonProperty("brand")
     String brand;
+    @JsonProperty("initiativeList")
     List<StatusOnInitiativeDTO> initiativeList;
 
 }

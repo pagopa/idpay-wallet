@@ -12,9 +12,7 @@ import java.util.List;
 public class InstrumentOnInitiativesDTO {
 
     String idWallet;
-    String idInstrument;
     String maskedPan;
-    String brandLogo;
     String brand;
     List<InstrumentStatusOnInitiativeDTO> initiativeList;
 

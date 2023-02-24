@@ -9,6 +9,7 @@ public class InstrumentStatusOnInitiativeDTO {
 
     String initiativeId;
     String initiativeName;
+    String idInstrument;
     String status;
 
 }

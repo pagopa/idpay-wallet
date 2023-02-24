@@ -32,7 +32,7 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   public void enrollInstrumentIssuer(InstrumentIssuerCallDTO body) {
     paymentInstrumentRestClient.enrollInstrumentIssuer(body);
   }
-
+  @Override
   public InstrumentDetailDTO getInstrumentInitiativesDetail(String idWallet){
     return paymentInstrumentRestClient.getInstrumentInitiativesDetail(idWallet);
   }
