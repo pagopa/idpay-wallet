@@ -1569,9 +1569,18 @@ class WalletServiceTest {
     void getInitiativesWithInstrument_emptyListFromPI() {
         List<Wallet> walletList = new ArrayList<>();
         walletList.add(TEST_WALLET);
+        walletList.add(TEST_WALLET_REFUNDABLE);
+        walletList.add(TEST_WALLET_UNSUBSCRIBED);
+
+        WalletDTO walletDtoRef= new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
+                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
+        WalletDTO walletDtoUnsub = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
+                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(walletDtoRef);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_UNSUBSCRIBED)).thenReturn(walletDtoUnsub);
 
         InitiativesStatusDTO dtoTestWallet = new InitiativesStatusDTO(WALLET_DTO.getInitiativeId(),
                 WALLET_DTO.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT);
@@ -1602,15 +1611,9 @@ class WalletServiceTest {
         walletList.add(TEST_WALLET);
         walletList.add(TEST_WALLET_REFUNDABLE);
 
-        WalletDTO walletDto2 = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
-                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
-        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(walletDto2);
-
-        InitiativesStatusDTO dtoTestWallet = new InitiativesStatusDTO(WALLET_DTO.getInitiativeId(),
-                WALLET_DTO.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT);
-        Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_DTO)).thenReturn(dtoTestWallet);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(WALLET_REFUNDABLE_DTO);
 
         Request request =
                 Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
