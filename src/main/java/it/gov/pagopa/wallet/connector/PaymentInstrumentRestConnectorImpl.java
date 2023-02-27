@@ -1,9 +1,6 @@
 package it.gov.pagopa.wallet.connector;
 
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.*;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,6 +31,10 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   @Override
   public void enrollInstrumentIssuer(InstrumentIssuerCallDTO body) {
     paymentInstrumentRestClient.enrollInstrumentIssuer(body);
+  }
+  @Override
+  public InstrumentDetailDTO getInstrumentInitiativesDetail(String idWallet, String userId){
+    return paymentInstrumentRestClient.getInstrumentInitiativesDetail(idWallet, userId);
   }
 
 }

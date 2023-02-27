@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/idpay/instrument/initiatives/.*/.*/detail"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "maskedPan": "String",
+      "brand": "String",
+      "initiativeList": [
+        {
+          "initiativeId": "String",
+          "idInstrument": "String",
+          "status": "String"
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

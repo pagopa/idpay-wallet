@@ -5,25 +5,7 @@ import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.Counters;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
-import it.gov.pagopa.wallet.dto.RefundDTO;
-import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -41,10 +23,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
@@ -679,5 +661,56 @@ public class WalletServiceImpl implements WalletService {
         "[PERFORMANCE_LOG] [{}] Time occurred to perform business logic: {} ms",
         service,
         System.currentTimeMillis() - startTime);
+  }
+
+  @Override
+  public InitiativesWithInstrumentDTO getInitiativesWithInstrument(String idWallet, String userId) {
+    long startTime = System.currentTimeMillis();
+    List<InitiativesStatusDTO> initiativesStatusDTO = new ArrayList<>();
+
+    InitiativeListDTO initiativeListDTO = this.getInitiativeList(userId);
+
+    log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get detail about payment instrument and its status on initiatives");
+    try {
+      log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Calling Payment Instrument");
+      InstrumentDetailDTO instrumentDetailDTO = paymentInstrumentRestConnector.getInstrumentInitiativesDetail(idWallet, userId);
+
+      if (initiativeListDTO.getInitiativeList().isEmpty()) {
+        return walletMapper.toInstrumentOnInitiativesDTO(idWallet, instrumentDetailDTO, initiativesStatusDTO);
+      }
+
+      log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
+      for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
+        if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED) && !wallet.getEndDate().isBefore(LocalDate.now())) {
+          initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));
+        }
+      }
+
+      if (!instrumentDetailDTO.getInitiativeList().isEmpty()) {
+        List<StatusOnInitiativeDTO> instrStatusList = instrumentDetailDTO.getInitiativeList();
+
+        Map<String, InitiativesStatusDTO> activeInitiativesMap = initiativesStatusDTO.stream()
+                .collect(Collectors.toMap(InitiativesStatusDTO::getInitiativeId, Function.identity()));
+
+        Map<String, StatusOnInitiativeDTO> instrumentStatusOnInitiativeMap = instrStatusList.stream()
+                .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity()));
+
+        log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Updating initiatives list with payment status");
+        initiativesStatusDTO = activeInitiativesMap.keySet().stream()
+                .map(key -> new InitiativesStatusDTO(key,
+                        activeInitiativesMap.get(key).getInitiativeName(),
+                        (instrumentStatusOnInitiativeMap.get(key) != null ? instrumentStatusOnInitiativeMap.get(key).getIdInstrument() : null),
+                        (instrumentStatusOnInitiativeMap.get(key) != null ? instrumentStatusOnInitiativeMap.get(key).getStatus() :
+                                WalletConstants.INSTRUMENT_STATUS_DEFAULT)))
+                .toList();
+      }
+
+      performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
+      return walletMapper.toInstrumentOnInitiativesDTO(idWallet, instrumentDetailDTO, initiativesStatusDTO);
+    } catch (FeignException e) {
+      log.error("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Error in Payment Instrument Request");
+      performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
+      throw new WalletException(e.status(), e.getMessage());
+    }
   }
 }

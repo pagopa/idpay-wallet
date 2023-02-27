@@ -7,7 +7,6 @@ import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -96,6 +95,15 @@ class PaymentInstrumentRestClientTest {
 
     try {
       restConnector.enrollInstrumentIssuer(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void get_instrument_initiatives_detail_test() {
+    try {
+      restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID);
     } catch (Exception e) {
       Assertions.fail();
     }
