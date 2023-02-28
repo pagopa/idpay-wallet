@@ -98,6 +98,8 @@ class WalletServiceTest {
     private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
     private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
     private static final String STATUS_ACTIVE = "ACTIVE";
+    private static final String STATUS_INACTIVE = "INACTIVE";
+
 
     private static final Wallet TEST_WALLET =
       Wallet.builder()
@@ -1528,7 +1530,8 @@ class WalletServiceTest {
         Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_REFUNDABLE_DTO)).thenReturn(instrOnInitiativeRefDTO);
 
         List<StatusOnInitiativeDTO> initiativeList = new ArrayList<>();
-        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID, STATUS_ACTIVE));
+        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID + STATUS_ACTIVE, STATUS_ACTIVE));
+        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID, STATUS_INACTIVE));
         Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, initiativeList));
 

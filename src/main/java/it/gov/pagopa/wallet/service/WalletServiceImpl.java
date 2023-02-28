@@ -693,7 +693,8 @@ public class WalletServiceImpl implements WalletService {
                 .collect(Collectors.toMap(InitiativesStatusDTO::getInitiativeId, Function.identity()));
 
         Map<String, StatusOnInitiativeDTO> instrumentStatusOnInitiativeMap = instrStatusList.stream()
-                .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity()));
+                .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity(),
+                        (oldValue, newValue)-> oldValue));
 
         log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Updating initiatives list with payment status");
         initiativesStatusDTO = activeInitiativesMap.keySet().stream()
