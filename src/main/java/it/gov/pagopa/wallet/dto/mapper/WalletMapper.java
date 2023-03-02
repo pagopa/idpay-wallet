@@ -1,10 +1,12 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,5 +49,23 @@ public class WalletMapper {
         .refunded(wallet.getRefunded())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
         .build();
+  }
+
+  public InitiativesStatusDTO toInstrStatusOnInitiativeDTO(WalletDTO wallet){
+    return InitiativesStatusDTO.builder()
+            .initiativeId(wallet.getInitiativeId())
+            .initiativeName(wallet.getInitiativeName())
+            .status(WalletConstants.INSTRUMENT_STATUS_DEFAULT)
+            .build();
+  }
+
+  public InitiativesWithInstrumentDTO toInstrumentOnInitiativesDTO(String idWallet,
+                                                                   InstrumentDetailDTO instrumentDetailDTO,
+                                                                   List<InitiativesStatusDTO> initiativesStatusDTO){
+    return InitiativesWithInstrumentDTO.builder()
+            .idWallet(idWallet)
+            .maskedPan(instrumentDetailDTO.getMaskedPan())
+            .brand(instrumentDetailDTO.getBrand())
+            .initiativeList(initiativesStatusDTO).build();
   }
 }

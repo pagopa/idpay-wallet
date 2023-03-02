@@ -7,26 +7,7 @@ import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.Counters;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
-import it.gov.pagopa.wallet.dto.RefundDTO;
-import it.gov.pagopa.wallet.dto.RewardDTO;
-import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -95,11 +76,12 @@ class WalletServiceTest {
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
+    private static final String INITIATIVE_ID_REFUNDABLE = "TEST_INITIATIVE_ID_REFUNDABLE";
+    private static final String INITIATIVE_ID_UNSUBSCRIBED = "TEST_INITIATIVE_ID_UNSUBSCRIBED";
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
     private static final String MASKED_PAN = "masked_pan";
     private static final String BRAND_LOGO = "brand_logo";
-    private static final String CIRCUIT_TYPE = "circuit_type";
-
+    private static final String BRAND = "brand";
     private static final String CHANNEL = "CHANNEL";
     private static final String ID_WALLET = "TEST_ID_WALLET";
     private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
@@ -111,11 +93,15 @@ class WalletServiceTest {
     private static final String DESCRIPTION_OK = "conto cointestato";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
+    private static final LocalDate TEST_END_DATE = LocalDate.now().plusDays(2);
     private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
     private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
     private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
+    private static final String STATUS_ACTIVE = "ACTIVE";
+    private static final String STATUS_INACTIVE = "INACTIVE";
 
-  private static final Wallet TEST_WALLET =
+
+    private static final Wallet TEST_WALLET =
       Wallet.builder()
           .userId(USER_ID)
           .initiativeId(INITIATIVE_ID)
@@ -128,7 +114,31 @@ class WalletServiceTest {
           .refunded(TEST_REFUNDED)
           .lastCounterUpdate(TEST_DATE)
           .build();
-
+    private static final Wallet TEST_WALLET_REFUNDABLE =
+            Wallet.builder()
+                    .userId(USER_ID)
+                    .initiativeId(INITIATIVE_ID_REFUNDABLE)
+                    .initiativeName(INITIATIVE_NAME)
+                    .acceptanceDate(TEST_DATE)
+                    .status(WalletStatus.REFUNDABLE.name())
+                    .endDate(TEST_DATE_ONLY_DATE)
+                    .amount(TEST_AMOUNT)
+                    .accrued(TEST_ACCRUED)
+                    .refunded(TEST_REFUNDED)
+                    .lastCounterUpdate(TEST_DATE)
+                    .build();
+    private static final Wallet TEST_WALLET_UNSUBSCRIBED =
+            Wallet.builder()
+                    .userId(USER_ID)
+                    .initiativeId(INITIATIVE_ID_UNSUBSCRIBED)
+                    .initiativeName(INITIATIVE_NAME)
+                    .acceptanceDate(TEST_DATE)
+                    .status(WalletStatus.UNSUBSCRIBED)
+                    .endDate(TEST_DATE_ONLY_DATE)
+                    .amount(TEST_AMOUNT)
+                    .accrued(TEST_ACCRUED)
+                    .refunded(TEST_REFUNDED)
+                    .build();
     private static final Wallet TEST_WALLET_ISSUER =
             Wallet.builder().amount(TEST_AMOUNT).accrued(TEST_ACCRUED).refunded(TEST_REFUNDED).build();
 
@@ -149,19 +159,6 @@ class WalletServiceTest {
           .lastCounterUpdate(TEST_DATE)
           .build();
 
-    private static final Wallet TEST_WALLET_UNSUBSCRIBED =
-            Wallet.builder()
-                    .userId(USER_ID)
-                    .initiativeId(INITIATIVE_ID)
-                    .initiativeName(INITIATIVE_NAME)
-                    .acceptanceDate(TEST_DATE)
-                    .status(WalletStatus.UNSUBSCRIBED)
-                    .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
-                    .build();
-
   private static final WalletDTO WALLET_DTO =
       new WalletDTO(
           INITIATIVE_ID,
@@ -174,6 +171,33 @@ class WalletServiceTest {
           TEST_ACCRUED,
           TEST_REFUNDED,
           TEST_DATE);
+
+    private static final WalletDTO WALLET_REFUNDABLE_DTO =
+            new WalletDTO(
+                    INITIATIVE_ID_REFUNDABLE,
+                    INITIATIVE_NAME,
+                    WalletStatus.REFUNDABLE.name(),
+                    IBAN_OK,
+                    TEST_END_DATE,
+                    0,
+                    TEST_AMOUNT,
+                    TEST_ACCRUED,
+                    TEST_REFUNDED,
+                    TEST_DATE);
+
+    private static final WalletDTO WALLET_UNSUBSCRIBED_DTO =
+            new WalletDTO(
+                    INITIATIVE_ID_UNSUBSCRIBED,
+                    INITIATIVE_NAME,
+                    WalletStatus.UNSUBSCRIBED,
+                    IBAN_OK,
+                    TEST_END_DATE,
+                    0,
+                    TEST_AMOUNT,
+                    TEST_ACCRUED,
+                    TEST_REFUNDED,
+                    TEST_DATE);
+
 
   private static final WalletDTO WALLET_ISSUER_DTO =
       new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
@@ -1481,6 +1505,126 @@ class WalletServiceTest {
         try {
             walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
             Assertions.fail();
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+        }
+    }
+
+    @Test
+    void getInitiativesWithInstrument_ok(){
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(TEST_WALLET);
+        walletList.add(TEST_WALLET_REFUNDABLE);
+        walletList.add(TEST_WALLET_UNSUBSCRIBED);
+
+        Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(WALLET_REFUNDABLE_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_UNSUBSCRIBED)).thenReturn(WALLET_UNSUBSCRIBED_DTO);
+
+        InitiativesStatusDTO instrOnInitiativeDTO = new InitiativesStatusDTO(WALLET_DTO.getInitiativeId(),
+                WALLET_DTO.getInitiativeName(), null, WalletConstants.INSTRUMENT_STATUS_DEFAULT);
+        InitiativesStatusDTO instrOnInitiativeRefDTO = new InitiativesStatusDTO(WALLET_REFUNDABLE_DTO.getInitiativeId(),
+                WALLET_REFUNDABLE_DTO.getInitiativeName(), null, WalletConstants.INSTRUMENT_STATUS_DEFAULT);
+        Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_DTO)).thenReturn(instrOnInitiativeDTO);
+        Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_REFUNDABLE_DTO)).thenReturn(instrOnInitiativeRefDTO);
+
+        List<StatusOnInitiativeDTO> initiativeList = new ArrayList<>();
+        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID + STATUS_ACTIVE, STATUS_ACTIVE));
+        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID, STATUS_INACTIVE));
+        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, initiativeList));
+
+        List<InitiativesStatusDTO> instrStatusOnInitiative = new ArrayList<>();
+        instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET.getInitiativeId(),
+                TEST_WALLET.getInitiativeName(), INSTRUMENT_ID, STATUS_ACTIVE));
+        instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET_REFUNDABLE.getInitiativeId(),
+                TEST_WALLET_REFUNDABLE.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT));
+        InitiativesWithInstrumentDTO initiativesWithInstrumentDTO =
+                new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, instrStatusOnInitiative);
+
+        Mockito.when(walletMapper.toInstrumentOnInitiativesDTO(Mockito.anyString(), Mockito.any(), Mockito.anyList()))
+                .thenReturn(initiativesWithInstrumentDTO);
+
+        InitiativesWithInstrumentDTO result = walletService.getInitiativesWithInstrument(ID_WALLET, USER_ID);
+        assertEquals(result.getIdWallet(), initiativesWithInstrumentDTO.getIdWallet());
+        assertEquals(result.getMaskedPan(), initiativesWithInstrumentDTO.getMaskedPan());
+        assertEquals(result.getBrand(), initiativesWithInstrumentDTO.getBrand());
+        assertIterableEquals(result.getInitiativeList(), initiativesWithInstrumentDTO.getInitiativeList());
+    }
+    @Test
+    void getInitiativesWithInstrument_noActiveInitiatives() {
+        List<Wallet> walletList = new ArrayList<>();
+        Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
+        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, new ArrayList<>()));
+        Mockito.when(walletMapper.toInstrumentOnInitiativesDTO(Mockito.anyString(), Mockito.any(), Mockito.anyList()))
+                .thenReturn(new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, new ArrayList<>()));
+
+        InitiativesWithInstrumentDTO result = walletService.getInitiativesWithInstrument(ID_WALLET, USER_ID);
+        assertEquals(ID_WALLET, result.getIdWallet());
+        assertEquals(MASKED_PAN, result.getMaskedPan());
+        assertEquals(BRAND, result.getBrand());
+        assertEquals(result.getInitiativeList(), new ArrayList<>());
+    }
+
+    @Test
+    void getInitiativesWithInstrument_emptyListFromPI() {
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(TEST_WALLET);
+        walletList.add(TEST_WALLET_REFUNDABLE);
+        walletList.add(TEST_WALLET_UNSUBSCRIBED);
+
+        WalletDTO walletDtoRef= new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
+                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
+        WalletDTO walletDtoUnsub = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
+                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
+
+        Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(walletDtoRef);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_UNSUBSCRIBED)).thenReturn(walletDtoUnsub);
+
+        InitiativesStatusDTO dtoTestWallet = new InitiativesStatusDTO(WALLET_DTO.getInitiativeId(),
+                WALLET_DTO.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT);
+        Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_DTO)).thenReturn(dtoTestWallet);
+
+        InstrumentDetailDTO instrDetailDTO = new InstrumentDetailDTO(MASKED_PAN, BRAND, new ArrayList<>());
+        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(instrDetailDTO);
+
+        List<InitiativesStatusDTO> instrStatusOnInitiative = new ArrayList<>();
+        instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET.getInitiativeId(),
+                TEST_WALLET.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT));
+        InitiativesWithInstrumentDTO initiativesWithInstrumentDTO =
+                new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, instrStatusOnInitiative);
+
+        Mockito.when(walletMapper.toInstrumentOnInitiativesDTO(Mockito.anyString(), Mockito.any(), Mockito.anyList()))
+                .thenReturn(initiativesWithInstrumentDTO);
+
+        InitiativesWithInstrumentDTO result = walletService.getInitiativesWithInstrument(ID_WALLET, USER_ID);
+        assertEquals(result.getIdWallet(), initiativesWithInstrumentDTO.getIdWallet());
+        assertEquals(result.getMaskedPan(), initiativesWithInstrumentDTO.getMaskedPan());
+        assertEquals(result.getBrand(), initiativesWithInstrumentDTO.getBrand());
+        assertIterableEquals(result.getInitiativeList(), initiativesWithInstrumentDTO.getInitiativeList());
+    }
+
+    @Test
+    void getInitiativesWithInstrument_feignException() {
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(TEST_WALLET);
+        walletList.add(TEST_WALLET_REFUNDABLE);
+
+        Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(WALLET_REFUNDABLE_DTO);
+
+        Request request =
+                Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
+        Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+                .when(paymentInstrumentRestConnector).getInstrumentInitiativesDetail(ID_WALLET, USER_ID);
+
+        try {
+            walletService.getInitiativesWithInstrument(ID_WALLET, USER_ID);
         } catch (WalletException e) {
             assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
         }

@@ -1,12 +1,7 @@
 package it.gov.pagopa.wallet.controller;
 
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.*;
+
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,4 +65,8 @@ public interface WalletController {
       @Valid @RequestBody InstrumentIssuerDTO body,
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId);
+
+  @GetMapping("/instrument/{idWallet}/{userId}/initiatives")
+  ResponseEntity<InitiativesWithInstrumentDTO> getInitiativesWithInstrument(@PathVariable("idWallet") String idWallet,
+                                                                            @PathVariable("userId") String userId);
 }
