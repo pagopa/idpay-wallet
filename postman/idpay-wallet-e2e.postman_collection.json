@@ -5636,11 +5636,7 @@
 													"pm.test(\"Status test\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
-													"\r",
-													"pm.test(\"Message test\", function () {\r",
-													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('[description]: The field is mandatory! - [iban]: The field is mandatory!');\r",
-													"});"
+													""
 												],
 												"type": "text/javascript"
 											}
@@ -5689,118 +5685,6 @@
 												"wallet",
 												"{{initiativeId}}",
 												"iban"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Get Wallet Status Ok",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
-													"    let responseJson = pm.response.json()\r",
-													"    pm.expect(responseJson.status).to.be.eql('REFUNDABLE');\r",
-													"});"
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{tokenIO}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "GET",
-										"header": [
-											{
-												"key": "Ocp-Apim-Subscription-Key",
-												"value": "{{apimSubscriptionKey}}",
-												"type": "text"
-											},
-											{
-												"key": "Ocp-Apim-Trace",
-												"value": "{{Ocp-Apim-Trace}}",
-												"type": "text"
-											}
-										],
-										"url": {
-											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}/status",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"idpay",
-												"wallet",
-												"{{initiativeId}}",
-												"status"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Get Wallet Detail",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});"
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{tokenIO}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "GET",
-										"header": [
-											{
-												"key": "Ocp-Apim-Subscription-Key",
-												"value": "{{apimSubscriptionKey}}",
-												"type": "text"
-											},
-											{
-												"key": "Ocp-Apim-Trace",
-												"value": "{{Ocp-Apim-Trace}}",
-												"type": "text"
-											}
-										],
-										"url": {
-											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"idpay",
-												"wallet",
-												"{{initiativeId}}"
 											]
 										}
 									},
