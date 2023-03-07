@@ -3,7 +3,7 @@
 		"_postman_id": "4e2115d6-d699-48a2-87fb-f1d174b1c10c",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036736"
+		"_exporter_id": "26036679"
 	},
 	"item": [
 		{
@@ -57,7 +57,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode=GMMMRA79L13H703E",
+									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -71,7 +71,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "GMMMRA79L13H703E"
+											"value": "{{CF_2}}"
 										}
 									]
 								}
@@ -411,7 +411,7 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "{{CF_GAM}}",
+										"value": "{{CF_2}}",
 										"type": "text"
 									}
 								],
@@ -478,7 +478,7 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "GMMMRA79L13H703E",
+										"value": "{{CF_2}}",
 										"type": "text"
 									}
 								],
@@ -541,7 +541,7 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "GMMMRA79L13H703E",
+										"value": "{{CF_2}}",
 										"type": "text"
 									}
 								],
@@ -599,7 +599,7 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "GMMMRA79L13H703E",
+										"value": "{{CF_2}}",
 										"type": "text"
 									}
 								],
@@ -732,7 +732,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -746,7 +746,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "{{CF_GAM}}"
+											"value": "{{CF_2}}"
 										}
 									]
 								}
@@ -851,7 +851,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"iban\": \"IT09P3608105138205493205495\",\r\n    \"description\": \"conto cointestato\"\r\n}",
+									"raw": "{\r\n    \"iban\": \"{{IBAN_1}}\",\r\n    \"description\": \"conto cointestato\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1091,7 +1091,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -1105,7 +1105,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "{{CF_GAM}}"
+											"value": "{{CF_2}}"
 										}
 									]
 								}
@@ -1335,7 +1335,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -1349,7 +1349,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "{{CF_IUR}}"
+											"value": "{{CF_1}}"
 										}
 									]
 								}
@@ -1536,7 +1536,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -1550,7 +1550,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -1727,7 +1727,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -1741,7 +1741,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -1866,7 +1866,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -1880,7 +1880,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -2248,7 +2248,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2262,7 +2262,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_IUR}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -2557,7 +2557,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2571,7 +2571,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_IUR}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -2866,7 +2866,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2880,7 +2880,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_IUR}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -3180,7 +3180,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3194,7 +3194,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_IUR}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -3437,7 +3437,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3451,7 +3451,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -3735,7 +3735,7 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_IUR}}",
+												"value": "{{CF_1}}",
 												"type": "text"
 											}
 										],
@@ -3802,7 +3802,7 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_IUR}}",
+												"value": "{{CF_1}}",
 												"type": "text"
 											}
 										],
@@ -3865,7 +3865,7 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_IUR}}",
+												"value": "{{CF_1}}",
 												"type": "text"
 											}
 										],
@@ -3894,6 +3894,10 @@
 												"exec": [
 													"pm.test(\"Status test\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"pm.test(\"Empty test\", function () {\r",
+													"    let jsonResponse = pm.response.json()\r",
+													"    pm.expect(jsonResponse.instrumentList.length).equals(0);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -3923,7 +3927,7 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_IUR}}",
+												"value": "{{CF_1}}",
 												"type": "text"
 											}
 										],
@@ -3998,7 +4002,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -4012,7 +4016,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_IUR}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -4122,7 +4126,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"iban\": \"IT09P3608105138205493205495\",\r\n    \"description\": \"conto cointestato\"\r\n}",
+											"raw": "{\r\n    \"iban\": \"{{IBAN_1}}\",\r\n    \"description\": \"conto cointestato\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -4311,7 +4315,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_IUR}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -4325,7 +4329,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_IUR}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -4624,7 +4628,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -4638,7 +4642,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -4932,7 +4936,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -4946,7 +4950,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -5240,7 +5244,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -5254,7 +5258,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -5548,7 +5552,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -5562,7 +5566,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_GAM}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -5740,7 +5744,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode=RLLCLD92M08A662O",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -5754,7 +5758,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "RLLCLD92M08A662O"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -5807,7 +5811,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"iban\": \"IT09P3608105138205493205495\",\r\n    \"description\": \"conto cointestato\"\r\n}",
+											"raw": "{\r\n    \"iban\": \"{{IBAN_1}}\",\r\n    \"description\": \"conto cointestato\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -6005,7 +6009,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_GAM}}",
+									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -6019,7 +6023,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "{{CF_GAM}}"
+											"value": "{{CF_2}}"
 										}
 									]
 								}
@@ -6156,14 +6160,6 @@
 		{
 			"key": "serviceId - instrument-failed",
 			"value": "MOCKdevVTDS9QUN1BWFWPIZGA090RE2IC"
-		},
-		{
-			"key": "CF_IUR",
-			"value": "RLLCLD92M08A662O"
-		},
-		{
-			"key": "CF_GAM",
-			"value": "GMMMRA79L13H703E"
 		},
 		{
 			"key": "iban",
