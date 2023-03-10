@@ -155,7 +155,9 @@ public class WalletServiceImpl implements WalletService {
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
       utilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT");
-      throw new WalletException(e.status(), e.getMessage());
+      String error = e.contentUTF8();
+      String messageError = (!error.isBlank()) ? error.substring(error.lastIndexOf(":")+2, error.indexOf("\"}")) : e.getMessage();
+      throw new WalletException(e.status(), messageError);
     }
   }
 
