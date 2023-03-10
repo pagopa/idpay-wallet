@@ -29,6 +29,7 @@ public class WalletConstants {
   public static final String REJECTED_ADD_INSTRUMENT = "REJECTED_ADD_INSTRUMENT";
   public static final String ADD_INSTRUMENT = "ADD_INSTRUMENT";
   public static final String INSTRUMENT_STATUS_DEFAULT = "INACTIVE";
+  public static final String CHECKIBAN_KO = "CHECKIBAN_KO";
 
   private WalletConstants(){}
 }
