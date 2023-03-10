@@ -496,7 +496,9 @@ public class WalletServiceImpl implements WalletService {
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
-      throw new WalletException(e.status(), e.getMessage());
+      String error = e.contentUTF8();
+      String messageError = (!error.isBlank()) ? error.substring(error.lastIndexOf(":")+2, error.indexOf("\"}")) : e.getMessage();
+      throw new WalletException(e.status(), messageError);
     }
   }
 

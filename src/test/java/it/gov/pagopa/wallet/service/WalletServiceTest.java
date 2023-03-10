@@ -1484,6 +1484,23 @@ class WalletServiceTest {
     }
 
     @Test
+    void enrollInstrumentIssuer_unsubscribed() {
+
+        final InstrumentIssuerDTO instrument =
+                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
+
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_UNSUBSCRIBED));
+
+        try {
+            walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED, e.getMessage());
+        }
+    }
+
+    @Test
     void enrollInstrumentIssuer_ko_feignexception() {
 
         TEST_WALLET.setEndDate(LocalDate.MAX);
@@ -1492,7 +1509,7 @@ class WalletServiceTest {
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(TEST_WALLET_REFUNDABLE));
 
 
         Request request =
