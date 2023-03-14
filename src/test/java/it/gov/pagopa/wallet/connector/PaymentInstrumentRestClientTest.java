@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
+import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
@@ -103,7 +104,7 @@ class PaymentInstrumentRestClientTest {
   @Test
   void get_instrument_initiatives_detail_test() {
     try {
-      restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID);
+      restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID, WalletConstants.FILTER_INSTRUMENT_STATUS_LIST);
     } catch (Exception e) {
       Assertions.fail();
     }

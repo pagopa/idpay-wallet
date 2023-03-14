@@ -98,8 +98,7 @@ class WalletServiceTest {
     private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
     private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
     private static final String STATUS_ACTIVE = "ACTIVE";
-    private static final String STATUS_INACTIVE = "INACTIVE";
-
+    private static final String STATUS_PENDING_ENROLLMENT = "PENDING_ENROLLMENT_REQUEST";
 
     private static final Wallet TEST_WALLET =
       Wallet.builder()
@@ -1547,16 +1546,16 @@ class WalletServiceTest {
         Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_REFUNDABLE_DTO)).thenReturn(instrOnInitiativeRefDTO);
 
         List<StatusOnInitiativeDTO> initiativeList = new ArrayList<>();
-        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID + STATUS_ACTIVE, STATUS_ACTIVE));
-        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID, STATUS_INACTIVE));
-        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, initiativeList));
+        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID, INSTRUMENT_ID, STATUS_ACTIVE));
+        initiativeList.add(new StatusOnInitiativeDTO(INITIATIVE_ID + "PENDING", INSTRUMENT_ID, STATUS_PENDING_ENROLLMENT));
+        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString(),
+                Mockito.anyList())).thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, initiativeList));
 
         List<InitiativesStatusDTO> instrStatusOnInitiative = new ArrayList<>();
         instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET.getInitiativeId(),
                 TEST_WALLET.getInitiativeName(), INSTRUMENT_ID, STATUS_ACTIVE));
         instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET_REFUNDABLE.getInitiativeId(),
-                TEST_WALLET_REFUNDABLE.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT));
+                TEST_WALLET_REFUNDABLE.getInitiativeName(), INSTRUMENT_ID, STATUS_PENDING_ENROLLMENT));
         InitiativesWithInstrumentDTO initiativesWithInstrumentDTO =
                 new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, instrStatusOnInitiative);
 
@@ -1573,8 +1572,8 @@ class WalletServiceTest {
     void getInitiativesWithInstrument_noActiveInitiatives() {
         List<Wallet> walletList = new ArrayList<>();
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
-        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, new ArrayList<>()));
+        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString(),
+                        Mockito.anyList())).thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, new ArrayList<>()));
         Mockito.when(walletMapper.toInstrumentOnInitiativesDTO(Mockito.anyString(), Mockito.any(), Mockito.anyList()))
                 .thenReturn(new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, new ArrayList<>()));
 
@@ -1607,7 +1606,8 @@ class WalletServiceTest {
         Mockito.when(walletMapper.toInstrStatusOnInitiativeDTO(WALLET_DTO)).thenReturn(dtoTestWallet);
 
         InstrumentDetailDTO instrDetailDTO = new InstrumentDetailDTO(MASKED_PAN, BRAND, new ArrayList<>());
-        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString())).thenReturn(instrDetailDTO);
+        Mockito.when(paymentInstrumentRestConnector.getInstrumentInitiativesDetail(Mockito.anyString(), Mockito.anyString(),
+                Mockito.anyList())).thenReturn(instrDetailDTO);
 
         List<InitiativesStatusDTO> instrStatusOnInitiative = new ArrayList<>();
         instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET.getInitiativeId(),
@@ -1638,7 +1638,7 @@ class WalletServiceTest {
         Request request =
                 Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
         Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
-                .when(paymentInstrumentRestConnector).getInstrumentInitiativesDetail(ID_WALLET, USER_ID);
+                .when(paymentInstrumentRestConnector).getInstrumentInitiativesDetail(ID_WALLET, USER_ID, WalletConstants.FILTER_INSTRUMENT_STATUS_LIST);
 
         try {
             walletService.getInitiativesWithInstrument(ID_WALLET, USER_ID);

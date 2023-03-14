@@ -3,6 +3,8 @@ package it.gov.pagopa.wallet.connector;
 import it.gov.pagopa.wallet.dto.*;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRestConnector {
 
@@ -33,8 +35,8 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
     paymentInstrumentRestClient.enrollInstrumentIssuer(body);
   }
   @Override
-  public InstrumentDetailDTO getInstrumentInitiativesDetail(String idWallet, String userId){
-    return paymentInstrumentRestClient.getInstrumentInitiativesDetail(idWallet, userId);
+  public InstrumentDetailDTO getInstrumentInitiativesDetail(String idWallet, String userId, List<String> statusList){
+    return paymentInstrumentRestClient.getInstrumentInitiativesDetail(idWallet, userId, statusList);
   }
 
 }

@@ -1,103 +1,121 @@
 package it.gov.pagopa.wallet.utils;
 
-import it.gov.pagopa.wallet.exception.WalletException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.logging.Logger;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
+@Slf4j(topic = "AUDIT")
 public class AuditUtilities {
-  private static final String SRCIP;
+  public static final String SRCIP;
 
   static {
+    String srcIp;
     try {
-      SRCIP = InetAddress.getLocalHost().getHostAddress();
+      srcIp = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
-      throw new WalletException(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+      log.error("Cannot determine the ip of the current host", e);
+      srcIp="UNKNOWN";
     }
+
+    SRCIP = srcIp;
   }
 
   private static final String CEF = String.format("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s", SRCIP);
-  private static final String MSG = " msg=";
-  private static final String USER = "suser=";
-  private static final String INITIATIVE_ID = "cs1Label=initiativeId cs1=";
-  private static final String CHANNEL = "cs2Label=channel cs2=";
-  private static final String ID_WALLET = "cs3Label=idWallet cs3=";
+  private static final String CEF_BASE_PATTERN = CEF + " msg={}";
+  private static final String CEF_PATTERN = CEF_BASE_PATTERN + " suser={} cs1Label=initiativeId cs1={}";
+  private static final String CEF_PATTERN_CHANNEL = CEF_PATTERN + " cs2Label=channel cs2={}";
+  private static final String CEF_PATTERN_ID_WALLET = CEF_PATTERN + " cs3Label=idWallet cs3={}";
 
-  final Logger logger = Logger.getLogger("AUDIT");
-
-
-  private String buildLogWithChannel(String eventLog, String userId, String initiativeId, String channel) {
-    return CEF + MSG + eventLog + " " + USER + userId + " " + INITIATIVE_ID + initiativeId + " " + CHANNEL + channel;
-  }
-
-  private String buildLogWithIdWallet(String eventLog, String userId, String initiativeId, String idWallet) {
-    return CEF + MSG + eventLog + " " + USER + userId + " " + INITIATIVE_ID + initiativeId + " " + ID_WALLET + idWallet;
-  }
-
-  private String buildLog(String eventLog, String userId, String initiativeId) {
-    return CEF + MSG + eventLog + " " + USER + userId + " " + INITIATIVE_ID + initiativeId;
+  private void logAuditString(String pattern, String... parameters) {
+    log.info(pattern, (Object[]) parameters);
   }
 
   public void logCreatedWallet(String userId, String initiativeId) {
-    String testLog = this.buildLog("Wallet's citizen created ", userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+              "Wallet's citizen created.", userId, initiativeId
+    );
   }
 
   public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet) {
-    String testLog = this.buildLogWithIdWallet("Request for association of an instrument to an initiative from APP IO ", userId, initiativeId, idWallet);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN_ID_WALLET,
+            "Request for association of an instrument to an initiative from APP IO.", userId, initiativeId, idWallet
+    );
   }
 
   public void logEnrollmentInstrumentIssuer(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of an instrument to an initiative from ISSUER ", userId, initiativeId, channel);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN_CHANNEL,
+            "Request for association of an instrument to an initiative from Issuer.", userId, initiativeId, channel
+    );
   }
   public void logEnrollmentInstrumentKO(String userId, String initiativeId, String idWallet, String msg) {
-    String testLog = this.buildLogWithIdWallet("Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, idWallet);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN_ID_WALLET,
+            "Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, idWallet
+    );
   }
 
   public void logEnrollmentIban(String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of an IBAN to an initiative ", userId, initiativeId, channel);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN_CHANNEL,
+            "Request for association of an IBAN to an initiative.", userId, initiativeId, channel
+    );
   }
   public void logEnrollmentIbanKO(String msg, String userId, String initiativeId, String channel) {
-    String testLog = this.buildLogWithChannel("Request for association of an IBAN to an initiative failed: " + msg, userId, initiativeId, channel);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN_CHANNEL,
+            "Request for association of an IBAN to an initiative failed: " + msg, userId, initiativeId, channel
+    );
   }
   public void logEnrollmentIbanValidationKO(String iban) {
-    String testLog = CEF + MSG + String.format("The iban %s is not valid", iban);
-    logger.info(testLog);
+    logAuditString(
+            CEF_BASE_PATTERN,
+            String.format("The iban %s is not valid.", iban)
+    );
   }
   public void logEnrollmentIbanComplete(String userId, String initiativeId, String iban) {
-    String testLog = this.buildLog(String.format("The iban %s was associated to initiative ", iban), userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+            String.format("The iban %s was associated to initiative.", iban), userId, initiativeId
+    );
   }
   public void logIbanDeleted(String userId, String initiativeId, String iban) {
-    String testLog = this.buildLog(String.format("The iban %s was disassociated from initiative ", iban), userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+            String.format("The iban %s was disassociated from initiative.", iban), userId, initiativeId
+    );
   }
   public void logIbanDeletedKO(String userId, String initiativeId, String iban, String msg) {
-    String testLog = this.buildLog(String.format("Request to delete iban %s from initiative failed:", iban) + msg, userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+            String.format("Request to delete iban %s from initiative failed: ", iban) + msg, userId, initiativeId
+    );
   }
 
   public void logInstrumentDeleted(String userId, String initiativeId) {
-    String testLog = this.buildLog("Request to delete an instrument from an initiative ", userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+            "Request to delete an instrument from an initiative.", userId, initiativeId
+    );
   }
 
   public void logUnsubscribe(String userId, String initiativeId) {
-    String testLog = this.buildLog("Request of unsubscription from initiative ", userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+            "Request of unsubscription from initiative.", userId, initiativeId
+    );
   }
   public void logUnsubscribeKO(String userId, String initiativeId, String msg) {
-    String testLog = this.buildLog("Request of unsubscription from initiative failed " + msg, userId, initiativeId);
-    logger.info(testLog);
+    logAuditString(
+            CEF_PATTERN,
+            "Request of unsubscription from initiative failed: " + msg, userId, initiativeId
+    );
   }
 }

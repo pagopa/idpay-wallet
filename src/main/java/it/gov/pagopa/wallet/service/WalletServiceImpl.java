@@ -677,7 +677,8 @@ public class WalletServiceImpl implements WalletService {
     log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get detail about payment instrument and its status on initiatives");
     try {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Calling Payment Instrument");
-      InstrumentDetailDTO instrumentDetailDTO = paymentInstrumentRestConnector.getInstrumentInitiativesDetail(idWallet, userId);
+      InstrumentDetailDTO instrumentDetailDTO = paymentInstrumentRestConnector.getInstrumentInitiativesDetail(idWallet, userId,
+              WalletConstants.FILTER_INSTRUMENT_STATUS_LIST);
 
       if (initiativeListDTO.getInitiativeList().isEmpty()) {
         return walletMapper.toInstrumentOnInitiativesDTO(idWallet, instrumentDetailDTO, initiativesStatusDTO);
@@ -697,8 +698,7 @@ public class WalletServiceImpl implements WalletService {
                 .collect(Collectors.toMap(InitiativesStatusDTO::getInitiativeId, Function.identity()));
 
         Map<String, StatusOnInitiativeDTO> instrumentStatusOnInitiativeMap = instrStatusList.stream()
-                .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity(),
-                        (oldValue, newValue)-> oldValue));
+                .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity()));
 
         log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Updating initiatives list with payment status");
         initiativesStatusDTO = activeInitiativesMap.keySet().stream()

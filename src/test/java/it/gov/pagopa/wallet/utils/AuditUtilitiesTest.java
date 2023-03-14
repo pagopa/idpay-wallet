@@ -1,57 +1,23 @@
 package it.gov.pagopa.wallet.utils;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import it.gov.pagopa.wallet.exception.WalletException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = {AuditUtilities.class,InetAddress.class})
 class AuditUtilitiesTest {
-  private static final String SRCIP;
 
-  static {
-    try {
-      SRCIP = InetAddress.getLocalHost().getHostAddress();
-    } catch (UnknownHostException e) {
-      throw new WalletException(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-    }
-  }
-
-  private static final String MSG = " TEST_MSG";
+  private static final String MSG = "TEST_MSG";
   private static final String CHANNEL = "CHANNEL";
   private static final String USER_ID = "TEST_USER_ID";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
-
   private static final String IDWALLET = "IDWALLET";
+  private static final String IBAN = "TEST_IBAN";
 
+  private MemoryAppender memoryAppender;
 
-  @MockBean
-  Logger logger;
-  @Autowired
-  AuditUtilities auditUtilities;
-  @MockBean
-  InetAddress inetAddress;
-  MemoryAppender memoryAppender;
+  private final AuditUtilities auditUtilities = new AuditUtilities();
 
   @BeforeEach
   public void setup() {
@@ -66,110 +32,212 @@ class AuditUtilitiesTest {
 
   @Test
   void logCreateWallet_ok(){
-    auditUtilities.logCreatedWallet(USER_ID,INITIATIVE_ID);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+    auditUtilities.logCreatedWallet(USER_ID, INITIATIVE_ID);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Wallet's citizen created." +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
 
-  @Test
-  void logUnsubscribe_ok(){
-    auditUtilities.logUnsubscribe(USER_ID,INITIATIVE_ID);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
-  }
-  @Test
-  void logUnsubscribeKO_ok(){
-    auditUtilities.logUnsubscribeKO(USER_ID,INITIATIVE_ID,MSG);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
-  }
+
   @Test
   void logEnrollInstrument_ok(){
     auditUtilities.logEnrollmentInstrument(USER_ID,INITIATIVE_ID,IDWALLET);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative from APP IO." +
+                    " suser=%s cs1Label=initiativeId cs1=%s cs3Label=idWallet cs3=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            IDWALLET
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
 
   @Test
   void logEnrollInstrumentIssuer_ok(){
     auditUtilities.logEnrollmentInstrumentIssuer(USER_ID,INITIATIVE_ID,CHANNEL);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative from Issuer." +
+                    " suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            CHANNEL
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
   void logEnrollmentInstrumentKO_ok(){
-    auditUtilities.logEnrollmentInstrumentKO(USER_ID,INITIATIVE_ID,CHANNEL,MSG);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+    auditUtilities.logEnrollmentInstrumentKO(USER_ID,INITIATIVE_ID,IDWALLET,MSG);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative failed:" +
+                    " %s suser=%s cs1Label=initiativeId cs1=%s cs3Label=idWallet cs3=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            MSG,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            IDWALLET
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
   void logEnrollIban_ok(){
     auditUtilities.logEnrollmentIban(USER_ID,INITIATIVE_ID,CHANNEL);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an IBAN to an initiative." +
+                    " suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            CHANNEL
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
   void logEnrollIbanKO_ok(){
     auditUtilities.logEnrollmentIbanKO(MSG, USER_ID,INITIATIVE_ID,CHANNEL);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an IBAN to an initiative failed:" +
+                    " %s suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            MSG,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            CHANNEL
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
-  void logEnrollmentIbanValidationKOO_ok(){
-    auditUtilities.logEnrollmentIbanValidationKO(MSG);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+  void logEnrollmentIbanValidationKO_ok(){
+    auditUtilities.logEnrollmentIbanValidationKO(IBAN);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=The iban %s is not valid.")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            IBAN
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
   void logEnrollmentIbanComplete_ok(){
-    auditUtilities.logEnrollmentIbanComplete(USER_ID,INITIATIVE_ID, MSG);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+    auditUtilities.logEnrollmentIbanComplete(USER_ID,INITIATIVE_ID, IBAN);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=The iban %s was associated to initiative." +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            IBAN,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
 
   @Test
   void logIbanDeleted_ok(){
-    auditUtilities.logIbanDeleted(USER_ID,INITIATIVE_ID,MSG);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+    auditUtilities.logIbanDeleted(USER_ID,INITIATIVE_ID,IBAN);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=The iban %s was disassociated from initiative." +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            IBAN,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
   void logIbanDeletedKO_ok(){
-    auditUtilities.logIbanDeletedKO(USER_ID,INITIATIVE_ID,MSG,MSG);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+    auditUtilities.logIbanDeletedKO(USER_ID,INITIATIVE_ID,IBAN,MSG);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request to delete iban %s from initiative failed:" +
+                    " %s suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            IBAN,
+                            MSG,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
   @Test
   void logDeleteInstrument_ok(){
     auditUtilities.logInstrumentDeleted(USER_ID,INITIATIVE_ID);
-    assertThat(memoryAppender.contains(ch.qos.logback.classic.Level.DEBUG,MSG)).isFalse();
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request to delete an instrument from an initiative." +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );  }
+
+  @Test
+  void logUnsubscribe_ok(){
+    auditUtilities.logUnsubscribe(USER_ID,INITIATIVE_ID);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request of unsubscription from initiative." +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
+  @Test
+  void logUnsubscribeKO_ok(){
+    auditUtilities.logUnsubscribeKO(USER_ID,INITIATIVE_ID,MSG);
 
-  public static class MemoryAppender extends ListAppender<ILoggingEvent> {
-    public void reset() {
-      this.list.clear();
-    }
-
-    public boolean contains(ch.qos.logback.classic.Level level, String string) {
-      return this.list.stream()
-          .anyMatch(event -> event.toString().contains(string)
-              && event.getLevel().equals(level));
-    }
-
-    public int countEventsForLogger(String loggerName) {
-      return (int) this.list.stream()
-          .filter(event -> event.getLoggerName().contains(loggerName))
-          .count();
-    }
-
-    public List<ILoggingEvent> search() {
-      return this.list.stream()
-          .filter(event -> event.toString().contains(MSG))
-          .collect(Collectors.toList());
-    }
-
-    public List<ILoggingEvent> search(Level level) {
-      return this.list.stream()
-          .filter(event -> event.toString().contains(MSG)
-              && event.getLevel().equals(level))
-          .collect(Collectors.toList());
-    }
-
-    public int getSize() {
-      return this.list.size();
-    }
-
-    public List<ILoggingEvent> getLoggedEvents() {
-      return Collections.unmodifiableList(this.list);
-    }
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request of unsubscription from initiative failed:" +
+                    " %s suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            MSG,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
   }
 
 }
