@@ -21,6 +21,7 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
+import it.gov.pagopa.wallet.utils.Utilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
@@ -73,6 +74,8 @@ class WalletServiceTest {
     WalletService walletService;
     @MockBean
     AuditUtilities auditUtilities;
+    @MockBean
+    Utilities utilities;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
