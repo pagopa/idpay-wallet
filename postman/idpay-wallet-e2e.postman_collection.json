@@ -3,7 +3,7 @@
 		"_postman_id": "4e2115d6-d699-48a2-87fb-f1d174b1c10c",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036679"
+		"_exporter_id": "26036736"
 	},
 	"item": [
 		{
@@ -747,7 +747,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													"setTimeout(() => {}, 10000);"
+													"setTimeout(() => {}, 30000);"
 												],
 												"type": "text/javascript"
 											}
@@ -863,6 +863,15 @@
 													"pm.test(\"Status test\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 20000);"
 												],
 												"type": "text/javascript"
 											}
