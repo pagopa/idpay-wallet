@@ -1,5 +1,7 @@
 package it.gov.pagopa.wallet.constants;
 
+import java.util.List;
+
 public class WalletConstants {
 
   public static final String ERROR_MANDATORY_FIELD = "The field is mandatory!";
@@ -29,6 +31,9 @@ public class WalletConstants {
   public static final String REJECTED_ADD_INSTRUMENT = "REJECTED_ADD_INSTRUMENT";
   public static final String ADD_INSTRUMENT = "ADD_INSTRUMENT";
   public static final String INSTRUMENT_STATUS_DEFAULT = "INACTIVE";
+  public static final String CHECKIBAN_KO = "CHECKIBAN_KO";
+  public static final List<String> FILTER_INSTRUMENT_STATUS_LIST = List.of("ACTIVE", "PENDING_ENROLL_RTD",
+          "PENDING_ENROLL_RE", "PENDING_DEACTIVATION_REQUEST");
 
   private WalletConstants(){}
 }

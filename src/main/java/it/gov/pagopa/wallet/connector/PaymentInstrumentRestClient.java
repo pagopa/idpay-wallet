@@ -5,6 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(
     name = "${rest-client.payment.instrument.serviceCode}",
     url = "${rest-client.payment.instrument.baseUrl}")
@@ -40,6 +42,7 @@ void deleteInstrument(
           produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   InstrumentDetailDTO getInstrumentInitiativesDetail(@PathVariable("idWallet") String idWallet,
-                                                     @PathVariable("userId") String userId);
+                                                     @PathVariable("userId") String userId,
+                                                     @RequestParam(required = false) List<String> statusList);
 
 }
