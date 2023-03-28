@@ -234,6 +234,30 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
+  public void suspendWallet(String initiativeId, String userId) {
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      auditUtilities.logSuspensionKO(userId,initiativeId);
+      throw new WalletException(
+              HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    }
+    LocalDateTime localDateTime = LocalDateTime.now();
+    String backupStatus = wallet.getStatus();
+    try{
+      walletUpdatesRepository.suspendWallet(initiativeId,userId,WalletStatus.SUSPENDED, localDateTime);
+      log.info("[SUSPEND_USER] Sending event to ONBOARDING");
+      onboardingRestConnector.suspendOnboarding(initiativeId,userId);
+    }catch(Exception e) {
+      auditUtilities.logSuspensionKO(userId,initiativeId);
+      this.rollbackWallet(backupStatus, wallet);
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+    }
+    sendToTimeline(timelineMapper.suspendToTimeline(initiativeId,userId,localDateTime));
+    auditUtilities.logSuspension(userId,initiativeId);
+
+  }
+
+  @Override
   public InitiativeListDTO getInitiativeList(String userId) {
     long startTime = System.currentTimeMillis();
     List<Wallet> walletList = walletRepository.findByUserId(userId);
@@ -613,10 +637,18 @@ public class WalletServiceImpl implements WalletService {
     }
   }
 
-  private void rollbackWallet(String oldStatus, Wallet wallet) {
-    log.info("[ROLLBACK_WALLET] Wallet, old status: {}", oldStatus);
-    wallet.setStatus(oldStatus);
-    wallet.setRequestUnsubscribeDate(null);
+  private void rollbackWallet(String statusToRollback, Wallet wallet) {
+    log.info("[ROLLBACK_WALLET] Wallet, old status: {}", wallet.getStatus());
+    switch (wallet.getStatus()) {
+      case WalletStatus.UNSUBSCRIBED:
+        wallet.setRequestUnsubscribeDate(null);
+        break;
+      case WalletStatus.SUSPENDED:
+        wallet.setSuspensionDate(null);
+        break;
+    }
+    wallet.setStatus(statusToRollback);
+    wallet.setUpdateDate(LocalDateTime.now());
     walletRepository.save(wallet);
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }

@@ -57,6 +57,11 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  public ResponseEntity<Void> suspendWallet(String initiativeId, String userId) {
+    return null;
+  }
+
+  @Override
   public ResponseEntity<InitiativeListDTO> initiativeList(String userId) {
     InitiativeListDTO initiativeDTO = walletService.getInitiativeList(userId);
     return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
