@@ -36,7 +36,9 @@ public class Wallet {
   private Long nTrx;
   private int nInstr;
   private LocalDateTime requestUnsubscribeDate;
+  private LocalDateTime updateDate;
   private LocalDateTime lastCounterUpdate;
+  private LocalDateTime suspensionDate;
 
   @Data
   @NoArgsConstructor

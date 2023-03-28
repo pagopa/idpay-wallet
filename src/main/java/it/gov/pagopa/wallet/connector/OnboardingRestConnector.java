@@ -9,5 +9,7 @@ public interface OnboardingRestConnector {
 
   void disableOnboarding(@RequestBody UnsubscribeCallDTO body);
 
+  void suspendOnboarding(@PathVariable String initiativeId,@PathVariable String userId);
+
   void rollback(@PathVariable String initiativeId,@PathVariable String userId);
 }

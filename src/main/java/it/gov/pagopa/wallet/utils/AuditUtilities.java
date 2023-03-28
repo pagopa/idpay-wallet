@@ -118,4 +118,17 @@ public class AuditUtilities {
             "Request of unsubscription from initiative failed: " + msg, userId, initiativeId
     );
   }
+
+  public void logSuspension(String userId, String initiativeId) {
+    logAuditString(
+            CEF_PATTERN,
+            "Wallet suspended", userId, initiativeId
+    );
+  }
+  public void logSuspensionKO(String userId, String initiativeId) {
+    logAuditString(
+            CEF_PATTERN,
+            "Wallet suspension failed", userId, initiativeId
+    );
+  }
 }
