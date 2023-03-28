@@ -58,7 +58,8 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public ResponseEntity<Void> suspendWallet(String initiativeId, String userId) {
-    return null;
+    walletService.suspendWallet(initiativeId, userId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Override
