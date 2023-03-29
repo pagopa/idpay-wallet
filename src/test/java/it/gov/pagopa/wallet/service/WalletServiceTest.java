@@ -43,6 +43,7 @@ import java.util.*;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -1647,6 +1648,63 @@ class WalletServiceTest {
             walletService.getInitiativesWithInstrument(ID_WALLET, USER_ID);
         } catch (WalletException e) {
             assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+        }
+    }
+
+    @Test
+    void suspend_ok(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET.setStatus(WalletStatus.SUSPENDED);
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .suspendWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+
+        walletService.suspendWallet(INITIATIVE_ID, USER_ID);
+
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
+                .suspendWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+        Mockito.verify(onboardingRestConnector, Mockito.times(1))
+                .suspendOnboarding(INITIATIVE_ID, USER_ID);
+        assertEquals(WalletStatus.SUSPENDED, TEST_WALLET.getStatus());
+    }
+
+    @Test
+    void suspend_walletUnsubscribed(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_UNSUBSCRIBED));
+        try {
+            walletService.suspendWallet(INITIATIVE_ID, USER_ID);
+        } catch (WalletException e){
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED, e.getMessage());
+        }
+    }
+    @Test
+    void suspend_ko(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET.setStatus(WalletStatus.SUSPENDED);
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .suspendWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+
+        Mockito.doThrow(new WalletException(500, WalletConstants.ERROR_MSG_HEADER_MESSAGE)).when(onboardingRestConnector)
+                .suspendOnboarding(anyString(), anyString());
+
+        try {
+            walletService.suspendWallet(INITIATIVE_ID, USER_ID);
+        } catch (WalletException e){
+            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
         }
     }
 }

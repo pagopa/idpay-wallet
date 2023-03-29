@@ -235,26 +235,30 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void suspendWallet(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
+
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logSuspensionKO(userId,initiativeId);
       throw new WalletException(
               HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
+
     LocalDateTime localDateTime = LocalDateTime.now();
     String backupStatus = wallet.getStatus();
     try{
-      walletUpdatesRepository.suspendWallet(initiativeId,userId,WalletStatus.SUSPENDED, localDateTime);
+      walletUpdatesRepository.suspendWallet(initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
       log.info("[SUSPEND_USER] Sending event to ONBOARDING");
-      onboardingRestConnector.suspendOnboarding(initiativeId,userId);
-    }catch(Exception e) {
+      onboardingRestConnector.suspendOnboarding(initiativeId, userId);
+    } catch (Exception e) {
       auditUtilities.logSuspensionKO(userId,initiativeId);
       this.rollbackWallet(backupStatus, wallet);
+      performanceLog(startTime, "SUSPENSION");
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
-    sendToTimeline(timelineMapper.suspendToTimeline(initiativeId,userId,localDateTime));
-    auditUtilities.logSuspension(userId,initiativeId);
-
+    sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+    auditUtilities.logSuspension(userId, initiativeId);
+    performanceLog(startTime, "SUSPENSION");
   }
 
   @Override

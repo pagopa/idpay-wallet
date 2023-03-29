@@ -46,7 +46,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status),
+        new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -57,7 +57,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status),
+        new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -86,7 +86,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
         new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx)
-                    .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()),
+                    .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         FindAndModifyOptions.options().returnNew(true),
         Wallet.class);
   }
@@ -100,7 +100,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_REFUNDED, refunded).set(FIELD_HISTORY, history),
+        new Update().set(FIELD_REFUNDED, refunded).set(FIELD_HISTORY, history).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -112,7 +112,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status),
+        new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -123,7 +123,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status),
+        new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 }
