@@ -553,7 +553,7 @@
 												"exec": [
 													"let textResponse = pm.response.text()\r",
 													"\r",
-													"pm.test('API GET Initiative Detail IO - Happy case - Initiative updating - Generate Portal Token (PagoPA Admin)', () => {\r",
+													"pm.test('API GET Initiative Detail IO - Happy case - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -608,7 +608,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative updating - PagoPA Admin updates initiative status into APPROVED -(Responses with 204)\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative approving - PagoPA Admin updates initiative status into APPROVED -(Responses with 204)\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -1594,7 +1594,7 @@
 												"exec": [
 													"let textResponse = pm.response.text()\r",
 													"\r",
-													"pm.test('Wallet - Happy case - Initiative updating - Generate Portal Token (Ente Admin)', () => {\r",
+													"pm.test('Wallet - Happy case - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -1649,7 +1649,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Wallet - Happy case - Initiative updating - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
+													"pm.test(\"Wallet - Happy case - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});\r",
 													""
@@ -5018,7 +5018,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - Generate Portal Token (PagoPA Admin)', () => {\r",
+															"pm.test('Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -5073,7 +5073,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative approving - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -7173,7 +7173,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - Generate Portal Token (PagoPA Admin)', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -7228,7 +7228,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative approving - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -8205,7 +8205,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - Generate Portal Token (PagoPA Admin)', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -8260,7 +8260,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative approving - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
