@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -50,6 +51,16 @@ public class TimelineMapper {
                 .brand(brand)
                 .operationType("DELETE_INSTRUMENT")
                 .operationDate(LocalDateTime.now())
+                .build();
+    }
+
+    public QueueOperationDTO suspendToTimeline(
+            String initiativeId, String userId, LocalDateTime localDateTime) {
+        return QueueOperationDTO.builder()
+                .initiativeId(initiativeId)
+                .userId(userId)
+                .operationType(WalletStatus.SUSPENDED)
+                .operationDate(localDateTime)
                 .build();
     }
 

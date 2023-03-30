@@ -3,14 +3,14 @@
 		"_postman_id": "4e2115d6-d699-48a2-87fb-f1d174b1c10c",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036736"
+		"_exporter_id": "26036679"
 	},
 	"item": [
 		{
 			"name": "Happy Case",
 			"item": [
 				{
-					"name": "Enroll Instrument",
+					"name": "GET Initiative Detail (CIT)",
 					"item": [
 						{
 							"name": "ENTE - Initiative creation",
@@ -33,7 +33,7 @@
 												"exec": [
 													"let textResponse = pm.response.text()\r",
 													"\r",
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('API GET Initiative Detail IO - Happy case - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -58,7 +58,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -87,7 +87,10 @@
 											"script": {
 												"exec": [
 													"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
-													"pm.collectionVariables.set('serviceName', pm.variables.replaceIn('{{$randomProduct}}'));\r",
+													"let moment = require('moment');\r",
+													"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+													"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+													"pm.collectionVariables.set('serviceName', serviceName);\r",
 													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 													"\r",
 													"pm.collectionVariables.set('channel_type', 'web');\r",
@@ -105,11 +108,11 @@
 													"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
 													"pm.collectionVariables.set('initiativeId', jsonData.initiativeId);\r",
 													"\r",
-													"pm.test(\"Status test 201\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative creation - STEP1 - Status test 201\", function () {\r",
 													"    pm.response.to.have.status(201);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Verify response body\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
 													"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
 													"});"
@@ -199,7 +202,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test 204\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative creation - STEP2 - Status test 204\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -266,7 +269,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test 204\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative creation - STEP3 - Status test 204\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -316,7 +319,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test 204\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative creation - STEP4 - Status test 204\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -414,7 +417,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test 204\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative creation - STEP5 - Status test 204\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -550,7 +553,7 @@
 												"exec": [
 													"let textResponse = pm.response.text()\r",
 													"\r",
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('API GET Initiative Detail IO - Happy case - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -577,7 +580,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"pagopa_admin\"\r\n}\r\n",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -605,7 +608,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test 204\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative approving - PagoPA Admin updates initiative status into APPROVED -(Responses with 204)\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -663,7 +666,7 @@
 							"name": "ENTE - Initiative PUBLISHED",
 							"item": [
 								{
-									"name": "Generate Portal Token Copy",
+									"name": "Generate Portal Token",
 									"event": [
 										{
 											"listen": "prerequest",
@@ -680,7 +683,7 @@
 												"exec": [
 													"let textResponse = pm.response.text()\r",
 													"\r",
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('API GET Initiative Detail IO - Happy case - Initiative updating - Generate Portal Token (Ente Admin)', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -707,7 +710,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -735,7 +738,918 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"API GET Initiative Detail IO - Happy case - Initiative updating - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 30000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disabledSystemHeaders": {}
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeId}}/published",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeId}}",
+												"published"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Generate Token IO",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('API GET Initiative Detail IO - Happy case - Onboarding - Generate Token IO', () => {\r",
+											"    //verify response HTTP status \r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Ocp-Apim-Subscription-Key",
+										"value": "",
+										"type": "default"
+									},
+									{
+										"key": "Ocp-Apim-Trace",
+										"value": "true",
+										"type": "default"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{$randomPassword}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"bpd",
+										"pagopa",
+										"api",
+										"v1",
+										"login"
+									],
+									"query": [
+										{
+											"key": "fiscalCode",
+											"value": "{{$randomPassword}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Initiative Detail",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"API GET Initiative Detail IO - Happy case - CIT view initiative detail and Response Status is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{tokenIO}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Ocp-Apim-Subscription-Key",
+										"value": "{{apimSubscriptionKey}}",
+										"type": "text"
+									},
+									{
+										"key": "Ocp-Apim-Trace",
+										"value": "{{Ocp-Apim-Trace}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}/detail",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"idpay",
+										"wallet",
+										"{{initiativeId}}",
+										"detail"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Enroll Instrument",
+					"item": [
+						{
+							"name": "ENTE - Initiative creation",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Enroll instrument - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"aud\": \"idpay.welfare.pagopa.it\",\r\n    \"uid\": \"{{uid_Ente}}\",\r\n    \"name\": \"{{name_Ente}}\",\r\n    \"familyName\": \"{{familyName_Ente}}\",\r\n    \"email\": \"{{email_Ente}}\",\r\n    \"orgId\": \"{{orgId_Ente}}\",\r\n    \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n    \"orgName\": \"Ente di test IdPay\",\r\n    \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n    \"orgRole\": \"{{orgRole_Ente}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP1-Insert Initiative (Service Info)",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
+													"let moment = require('moment');\r",
+													"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+													"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+													"pm.collectionVariables.set('serviceName', serviceName);\r",
+													"\r",
+													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+													"\r",
+													"pm.collectionVariables.set('channel_type', 'web');\r",
+													"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);\r",
+													"// console.log('jsondata', jsonData);\r",
+													"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
+													"pm.collectionVariables.set('initiativeId', jsonData.initiativeId);\r",
+													"\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP1 - Status test 201\", function () {\r",
+													"    pm.response.to.have.status(201);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"serviceIO\": true,\n    \"serviceName\": \"{{serviceName}}\",\n    \"serviceScope\": \"LOCAL\",\n    \"description\": \"{{description}}\",\n    \"privacyLink\": \"https://www.google.it\",\n    \"tcLink\": \"https://www.google.com\",\n    \"channels\": [\n        {\n            \"type\": \"{{channel_type}}\",\n            \"contact\": \"{{channel_contact}}\"\n        }\n    ]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/info",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"info"
+											]
+										},
+										"description": "Save initiative and first subset of data 'general info'"
+									},
+									"response": []
+								},
+								{
+									"name": "STEP2-Update Initiative (general Info)",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"let moment = require('moment');\r",
+													"//Format: YYYY-MM-DD\r",
+													"let today = String(moment().format('YYYY-MM-DD'));\r",
+													"let todayP1 = String(moment().add(1,'months').format('YYYY-MM-DD'));\r",
+													"let todayP2 = String(moment().add(2,'months').format('YYYY-MM-DD'));\r",
+													"let todayP3 = String(moment().add(3,'months').format('YYYY-MM-DD'));\r",
+													"\r",
+													"/*\r",
+													"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
+													"pm.collectionVariables.set('...', _.random(0, 180));\r",
+													"*/\r",
+													"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+													"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
+													"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
+													"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+													"pm.collectionVariables.set('beneficiaryKnown', false);\r",
+													"pm.collectionVariables.set('rankingEnabled', false);\r",
+													"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+													"pm.collectionVariables.set('rankingStartDate', today);\r",
+													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
+													"pm.collectionVariables.set('startDate', todayP2);\r",
+													"pm.collectionVariables.set('endDate', todayP3);"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP2 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/general",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"general"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										},
+										"description": "Save initiative and first subset of data 'general info'"
+									},
+									"response": []
+								},
+								{
+									"name": "STEP3-Update Initiative (criteria)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP3 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"automatedCriteria\": [\r\n        {\r\n            \"authority\": \"INPS\",\r\n            \"code\": \"ISEE\",\r\n            \"operator\": \"GT\",\r\n            \"value\": \"1\",\r\n            \"value2\": \"\"\r\n        }\r\n    ],\r\n    \"selfDeclarationCriteria\": []\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeId}}/beneficiary",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeId}}",
+												"beneficiary"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP4-Update Initiative Trx-Reward rules",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP4 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"const d = new Date();\r",
+													"dateString = d.toISOString()\r",
+													"let endTime = dateString.split('T');\r",
+													"endTime = endTime[1].split('Z');\r",
+													"\r",
+													"pm.collectionVariables.set('rewardRuleType', 'rewardValue');\r",
+													"const rewardValueTypes = [\"PERCENTAGE\", \"ABSOLUTE\"];\r",
+													"rewardValueTypeRandomIndex = _.random(0, rewardValueTypes.length - 1);\r",
+													"const selectedRewardValueType = rewardValueTypes[rewardValueTypeRandomIndex];\r",
+													"pm.collectionVariables.set('rewardValueType', selectedRewardValueType);\r",
+													"if (selectedRewardValueType == \"PERCENTAGE\") {\r",
+													"    pm.collectionVariables.set('rewardRuleValue', 100);\r",
+													"} else {\r",
+													"    pm.collectionVariables.set('rewardRuleValue', 1);\r",
+													"}\r",
+													"\r",
+													"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
+													"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
+													"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+													"pm.collectionVariables.set('trxThresholdTo', 50);\r",
+													"pm.collectionVariables.set('trxCountFrom', 3);\r",
+													"pm.collectionVariables.set('trxCountTo', 11);\r",
+													"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
+													"pm.collectionVariables.set('trxRewardLimitValue', 3);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n    \"daysOfWeek\": [\n      {\n        \"daysOfWeek\": [\n          \"{{trxDaysOfWeek}}\"\n        ],\n        \"intervals\": [\n          {\n            \"startTime\": \"00:00:00.000\",\n            \"endTime\": \"{{trxDayEndTime}}\"\n          }\n        ]\n      }\n    ],\n    \"threshold\": {\n      \"from\": {{trxThresholdFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxThresholdTo}},\n      \"toIncluded\": true\n    },\n    \"mccFilter\": {\n      \"allowedList\": true,\n      \"values\": [\n        \"0742\", \"0743\", \"0744\"\n      ]\n    },\n    \"trxCount\": {\n      \"from\": {{trxCountFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxCountTo}},\n      \"toIncluded\": true\n    }\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/reward",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"reward"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP5-Update Initiative Refund Rule",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP5 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"/*const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+													"timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"\r",
+													"const accumulatedType = [\"BUDGET_EXHAUSTED\",\"THRESHOLD_REACHED\"];\r",
+													"accumulatedTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"\r",
+													"pm.collectionVariables.set('timeType', timeType[timeTypeRandomIndex]);\r",
+													"pm.collectionVariables.set('accumulatedType', accumulatedType[accumulatedTypeRandomIndex]);\r",
+													"pm.collectionVariables.set('identificationCode', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+													"*/\r",
+													"\r",
+													"\r",
+													"let refundType = [\"timeParameter\", \"accumulatedAmount\"];\r",
+													"refundTypeRandomIndex = _.random(0, refundType.length - 1);\r",
+													"\r",
+													"const refundTypeSelected = refundType[refundTypeRandomIndex];\r",
+													"let body = {};\r",
+													"if (refundTypeSelected == \"timeParameter\") {\r",
+													"    const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+													"    timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"    body = {\r",
+													"        timeParameter: {\r",
+													"            timeType: timeType[timeTypeRandomIndex]\r",
+													"        }\r",
+													"    };\r",
+													"} else {\r",
+													"    const accumulatedType = [\"BUDGET_EXHAUSTED\", \"THRESHOLD_REACHED\"];\r",
+													"    accumulatedTypeRandomIndex = _.random(0, accumulatedType.length - 1);\r",
+													"    const accumulatedTypeSelected = accumulatedType[accumulatedTypeRandomIndex];\r",
+													"    if (accumulatedTypeSelected == \"BUDGET_EXHAUSTED\") {\r",
+													"        body = {\r",
+													"            accumulatedAmount: {\r",
+													"                accumulatedType: \"BUDGET_EXHAUSTED\"\r",
+													"            }\r",
+													"        };\r",
+													"    } else {\r",
+													"        body = {\r",
+													"            accumulatedAmount: {\r",
+													"                accumulatedType: \"THRESHOLD_REACHED\",\r",
+													"                refundThreshold: 10\r",
+													"            }\r",
+													"        };\r",
+													"    }\r",
+													"}\r",
+													"\r",
+													"pm.collectionVariables.set('body', JSON.stringify(body));"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{{body}}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/refund",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"refund"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "PAGOPA - Initiative update status APPROVED",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Enroll instrument - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
+													"});\r",
+													"\r",
+													"//response time is less than 1s\r",
+													"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Pagopa}}\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update initiative into APPROVED status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative approving - PagoPA Admin updates initiative status into APPROVED - (Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//setTimeout(function(){}, 20000); //milliseconds"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalTokenPagopa}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeId}}/approved",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeId}}",
+												"approved"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "ENTE - Initiative PUBLISHED",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+													"});\r",
+													"\r",
+													"//response time is less than 1s\r",
+													"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Initiative PUBLISHED",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});\r",
 													""
@@ -794,7 +1708,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Generate Token IO', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -860,7 +1774,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Accept T&C - Response status is 204\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -931,7 +1845,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Prerequisites Check - Response status is 200,202\", function () {\r",
 													"    pm.expect(pm.response.code).to.be.oneOf([200,202]);\r",
 													"});"
 												],
@@ -993,7 +1907,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - PDND + Autocertification - Response status is 202\", function () {\r",
 													"    pm.response.to.have.status(202);\r",
 													"});"
 												],
@@ -1055,7 +1969,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case -Enroll instrument - Enroll instrument - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
 										],
@@ -1119,11 +2033,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Get Detail\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll instrument - Get wallet status - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Wallet status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll instrument - Get wallet status - Response status is one of REFUNDABLE and NOT_REFUNDABLE_ONLY_INSTRUMENT\", function () {\r",
 											"    let responseJson = pm.response.json()\r",
 											"    pm.expect(responseJson.status).to.be.oneOf(['REFUNDABLE','NOT_REFUNDABLE_ONLY_INSTRUMENT']);\r",
 											"});"
@@ -1187,7 +2101,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Get Detail\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll instrument - Get wallet detail - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
@@ -1250,7 +2164,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - Get Hpan - Get Hpan list - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													""
@@ -1313,7 +2227,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll iban - Enroll iban - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
 										],
@@ -1376,11 +2290,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Get Detail\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll iban - Get wallet status - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Wallet status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll iban - Get wallet status - Response is one of REFUNDABLE and REFUNDABLE_ONLY_INSTRUMENT\", function () {\r",
 											"    let responseJson = pm.response.json()\r",
 											"    pm.expect(responseJson.status).to.be.oneOf(['REFUNDABLE','REFUNDABLE_ONLY_INSTRUMENT']);\r",
 											"});"
@@ -1435,7 +2349,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Get Detail\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll iban - Get wallet detail - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"    pm.collectionVariables.set(\"iban\", pm.response.json().iban);\r",
 											"});"
@@ -1489,7 +2403,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Enroll iban - Get iban list - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											""
@@ -1548,7 +2462,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test('Retrieve Initiative ID', () => {\r",
+											"pm.test('Wallet - Happy case - Delete instrument - Get initiative list - Retrieve Initiative ID', () => {\r",
 											"    //verify response HTTP status \r",
 											"    pm.response.to.have.status(200);\r",
 											"    const response = pm.response.json().instrumentList;\r",
@@ -1608,7 +2522,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Delete instrument - Delete instrument - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
 										],
@@ -1668,7 +2582,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Unsubscribed wallet & user - Unsubscribe - Response status is 204\", function () {\r",
 											"    pm.response.to.have.status(204);\r",
 											"});\r",
 											"\r",
@@ -1744,11 +2658,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Get Detail\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Unsubscribe wallet & user - Get wallet status - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Wallet status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Unsubscribe wallet & user - Get wallet status - Wallet status is equals to UNSUBSCRIBED\", function () {\r",
 											"    let responseJson = pm.response.json()\r",
 											"    pm.expect(responseJson.status).to.be.equals('UNSUBSCRIBED');\r",
 											"});"
@@ -1812,13 +2726,13 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Unsubscribe wallet & user - Get status onboarding - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
 											"setTimeout(()=>{ \r",
 											"\r",
-											"pm.test(\"Onboarding status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - Unsubscribe wallet & user - Get status onboarding - Onboarding status is equals to UNSUBSCRIBED\", function () {\r",
 											"    let jsonResponse = pm.response.json()\r",
 											"    pm.expect(jsonResponse.status).to.eql('UNSUBSCRIBED');\r",
 											"});\r",
@@ -1880,7 +2794,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Onboarding user with whitelist - ISSUER - Accept T&C - Response status is 204\", function () {\r",
 													"    pm.response.to.have.status(204);\r",
 													"});"
 												],
@@ -1955,7 +2869,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Onboarding user with whitelist - ISSUER - Prerequisites Check - Response status is 202\", function () {\r",
 													"    pm.response.to.have.status(202);\r",
 													"});"
 												],
@@ -2030,11 +2944,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Onboarding user with whitelist - ISSUER - Status onboarding - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Onboarding status test\", function () {\r",
+													"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Onboarding user with whitelist - ISSUER - Status onboarding - Onboarding status is ONBOARDING_OK\", function () {\r",
 													"    let jsonResponse = pm.response.json()\r",
 													"    pm.expect(jsonResponse.status).equals('ONBOARDING_OK');\r",
 													"});"
@@ -2095,7 +3009,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Enroll instrument - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
 										],
@@ -2162,7 +3076,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Get wallet detail - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
 										],
@@ -2220,11 +3134,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Get wallet status - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Wallet status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Get wallet status - Wallet status is NOT_REFUNDABLE_ONLY_INSTRUMENT\", function () {\r",
 											"    let responseJson = pm.response.json()\r",
 											"    pm.expect(responseJson.status).to.be.eql('NOT_REFUNDABLE_ONLY_INSTRUMENT');\r",
 											"});"
@@ -2283,7 +3197,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Get the list of payment instrument associated to initiative - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
 										],
@@ -2351,11 +3265,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Unhappy case - Get Hpan list - Initiative Id not found - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Empty test\", function () {\r",
+											"pm.test(\"Wallet - Unhappy case - Get Hpan list - Initiative Id not found - Response is an empty list of payment instrumnet associated to this Hpan\", function () {\r",
 											"    let jsonResponse = pm.response.json()\r",
 											"    pm.expect(jsonResponse.instrumentList.length).equals(0);\r",
 											"});\r",
@@ -2420,7 +3334,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Generate token IO', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -2486,11 +3400,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Enroll instrument - Response status is 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Enroll instrument - Response message is : You are unsubscribed at this initiative!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('You are unsubscribed at this initiative!');\r",
 													"});"
@@ -2564,11 +3478,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Get wallet status - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Get wallet status - Wallet status is equals to UNSUBSCRIBED\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.equals('UNSUBSCRIBED');\r",
 													"});"
@@ -2623,7 +3537,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Get wallet detail - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -2681,7 +3595,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Unhappy case - Unsubscribed user try to enroll iban - Generate token IO', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -2747,11 +3661,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Enroll iban - Response status is 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Enroll iban - Response message is: You are unsubscribed at this initiative!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('You are unsubscribed at this initiative!');\r",
 													"});"
@@ -2815,11 +3729,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Get wallet status - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Get wallet status - Wallet status is equals to UNSUBSCRIBED\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.equals('UNSUBSCRIBED');\r",
 													"});"
@@ -2874,11 +3788,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Get wallet detail - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Get wallet detail - Wallet status is equals to UNSUBSCRIBED\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.equals('UNSUBSCRIBED');\r",
 													"});"
@@ -2945,7 +3859,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Payment Instrument - Enroll PI already in use - Onboarding - Generate token IO', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -3011,7 +3925,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Enroll PI already in use - Onboarding -  Accept T&C - Status 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -3073,7 +3987,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Enroll PI already in use - Onboarding - Prerequisites check - Status 200 or 202\", function () {\r",
 															"    pm.expect(pm.response.code).to.be.oneOf([200,202]);\r",
 															"});"
 														],
@@ -3135,7 +4049,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Enroll PI already in use - Onboarding - PDND + Autocertification - Status 202\", function () {\r",
 															"    pm.response.to.have.status(202);\r",
 															"});"
 														],
@@ -3197,11 +4111,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - enrolling instrument - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - Message is The selected payment instrument is not active for such user and initiative.\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The selected payment instrument is not active for such user and initiative.');\r",
 													"});"
@@ -3275,11 +4189,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - Get Status - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - Get Status - Wallet status NOT_REFUNDABLE\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.eql('NOT_REFUNDABLE');\r",
 													"});"
@@ -3334,7 +4248,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - Get Detail - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -3392,11 +4306,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - enrolling iban - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - Message is The selected payment instrument is not active for such user and initiative.\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The selected payment instrument is not active for such user and initiative.');\r",
 													"});"
@@ -3452,11 +4366,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - Get Status - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - Get Status - Wallet status NOT_REFUNDABLE\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.oneOf(['NOT_REFUNDABLE_ONLY_IBAN','NOT_REFUNDABLE']);\r",
 													"});"
@@ -3511,7 +4425,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - Get Detail - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -3583,7 +4497,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -3608,7 +4522,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -3637,7 +4551,11 @@
 													"script": {
 														"exec": [
 															"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
-															"pm.collectionVariables.set('serviceName', pm.variables.replaceIn('{{$randomProduct}}'));\r",
+															"let moment = require('moment');\r",
+															"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+															"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+															"pm.collectionVariables.set('serviceName', serviceName);\r",
+															"\r",
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
@@ -3655,11 +4573,11 @@
 															"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
 															"pm.collectionVariables.set('initiativeId', jsonData.initiativeId);\r",
 															"\r",
-															"pm.test(\"Status test 201\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - STEP1 - Responses with 201\", function () {\r",
 															"    pm.response.to.have.status(201);\r",
 															"});\r",
 															"\r",
-															"pm.test(\"Verify response body\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
 															"    let jsonResponse = pm.response.json();\r",
 															"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
 															"});"
@@ -3749,7 +4667,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - STEP2 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -3816,7 +4734,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - STEP3 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -3866,7 +4784,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - STEP4 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -3964,7 +4882,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative creation - STEP5 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -4100,7 +5018,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -4127,7 +5045,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"pagopa_admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -4155,7 +5073,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative approving - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -4230,7 +5148,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -4257,7 +5175,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -4285,7 +5203,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});\r",
 															""
@@ -4361,7 +5279,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Unhappy case - Payment Instrument - Initiative not active for this User - Generate token IO', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -4427,11 +5345,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - enrolling instrument - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - enrolling instrument - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -4496,11 +5414,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - Get Status - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - Get Status - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -4555,11 +5473,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - Get Detail - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - Get Detail - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -4612,7 +5530,7 @@
 							"name": "Enroll initiative not active - 404",
 							"item": [
 								{
-									"name": "ENTE - Initiative creation Copy",
+									"name": "ENTE - Initiative creation",
 									"item": [
 										{
 											"name": "Generate Portal Token",
@@ -4632,7 +5550,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Payment instrument - Initiative not active - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -4657,7 +5575,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -4686,7 +5604,11 @@
 													"script": {
 														"exec": [
 															"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
-															"pm.collectionVariables.set('serviceName', pm.variables.replaceIn('{{$randomProduct}}'));\r",
+															"let moment = require('moment');\r",
+															"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+															"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+															"pm.collectionVariables.set('serviceName', serviceName);\r",
+															"\r",
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
@@ -4704,11 +5626,11 @@
 															"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
 															"pm.collectionVariables.set('initiativeId-draft', jsonData.initiativeId);\r",
 															"\r",
-															"pm.test(\"Status test 201\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment instrument - Initiative not active - Initiative creation - STEP1 - Response status is 201\", function () {\r",
 															"    pm.response.to.have.status(201);\r",
 															"});\r",
 															"\r",
-															"pm.test(\"Verify response body\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment instrument - Initiative not active - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
 															"    let jsonResponse = pm.response.json();\r",
 															"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
 															"});"
@@ -4770,7 +5692,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Unhappy case - Payment instrument - Initiative not active - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -4836,11 +5758,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Enroll instrument - Response with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Enroll instrument - Response message is equals to: The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -4905,11 +5827,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet status - Response with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet status - Response message is equals to: The requested initiative is not active for the current user! \", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -4964,11 +5886,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet detail - Response with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet detail - Response message is equals to: The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -5014,6 +5936,73 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "DELETE initiative",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Unhappy case - Initiative deletion - Ente Admin delete(enabled:false) an initiative in status draft - Responses with 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/beneficiary/instruments",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"beneficiary",
+												"instruments"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId-draft}}"
+												}
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
@@ -5021,7 +6010,7 @@
 							"name": "ISSUER Enroll Instrument already in use - 403",
 							"item": [
 								{
-									"name": "ISSUER Onboarding User with Whitelist Copy",
+									"name": "ISSUER Onboarding User with Whitelist",
 									"item": [
 										{
 											"name": "Accept T&C",
@@ -5030,7 +6019,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Onboarding user with whitelist - ISSUER - Accept T&C - Response status is 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -5070,7 +6059,7 @@
 													},
 													{
 														"key": "Fiscal-Code",
-														"value": "{{CF_1}}",
+														"value": "{{CF_2}}",
 														"type": "text"
 													}
 												],
@@ -5105,7 +6094,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Onboarding user with whitelist - ISSUER - Prerequisites Check - Response status is 202\", function () {\r",
 															"    pm.response.to.have.status(202);\r",
 															"});"
 														],
@@ -5145,7 +6134,7 @@
 													},
 													{
 														"key": "Fiscal-Code",
-														"value": "{{CF_1}}",
+														"value": "{{CF_2}}",
 														"type": "text"
 													}
 												],
@@ -5180,11 +6169,11 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Onboarding user with whitelist - ISSUER - Status onboarding - Response status is 200\", function () {\r",
 															"    pm.response.to.have.status(200);\r",
 															"});\r",
 															"\r",
-															"pm.test(\"Onboarding status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Onboarding user with whitelist - ISSUER - Status onboarding - Onboarding status is ONBOARDING_OK\", function () {\r",
 															"    let jsonResponse = pm.response.json()\r",
 															"    pm.expect(jsonResponse.status).equals('ONBOARDING_OK');\r",
 															"});"
@@ -5201,7 +6190,7 @@
 												"header": [
 													{
 														"key": "Fiscal-Code",
-														"value": "{{CF_1}}",
+														"value": "{{CF_2}}",
 														"type": "text"
 													},
 													{
@@ -5245,11 +6234,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Enroll instrument - Response status is 403\", function () {\r",
 													"    pm.response.to.have.status(403);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Enroll instrument - Response message is equals to: Payment instrument already associated to another citizen\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('Payment instrument already associated to another citizen');\r",
 													"});"
@@ -5317,7 +6306,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Get wallet detail - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -5375,11 +6364,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Get wallet status - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Get wallet status - Wallet status is equals to NOT_REFUNDABLE\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.eql('NOT_REFUNDABLE');\r",
 													"});"
@@ -5438,10 +6427,10 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument - Get the list of payment instrument associated to initiative - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
-													"pm.test(\"Empty test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument - Get the list of payment instrument associated to initiative - Response is an empty list of payment instrument associated to initiative\", function () {\r",
 													"    let jsonResponse = pm.response.json()\r",
 													"    pm.expect(jsonResponse.instrumentList.length).equals(0);\r",
 													"});"
@@ -5507,7 +6496,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test('Retrieve Token', () => {\r",
+											"pm.test('Wallet - Unhappy case - Get Hpan list - Initiative Id field empty - Generate token IO', () => {\r",
 											"    //verify response HTTP status \r",
 											"    pm.response.to.have.status(200);\r",
 											"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -5580,11 +6569,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status test\", function () {\r",
+											"pm.test(\"Wallet - Unhappy case - Get Hpan list - Initiative Id field empty - Response status is 404\", function () {\r",
 											"    pm.response.to.have.status(404);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Message test\", function () {\r",
+											"pm.test(\"Wallet - Unhappy case - Get Hpan list - Initiative Id field empty - Response message is The requested initiative is not active for the current user!\", function () {\r",
 											"    const responseJson = pm.response.json();\r",
 											"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 											"});\r",
@@ -5663,7 +6652,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -5688,7 +6677,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -5717,7 +6706,11 @@
 													"script": {
 														"exec": [
 															"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
-															"pm.collectionVariables.set('serviceName', pm.variables.replaceIn('{{$randomProduct}}'));\r",
+															"let moment = require('moment');\r",
+															"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+															"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+															"pm.collectionVariables.set('serviceName', serviceName);\r",
+															"\r",
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
@@ -5735,11 +6728,11 @@
 															"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
 															"pm.collectionVariables.set('initiativeId', jsonData.initiativeId);\r",
 															"\r",
-															"pm.test(\"Status test 201\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - STEP1 - Responses with 201\", function () {\r",
 															"    pm.response.to.have.status(201);\r",
 															"});\r",
 															"\r",
-															"pm.test(\"Verify response body\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
 															"    let jsonResponse = pm.response.json();\r",
 															"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
 															"});"
@@ -5829,7 +6822,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - STEP2 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -5896,7 +6889,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - STEP3 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -5946,7 +6939,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - STEP4 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -6044,7 +7037,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative creation - STEP5 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -6180,14 +7173,14 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
 															"});\r",
 															"\r",
 															"//response time is less than 1s\r",
-															"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+															"tests[\"Response time is less than 2s\"] = responseTime < 2000;"
 														],
 														"type": "text/javascript"
 													}
@@ -6207,7 +7200,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"pagopa_admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Pagopa}}\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -6235,7 +7228,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative approving - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -6310,7 +7303,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -6337,7 +7330,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -6365,7 +7358,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Initiative not active for this User - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});\r",
 															""
@@ -6421,7 +7414,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Unhappy case - Iban - Initiative not active for this User - Generate token IO', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -6487,11 +7480,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - enrolling iban - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - enrolling iban - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -6555,11 +7548,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Status - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Status - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -6614,11 +7607,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Detail - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Detail - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -6691,7 +7684,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -6716,7 +7709,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -6745,7 +7738,11 @@
 													"script": {
 														"exec": [
 															"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
-															"pm.collectionVariables.set('serviceName', pm.variables.replaceIn('{{$randomProduct}}'));\r",
+															"let moment = require('moment');\r",
+															"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+															"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+															"pm.collectionVariables.set('serviceName', serviceName);\r",
+															"\r",
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
@@ -6763,11 +7760,11 @@
 															"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
 															"pm.collectionVariables.set('initiativeId', jsonData.initiativeId);\r",
 															"\r",
-															"pm.test(\"Status test 201\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - STEP1 - Responses with 201\", function () {\r",
 															"    pm.response.to.have.status(201);\r",
 															"});\r",
 															"\r",
-															"pm.test(\"Verify response body\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
 															"    let jsonResponse = pm.response.json();\r",
 															"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
 															"});"
@@ -6857,7 +7854,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - STEP2 Draft - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -6924,7 +7921,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - STEP3 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -6974,7 +7971,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - STEP4 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -7072,7 +8069,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative creation - STEP5 - Responses with 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -7208,7 +8205,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
@@ -7235,7 +8232,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"pagopa_admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Pagopa}}\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -7263,7 +8260,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test 204\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative approving - PagoPA Admin update Initiative status into TO_CHECK -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -7338,7 +8335,7 @@
 														"exec": [
 															"let textResponse = pm.response.text()\r",
 															"\r",
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
@@ -7365,7 +8362,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"b8986bf2-1f93-4827-ab16-b21eb8aeae2b\",\r\n  \"name\": \"Test\",\r\n  \"familyName\": \"IDPay\",\r\n  \"email\": \"test@test.com\",\r\n  \"orgId\": \"2f63a151-da4e-4e1e-acf9-adecc0c4d727\",\r\n  \"orgVAT\": \"00608720272\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"admin\"\r\n}\r\n",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgPartyRole\": \"ADMIN\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -7393,7 +8390,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});\r",
 															""
@@ -7452,7 +8449,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test('Retrieve Token', () => {\r",
+															"pm.test('Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Onboarding - Generate token IO', () => {\r",
 															"    //verify response HTTP status \r",
 															"    pm.response.to.have.status(200);\r",
 															"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -7518,7 +8515,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Onboarding -  Accept T&C - Status 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
 														],
@@ -7580,7 +8577,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Onboarding - Prerequisites check - Status 200 or 202\", function () {\r",
 															"    pm.expect(pm.response.code).to.be.oneOf([200,202]);\r",
 															"});"
 														],
@@ -7642,7 +8639,7 @@
 													"listen": "test",
 													"script": {
 														"exec": [
-															"pm.test(\"Status test\", function () {\r",
+															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Onboarding - PDND + Autocertification - Status 202\", function () {\r",
 															"    pm.response.to.have.status(202);\r",
 															"});"
 														],
@@ -7704,11 +8701,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll Iban without upper case letters - enrolling iban - Responses with 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll Iban without upper case letters - enrolling iban - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('Iban country code must contain upper case letters.');\r",
 													"});"
@@ -7781,11 +8778,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll Iban without upper case letters - Get Status - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll Iban without upper case letters - Get Status - Wallet status NOT_REFUNDABLE\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.eql('NOT_REFUNDABLE');\r",
 													"});"
@@ -7840,7 +8837,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll Iban without upper case letters - Get Detail - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -7898,11 +8895,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - enrolling iban - Responses with 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - enrolling iban - Message is Iban is not italian\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('GB29NWBK60161331926819 Iban is not italian');\r",
 													"});"
@@ -7975,11 +8972,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - Get Status - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - Get Status - Wallet status NOT_REFUNDABLE\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.eql('NOT_REFUNDABLE');\r",
 													"});"
@@ -8034,7 +9031,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - Get Detail - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -8092,11 +9089,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll wrong iban - enrolling iban - Responses with 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll wrong iban - enrolling iban - Message is length is 23, expected BBAN length is: 18\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('[P3608105138205493205495] length is 23, expected BBAN length is: 18');\r",
 													"});"
@@ -8169,11 +9166,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll wrong iban - Get Status - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll wrong iban - Get Status - Wallet status NOT_REFUNDABLE\", function () {\r",
 													"    let responseJson = pm.response.json()\r",
 													"    pm.expect(responseJson.status).to.be.eql('NOT_REFUNDABLE');\r",
 													"});"
@@ -8228,7 +9225,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll wrong iban - Get Detail - Responses with 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
 												],
@@ -8286,7 +9283,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban empty field - enrolling iban - Responses with 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
 													""
@@ -8364,7 +9361,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Retrieve Token', () => {\r",
+													"pm.test('Wallet - Unhappy case - Iban - Enroll iban initiative not active - Generate token IO', () => {\r",
 													"    //verify response HTTP status \r",
 													"    pm.response.to.have.status(200);\r",
 													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
@@ -8430,11 +9427,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - enrolling iban - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - enrolling iban - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -8498,11 +9495,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Status - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Status - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -8557,11 +9554,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Get Detail\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Detail - Responses with 404\", function () {\r",
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Message test\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Detail - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
 													"});"
@@ -8603,6 +9600,290 @@
 												"idpay",
 												"wallet",
 												"{{initiativeId-draft}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "GET Initiative Detail(CIT)",
+					"item": [
+						{
+							"name": "Initiative Id fake - 404 - Not Found",
+							"item": [
+								{
+									"name": "Generate Token IO",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('API GET Initiative Detail IO - Unhappy case - InitiativeId fake - Retrieve Token', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "",
+												"type": "default"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{$randomPassword}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"bpd",
+												"pagopa",
+												"api",
+												"v1",
+												"login"
+											],
+											"query": [
+												{
+													"key": "fiscalCode",
+													"value": "{{$randomPassword}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Initiative Detail",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"API GET Initiative Detail IO - Unhappy case - InitiativeId fake - Response status is 404\", function () {\r",
+													"    pm.response.to.have.status(404);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"API GET Initiative Detail IO - Unhappy case - InitiativeId fake - Response contains info about an unprocessable status\", function () {\r",
+													"    const responseJson = pm.response.json();\r",
+													"    pm.expect(responseJson.message).to.eql(`Initiative with initiativeId fake not found.`)\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "{{Ocp-Apim-Trace}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/idpay/wallet/{{initiative_fake}}/detail",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"wallet",
+												"{{initiative_fake}}",
+												"detail"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Initiative Not in status PUBLISHED or CLOSED - 404 - Not Found",
+							"item": [
+								{
+									"name": "Generate Token IO",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('API GET Initiative Detail IO - Unhappy case - Initiative not in status PUBLISHED or CLOSED - CIT trying to get initiative detail of an initiative not in status PUBLISHED or CLOSED - Retrieve Token', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "",
+												"type": "default"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{$randomPassword}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"bpd",
+												"pagopa",
+												"api",
+												"v1",
+												"login"
+											],
+											"query": [
+												{
+													"key": "fiscalCode",
+													"value": "{{$randomPassword}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Initiative Detail",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"API GET Initiative Detail IO - Unhappy case - Initiative not in status PUBLISHED or CLOSED - CIT trying to get initiative detail of an initiative not in status PUBLISHED or CLOSED - Response status is 404\", function () {\r",
+													"    pm.response.to.have.status(404);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"API GET Initiative Detail IO - Unhappy case - Initiative not in status PUBLISHED or CLOSED - CIT trying to get initiative detail of an initiative not in status PUBLISHED or CLOSED - Response contains info about an unprocessable status\", function () {\r",
+													"    const responseJson = pm.response.json();\r",
+													"    const initiativeId = pm.collectionVariables.get(\"initiativeId-draft\");\r",
+													"    pm.expect(responseJson.message).to.eql(`Initiative with initiativeId ${initiativeId} not found.`)\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "{{Ocp-Apim-Trace}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId-draft}}/detail",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"wallet",
+												"{{initiativeId-draft}}",
+												"detail"
 											]
 										}
 									},
@@ -8682,7 +9963,7 @@
 		},
 		{
 			"key": "idwallet",
-			"value": "94185"
+			"value": "110454"
 		},
 		{
 			"key": "serviceId - test_associated",

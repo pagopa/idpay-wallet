@@ -29,6 +29,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
   private static final String FIELD_NINSTR = Fields.nInstr;
   private static final String FIELD_HISTORY = Fields.refundHistory;
   private static final String FIELD_LAST_COUNTER_UPDATE = Fields.lastCounterUpdate;
+  private static final String FIELD_SUSPENSION_DATE = Fields.suspensionDate;
+  private static final String FIELD_UPDATE_DATE = Fields.updateDate;
   private final MongoTemplate mongoTemplate;
 
   public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
@@ -44,7 +46,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status),
+        new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -55,8 +57,19 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status),
+        new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
+  }
+
+  @Override
+  public void suspendWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime) {
+    log.trace("[SUSPEND_WALLET] Suspend wallet with initiativeId: {}", initiativeId);
+
+    mongoTemplate.updateFirst(
+            Query.query(
+                    Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
+            new Update().set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, localDateTime).set(FIELD_SUSPENSION_DATE, localDateTime),
+            Wallet.class);
   }
 
   @Override
@@ -73,7 +86,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
         new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx)
-                    .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()),
+                    .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         FindAndModifyOptions.options().returnNew(true),
         Wallet.class);
   }
@@ -87,7 +100,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_REFUNDED, refunded).set(FIELD_HISTORY, history),
+        new Update().set(FIELD_REFUNDED, refunded).set(FIELD_HISTORY, history).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -99,7 +112,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status),
+        new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 
@@ -110,7 +123,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     mongoTemplate.updateFirst(
         Query.query(
             Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-        new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status),
+        new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
         Wallet.class);
   }
 }

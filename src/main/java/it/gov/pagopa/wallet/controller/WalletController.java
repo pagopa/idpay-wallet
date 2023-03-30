@@ -50,6 +50,11 @@ public interface WalletController {
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId);
 
+  @PutMapping("/{initiativeId}/{userId}/suspend")
+  ResponseEntity<Void> suspendWallet(
+          @PathVariable("initiativeId") String initiativeId,
+          @PathVariable("userId") String userId);
+
   @GetMapping("/{userId}")
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
 

@@ -239,5 +239,35 @@ class AuditUtilitiesTest {
             memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
     );
   }
+  @Test
+  void logSuspension_ok(){
+    auditUtilities.logSuspension(USER_ID,INITIATIVE_ID);
 
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Wallet suspended" +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
+  }
+
+  @Test
+  void logSuspensionKO_ok(){
+    auditUtilities.logSuspensionKO(USER_ID,INITIATIVE_ID);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Wallet suspension failed" +
+                    " suser=%s cs1Label=initiativeId cs1=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
+  }
 }
