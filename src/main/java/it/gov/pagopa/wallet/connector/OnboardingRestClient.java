@@ -35,4 +35,11 @@ public interface OnboardingRestClient {
   void suspendOnboarding(
           @PathVariable String initiativeId, @PathVariable String userId);
 
+  @PutMapping(
+          value = "/idpay/onboarding/{initiativeId}/{userId}/readmit",
+          produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
+  void readmitOnboarding(
+          @PathVariable String initiativeId, @PathVariable String userId);
+
 }

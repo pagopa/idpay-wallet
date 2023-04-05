@@ -72,6 +72,14 @@ class OnboardingRestClientTest {
       Assertions.fail();
     }
   }
+  @Test
+  void readmit_test() {
+    try{
+      restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID);
+    } catch (Exception e){
+      Assertions.fail();
+    }
+  }
 
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {

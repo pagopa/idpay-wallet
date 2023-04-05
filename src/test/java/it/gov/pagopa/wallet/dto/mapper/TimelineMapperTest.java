@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,4 +230,25 @@ class TimelineMapperTest {
         assertEquals(CRO, actual.getCro());
         assertEquals("REJECTED_REFUND", actual.getOperationType());
     }
+
+    @Test
+    void suspendToTimeline() {
+        QueueOperationDTO actual =
+                timelineMapper.suspendToTimeline(INITIATIVE_ID, USER_ID, OPERATION_DATE);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(WalletStatus.SUSPENDED, actual.getOperationType());
+        assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+        assertEquals(OPERATION_DATE, actual.getOperationDate());
+    }
+
+    @Test
+    void readmitToTimeline() {
+        QueueOperationDTO actual =
+                timelineMapper.readmitToTimeline(INITIATIVE_ID, USER_ID, OPERATION_DATE);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(WalletConstants.TIMELINE_READMITTED, actual.getOperationType());
+        assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+        assertEquals(OPERATION_DATE, actual.getOperationDate());
+    }
+
 }

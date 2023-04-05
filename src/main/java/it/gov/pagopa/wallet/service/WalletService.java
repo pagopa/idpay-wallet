@@ -10,6 +10,7 @@ public interface WalletService {
   void deleteInstrument(String initiativeId, String userId, String instrumentId);
   void enrollIban(String initiativeId, String userId, String iban, String channel, String description);
   void suspendWallet(String initiativeId, String userId);
+  void readmitWallet(String initiativeId, String userId);
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
   void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
