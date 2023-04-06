@@ -55,6 +55,11 @@ public interface WalletController {
           @PathVariable("initiativeId") String initiativeId,
           @PathVariable("userId") String userId);
 
+  @PutMapping("/{initiativeId}/{userId}/readmit")
+  ResponseEntity<Void> readmitWallet(
+          @PathVariable("initiativeId") String initiativeId,
+          @PathVariable("userId") String userId);
+
   @GetMapping("/{userId}")
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
 

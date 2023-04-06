@@ -28,6 +28,8 @@ import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +98,7 @@ class WalletServiceTest {
     private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
     private static final String DESCRIPTION_OK = "conto cointestato";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+    private static final LocalDateTime TEST_SUSPENSION_DATE = LocalDateTime.now().minusDays(1);
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
     private static final LocalDate TEST_END_DATE = LocalDate.now().plusDays(2);
     private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
@@ -103,6 +106,10 @@ class WalletServiceTest {
     private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_PENDING_ENROLLMENT = "PENDING_ENROLLMENT_REQUEST";
+    private static final String WALLET_NOT_REFUNDABLE = "NOT_REFUNDABLE";
+    private static final String WALLET_REFUNDABLE = "NOT_REFUNDABLE";
+    private static final String WALLET_NOT_REFUNDABLE_ONLY_INSTRUMENT = "NOT_REFUNDABLE_ONLY_INSTRUMENT";
+    private static final String WALLET_NOT_REFUNDABLE_ONLY_IBAN = "NOT_REFUNDABLE_ONLY_IBAN";
 
     private static final Wallet TEST_WALLET =
       Wallet.builder()
@@ -142,6 +149,23 @@ class WalletServiceTest {
                     .accrued(TEST_ACCRUED)
                     .refunded(TEST_REFUNDED)
                     .build();
+
+    private static final Wallet TEST_WALLET_SUSPENDED =
+            Wallet.builder()
+                    .userId(USER_ID)
+                    .initiativeId(INITIATIVE_ID)
+                    .initiativeName(INITIATIVE_NAME)
+                    .acceptanceDate(TEST_DATE)
+                    .status(WalletStatus.SUSPENDED)
+                    .endDate(TEST_DATE_ONLY_DATE)
+                    .amount(TEST_AMOUNT)
+                    .accrued(TEST_ACCRUED)
+                    .refunded(TEST_REFUNDED)
+                    .lastCounterUpdate(TEST_DATE)
+                    .updateDate(TEST_DATE)
+                    .suspensionDate(TEST_SUSPENSION_DATE)
+                    .build();
+
     private static final Wallet TEST_WALLET_ISSUER =
             Wallet.builder().amount(TEST_AMOUNT).accrued(TEST_ACCRUED).refunded(TEST_REFUNDED).build();
 
@@ -1706,5 +1730,99 @@ class WalletServiceTest {
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
             assertEquals(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
         }
+    }
+
+    @Test
+    void suspend_idemp(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_SUSPENDED));
+
+        walletService.suspendWallet(INITIATIVE_ID, USER_ID);
+
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
+                .suspendWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+        Mockito.verify(onboardingRestConnector, Mockito.times(0))
+                .suspendOnboarding(INITIATIVE_ID, USER_ID);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {WALLET_REFUNDABLE, WALLET_NOT_REFUNDABLE, WALLET_NOT_REFUNDABLE_ONLY_IBAN, WALLET_NOT_REFUNDABLE_ONLY_INSTRUMENT})
+    void readmit_ok(String status){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_SUSPENDED));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET_SUSPENDED.setStatus(status);
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+
+        walletService.readmitWallet(INITIATIVE_ID, USER_ID);
+
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+        Mockito.verify(onboardingRestConnector, Mockito.times(1))
+                .readmitOnboarding(INITIATIVE_ID, USER_ID);
+        assertEquals(status, TEST_WALLET_SUSPENDED.getStatus());
+    }
+
+    @Test
+    void readmit_walletUnsubscribed(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_UNSUBSCRIBED));
+        try {
+            walletService.readmitWallet(INITIATIVE_ID, USER_ID);
+        } catch (WalletException e){
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED, e.getMessage());
+        }
+    }
+
+    @Test
+    void readmit_ko(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+
+        Mockito.doThrow(new WalletException(500, WalletConstants.ERROR_MSG_HEADER_MESSAGE)).when(onboardingRestConnector)
+                .readmitOnboarding(anyString(), anyString());
+
+        try {
+            walletService.readmitWallet(INITIATIVE_ID, USER_ID);
+        } catch (WalletException e){
+            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
+        }
+    }
+
+    @Test
+    void readmit_idemp(){
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_REFUNDABLE));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET.setStatus(WalletStatus.REFUNDABLE.name());
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+
+        walletService.readmitWallet(INITIATIVE_ID, USER_ID);
+
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+        Mockito.verify(onboardingRestConnector, Mockito.times(1))
+                .readmitOnboarding(INITIATIVE_ID, USER_ID);
+        assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET_REFUNDABLE.getStatus());
     }
 }

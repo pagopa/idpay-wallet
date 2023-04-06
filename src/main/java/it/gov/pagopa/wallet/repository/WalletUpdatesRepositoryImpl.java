@@ -73,6 +73,17 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
   }
 
   @Override
+  public void readmitWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime) {
+    log.trace("[READMIT_WALLET] Readmit wallet with initiativeId: {}", initiativeId);
+
+    mongoTemplate.updateFirst(
+            Query.query(
+                    Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
+            new Update().set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, localDateTime).set(FIELD_SUSPENSION_DATE, null),
+            Wallet.class);
+  }
+
+  @Override
   public Wallet rewardTransaction(
       String initiativeId, String userId, BigDecimal amount, BigDecimal accrued, Long nTrx) {
 

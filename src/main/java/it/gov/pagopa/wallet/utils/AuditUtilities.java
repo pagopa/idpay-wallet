@@ -131,4 +131,17 @@ public class AuditUtilities {
             "Wallet suspension failed", userId, initiativeId
     );
   }
+
+  public void logReadmission(String userId, String initiativeId) {
+    logAuditString(
+            CEF_PATTERN,
+            "Wallet readmitted", userId, initiativeId
+    );
+  }
+  public void logReadmissionKO(String userId, String initiativeId) {
+    logAuditString(
+            CEF_PATTERN,
+            "Wallet readmission failed", userId, initiativeId
+    );
+  }
 }
