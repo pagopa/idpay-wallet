@@ -39,6 +39,7 @@ public class Wallet {
   private LocalDateTime updateDate;
   private LocalDateTime lastCounterUpdate;
   private LocalDateTime suspensionDate;
+  private String initiativeRewardType;
 
   @Data
   @NoArgsConstructor

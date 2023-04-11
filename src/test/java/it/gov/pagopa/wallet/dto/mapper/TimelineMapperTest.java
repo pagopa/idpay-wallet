@@ -51,7 +51,8 @@ class TimelineMapperTest {
                     OPERATION_DATE,
                     OPERATION_DATE,
                     List.of(),
-                    new BigDecimal(500));
+                    new BigDecimal(500),
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
     private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
             new InstrumentAckDTO(
                     INITIATIVE_ID,

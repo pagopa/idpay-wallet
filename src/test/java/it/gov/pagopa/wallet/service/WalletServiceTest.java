@@ -233,7 +233,8 @@ class WalletServiceTest {
                     TEST_DATE,
                     TEST_DATE,
                     List.of(),
-                    new BigDecimal(500));
+                    new BigDecimal(500),
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
     private static final EvaluationDTO OUTCOME_OK =
             new EvaluationDTO(
@@ -246,9 +247,22 @@ class WalletServiceTest {
                     TEST_DATE,
                     TEST_DATE,
                     List.of(),
-                    new BigDecimal(500));
+                    new BigDecimal(500),
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
-
+    private static final EvaluationDTO OUTCOME_OK_DISCOUNT =
+            new EvaluationDTO(
+                    USER_ID,
+                    INITIATIVE_ID,
+                    INITIATIVE_ID,
+                    TEST_DATE_ONLY_DATE,
+                    INITIATIVE_ID,
+                    WalletConstants.STATUS_ONBOARDING_OK,
+                    TEST_DATE,
+                    TEST_DATE,
+                    List.of(),
+                    new BigDecimal(500),
+                    WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
     @Test
     void enrollInstrument_ok() {
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
@@ -888,10 +902,18 @@ class WalletServiceTest {
   }
 
     @Test
-    void createWallet_doNoting() {
+    void createWallet_doNothing() {
         walletService.createWallet(OUTCOME_KO);
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any());
+    }
+    @Test
+    void createWallet_initiativeDiscount() {
+        Mockito.when(walletMapper.map(Mockito.any())).thenReturn(TEST_WALLET);
+        walletService.createWallet(OUTCOME_OK_DISCOUNT);
+        Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+        assertEquals(TEST_WALLET.getStatus(), WalletStatus.REFUNDABLE.name());
     }
 
     @Test
