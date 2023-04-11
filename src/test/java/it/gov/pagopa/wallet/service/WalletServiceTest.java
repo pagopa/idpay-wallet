@@ -173,7 +173,8 @@ class WalletServiceTest {
           TEST_AMOUNT,
           TEST_ACCRUED,
           TEST_REFUNDED,
-          TEST_DATE);
+          TEST_DATE,
+          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
     private static final WalletDTO WALLET_REFUNDABLE_DTO =
             new WalletDTO(
@@ -186,7 +187,8 @@ class WalletServiceTest {
                     TEST_AMOUNT,
                     TEST_ACCRUED,
                     TEST_REFUNDED,
-                    TEST_DATE);
+                    TEST_DATE,
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
     private static final WalletDTO WALLET_UNSUBSCRIBED_DTO =
             new WalletDTO(
@@ -199,11 +201,13 @@ class WalletServiceTest {
                     TEST_AMOUNT,
                     TEST_ACCRUED,
                     TEST_REFUNDED,
-                    TEST_DATE);
+                    TEST_DATE,
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
 
   private static final WalletDTO WALLET_ISSUER_DTO =
-      new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
+      new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE,
+              WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
     private static final RewardDTO REWARD_DTO =
             RewardDTO.builder()
@@ -1617,10 +1621,12 @@ class WalletServiceTest {
         walletList.add(TEST_WALLET_REFUNDABLE);
         walletList.add(TEST_WALLET_UNSUBSCRIBED);
 
-        WalletDTO walletDtoRef= new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
-                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
-        WalletDTO walletDtoUnsub = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), IBAN_OK,
-                TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE);
+        WalletDTO walletDtoRef= new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
+                IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
+                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
+        WalletDTO walletDtoUnsub = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
+                IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
+                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);

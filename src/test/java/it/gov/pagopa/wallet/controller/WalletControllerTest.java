@@ -75,7 +75,8 @@ class WalletControllerTest {
           null,
           null,
           null,
-          TEST_DATE);
+          TEST_DATE,
+          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
   private static final IbanBodyDTO IBAN_BODY_DTO =
       new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -93,7 +94,8 @@ class WalletControllerTest {
           new BigDecimal("450.00"),
           new BigDecimal("50.00"),
           new BigDecimal("0.00"),
-          TEST_DATE);
+          TEST_DATE,
+          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
   private static final WalletDTO INITIATIVE_ISSUER_DTO =
       new WalletDTO(
           null,
@@ -105,7 +107,8 @@ class WalletControllerTest {
           new BigDecimal("450.00"),
           new BigDecimal("50.00"),
           new BigDecimal("0.00"),
-          TEST_DATE);
+          TEST_DATE,
+          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
   @MockBean WalletService walletServiceMock;
 

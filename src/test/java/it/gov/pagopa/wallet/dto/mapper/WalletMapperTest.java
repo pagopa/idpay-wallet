@@ -66,6 +66,7 @@ class WalletMapperTest {
           .refunded(BigDecimal.valueOf(0.00))
           .nInstr(0)
           .lastCounterUpdate(TEST_DATE)
+          .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
           .build();
 
   private static final WalletDTO ISSUER_INITIATIVE_DTO =

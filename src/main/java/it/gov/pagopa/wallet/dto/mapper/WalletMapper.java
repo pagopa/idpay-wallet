@@ -42,6 +42,7 @@ public class WalletMapper {
         .nInstr(wallet.getNInstr())
         .iban(wallet.getIban())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
+        .initiativeRewardType(wallet.getInitiativeRewardType())
         .build();
   }
 
