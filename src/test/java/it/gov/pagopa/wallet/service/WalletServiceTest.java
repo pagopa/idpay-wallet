@@ -110,6 +110,12 @@ class WalletServiceTest {
     private static final String WALLET_REFUNDABLE = "NOT_REFUNDABLE";
     private static final String WALLET_NOT_REFUNDABLE_ONLY_INSTRUMENT = "NOT_REFUNDABLE_ONLY_INSTRUMENT";
     private static final String WALLET_NOT_REFUNDABLE_ONLY_IBAN = "NOT_REFUNDABLE_ONLY_IBAN";
+    private static final LocalDate START_DATE = LocalDate.now();
+    private static final LocalDate END_DATE = LocalDate.now().plusDays(2);
+    private static final LocalDate TRANSFER_DATE = LocalDate.now();
+    private static final LocalDate NOTIFICATION_DATE = LocalDate.now();
+    private static final String REWARD_STATUS = "reward_status";
+    private static final String REFUND_TYPE = "refund_type";
 
     private static final Wallet TEST_WALLET =
       Wallet.builder()
@@ -1263,14 +1269,21 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         "ORG_ID",
+                        IBAN_OK,
                         "ACCEPTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
                         4000L,
                         4000L,
+                        START_DATE,
+                        END_DATE,
                         LocalDateTime.now(),
                         null,
                         null,
                         1L,
                         LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
                         "CRO");
 
         TEST_WALLET.setRefundHistory(null);
@@ -1301,14 +1314,21 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         "ORG_ID",
+                        IBAN_OK,
                         "ACCEPTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
                         4000L,
                         4000L,
+                        START_DATE,
+                        END_DATE,
                         LocalDateTime.now(),
                         null,
                         null,
                         1L,
                         LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
                         "CRO");
 
         TEST_WALLET.setRefundHistory(null);
@@ -1342,14 +1362,21 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         "ORG_ID",
+                        IBAN_OK,
                         "REJECTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
                         -4000L,
                         4000L,
+                        START_DATE,
+                        END_DATE,
                         LocalDateTime.now(),
                         null,
                         null,
                         2L,
                         LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
                         "CRO");
 
         Map<String, RefundHistory> map = new HashMap<>();
@@ -1383,14 +1410,21 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         "ORG_ID",
+                        IBAN_OK,
                         "REJECTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
                         0L,
                         4000L,
+                        START_DATE,
+                        END_DATE,
                         LocalDateTime.now(),
                         null,
                         null,
                         1L,
                         LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
                         "CRO");
 
         Map<String, RefundHistory> map = new HashMap<>();
@@ -1423,14 +1457,21 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         "ORG_ID",
+                        IBAN_OK,
                         "REJECTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
                         0L,
                         4000L,
+                        START_DATE,
+                        END_DATE,
                         LocalDateTime.now(),
                         null,
                         null,
                         2L,
                         LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
                         "CRO");
 
         TEST_WALLET.setRefundHistory(null);
@@ -1460,14 +1501,21 @@ class WalletServiceTest {
                         INITIATIVE_ID,
                         USER_ID,
                         "ORG_ID",
+                        IBAN_OK,
                         "REJECTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
                         0L,
                         4000L,
+                        START_DATE,
+                        END_DATE,
                         LocalDateTime.now(),
                         null,
                         null,
                         2L,
                         LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
                         "CRO");
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
