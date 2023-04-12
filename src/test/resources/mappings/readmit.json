@@ -1,0 +1,9 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPathPattern": "/idpay/onboarding/.*/.*/readmit"
+  },
+  "response": {
+    "status": "204"
+  }
+}

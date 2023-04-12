@@ -64,6 +64,16 @@ public class TimelineMapper {
                 .build();
     }
 
+    public QueueOperationDTO readmitToTimeline(
+            String initiativeId, String userId, LocalDateTime localDateTime) {
+        return QueueOperationDTO.builder()
+                .initiativeId(initiativeId)
+                .userId(userId)
+                .operationType(WalletConstants.TIMELINE_READMITTED)
+                .operationDate(localDateTime)
+                .build();
+    }
+
     public QueueOperationDTO ackToTimeline(InstrumentAckDTO dto) {
         return QueueOperationDTO.builder()
                 .initiativeId(dto.getInitiativeId())

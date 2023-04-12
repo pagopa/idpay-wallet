@@ -48,6 +48,7 @@ class WalletControllerTest {
   private static final String UPDATE_WALLET_URL = "/updateWallet";
   private static final String PROCESS_ACK_URL = "/acknowledge";
   private static final String SUSPEND_URL = "/suspend";
+  private static final String READMIT_URL = "/readmit";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
   private static final String ID_WALLET = "TEST_ID_WALLET";
   private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
@@ -812,6 +813,21 @@ class WalletControllerTest {
     mvc.perform(
                     MockMvcRequestBuilders.put(
                                     BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + SUSPEND_URL)
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isNoContent())
+            .andReturn();
+  }
+
+  @Test
+  void readmit_ok() throws Exception {
+    Mockito.doNothing()
+            .when(walletServiceMock)
+            .readmitWallet(INITIATIVE_ID, USER_ID);
+
+    mvc.perform(
+                    MockMvcRequestBuilders.put(
+                                    BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID + READMIT_URL)
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(MockMvcResultMatchers.status().isNoContent())

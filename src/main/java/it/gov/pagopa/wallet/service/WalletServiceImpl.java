@@ -238,27 +238,65 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    if (!wallet.getStatus().equals(WalletStatus.SUSPENDED)) {
+      if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+        auditUtilities.logSuspensionKO(userId, initiativeId);
+        throw new WalletException(
+                HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+      }
+
+      LocalDateTime localDateTime = LocalDateTime.now();
+      String backupStatus = wallet.getStatus();
+      try {
+        walletUpdatesRepository.suspendWallet(initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
+        log.info("[SUSPEND_USER] Sending event to ONBOARDING");
+        onboardingRestConnector.suspendOnboarding(initiativeId, userId);
+      } catch (Exception e) {
+        auditUtilities.logSuspensionKO(userId, initiativeId);
+        this.rollbackWallet(backupStatus, wallet);
+        performanceLog(startTime, "SUSPENSION");
+        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+      }
+      sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+      auditUtilities.logSuspension(userId, initiativeId);
+    }
+    performanceLog(startTime, "SUSPENSION");
+  }
+
+  @Override
+  public void readmitWallet(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
+
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-      auditUtilities.logSuspensionKO(userId,initiativeId);
+      auditUtilities.logReadmissionKO(userId,initiativeId);
+      log.info("[READMISSION] Wallet readmission to the initiative {} is not possible", initiativeId);
       throw new WalletException(
               HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
 
     LocalDateTime localDateTime = LocalDateTime.now();
     String backupStatus = wallet.getStatus();
+    LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
+    String readmittedStatus = setStatus(wallet);
     try{
-      walletUpdatesRepository.suspendWallet(initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
-      log.info("[SUSPEND_USER] Sending event to ONBOARDING");
-      onboardingRestConnector.suspendOnboarding(initiativeId, userId);
+      walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
+      log.info("[READMIT_USER] Sending event to ONBOARDING");
+      onboardingRestConnector.readmitOnboarding(initiativeId, userId);
     } catch (Exception e) {
-      auditUtilities.logSuspensionKO(userId,initiativeId);
-      this.rollbackWallet(backupStatus, wallet);
-      performanceLog(startTime, "SUSPENSION");
+      auditUtilities.logReadmissionKO(userId,initiativeId);
+      log.info("[READMISSION] Wallet readmission to the initiative {} is failed", initiativeId);
+      wallet.setStatus(backupStatus);
+      wallet.setSuspensionDate(backupSuspensionDate);
+      wallet.setUpdateDate(localDateTime);
+      walletRepository.save(wallet);
+      performanceLog(startTime, "READMISSION");
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
-    sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
-    auditUtilities.logSuspension(userId, initiativeId);
-    performanceLog(startTime, "SUSPENSION");
+    sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, localDateTime));
+    log.info("[READMISSION] Wallet is readmitted to the initiative {}", initiativeId);
+    auditUtilities.logReadmission(userId, initiativeId);
+    performanceLog(startTime, "READMISSION");
   }
 
   @Override
