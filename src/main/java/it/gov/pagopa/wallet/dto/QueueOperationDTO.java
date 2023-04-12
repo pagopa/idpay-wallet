@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,6 +51,18 @@ public class QueueOperationDTO {
   private String idTrxIssuer;
 
   private String idTrxAcquirer;
+
+  private String status;
+
+  private String refundType;
+
+  private LocalDate startDate;
+
+  private LocalDate endDate;
+
+  private LocalDate transferDate;
+
+  private LocalDate userNotificationDate;
 
 }
 

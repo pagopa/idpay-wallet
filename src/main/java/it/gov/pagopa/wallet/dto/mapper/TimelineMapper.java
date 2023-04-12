@@ -113,6 +113,9 @@ public class TimelineMapper {
                 .eventId(dto.getExternalId())
                 .initiativeId(dto.getInitiativeId())
                 .userId(dto.getUserId())
+                .iban(dto.getIban())
+                .status(dto.getRewardStatus())
+                .refundType(dto.getRefundType())
                 .operationType(operationType)
                 .operationDate(dto.getFeedbackDate())
                 .amount(BigDecimal.valueOf(dto.getRewardCents())
@@ -121,6 +124,10 @@ public class TimelineMapper {
                         .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN))
                 .rewardNotificationId(dto.getRewardNotificationId())
                 .cro(dto.getCro())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .transferDate(dto.getTransferDate())
+                .userNotificationDate(dto.getUserNotificationDate())
                 .rewardFeedbackProgressive(dto.getFeedbackProgressive())
                 .build();
     }
