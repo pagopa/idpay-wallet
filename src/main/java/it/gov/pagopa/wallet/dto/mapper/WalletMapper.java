@@ -5,6 +5,7 @@ import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public class WalletMapper {
         .amount(evaluationDTO.getBeneficiaryBudget())
         .accrued(BigDecimal.valueOf(0.00))
         .refunded(BigDecimal.valueOf(0.00))
+        .lastCounterUpdate(LocalDateTime.now())
+        .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
         .build();
   }
 
@@ -39,6 +42,7 @@ public class WalletMapper {
         .nInstr(wallet.getNInstr())
         .iban(wallet.getIban())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
+        .initiativeRewardType(wallet.getInitiativeRewardType())
         .build();
   }
 
