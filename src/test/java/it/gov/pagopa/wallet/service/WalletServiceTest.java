@@ -130,6 +130,20 @@ class WalletServiceTest {
           .refunded(TEST_REFUNDED)
           .lastCounterUpdate(TEST_DATE)
           .build();
+    private static final Wallet TEST_WALLET_DISCOUNT =
+            Wallet.builder()
+                    .userId(USER_ID)
+                    .initiativeId(INITIATIVE_ID)
+                    .initiativeName(INITIATIVE_NAME)
+                    .acceptanceDate(TEST_DATE)
+                    .status(WalletStatus.NOT_REFUNDABLE.name())
+                    .endDate(TEST_DATE_ONLY_DATE)
+                    .amount(TEST_AMOUNT)
+                    .accrued(TEST_ACCRUED)
+                    .refunded(TEST_REFUNDED)
+                    .lastCounterUpdate(TEST_DATE)
+                    .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)
+                    .build();
     private static final Wallet TEST_WALLET_REFUNDABLE =
             Wallet.builder()
                     .userId(USER_ID)
@@ -341,6 +355,19 @@ class WalletServiceTest {
         }
     }
 
+    @Test
+    void enrollInstrument_ko_discountInitiative() {
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_DISCOUNT));
+
+        try {
+            walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI, e.getMessage());
+        }
+
+    }
     @Test
     void processAck() {
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
@@ -839,6 +866,19 @@ class WalletServiceTest {
         walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
         assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
+    }
+    @Test
+    void enrollIban_ko_discountInitiative() {
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_DISCOUNT));
+
+        try {
+            walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
+            Assertions.fail();
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_INITIATIVE_DISCOUNT_IBAN, e.getMessage());
+        }
     }
 
     @Test
@@ -1584,6 +1624,21 @@ class WalletServiceTest {
         assertEquals(0, TEST_WALLET.getNInstr());
     }
 
+    @Test
+    void enrollInstrumentIssuer_discountInitiative() {
+        final InstrumentIssuerDTO instrument =
+                new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
+
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_DISCOUNT));
+
+        try {
+            walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
+            assertEquals(WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI, e.getMessage());
+        }
+    }
     @Test
     void enrollInstrumentIssuer_unsubscribed() {
 

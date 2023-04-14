@@ -37,7 +37,8 @@ public class WalletConstants {
           "PENDING_ENROLL_RE", "PENDING_DEACTIVATION_REQUEST");
   public static final String INITIATIVE_REWARD_TYPE_DISCOUNT = "DISCOUNT";
   public static final String INITIATIVE_REWARD_TYPE_REFUND = "REFUND";
-
+  public static final String ERROR_INITIATIVE_DISCOUNT_PI = "It is not possible enroll a payment instrument for a discount type initiative";
+  public static final String ERROR_INITIATIVE_DISCOUNT_IBAN = "It is not possible enroll an iban for a discount type initiative";
 
   private WalletConstants(){}
 }

@@ -140,6 +140,12 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
+    if (wallet.getInitiativeRewardType() != null &&
+            wallet.getInitiativeRewardType().equals(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)){
+      auditUtilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "the initiative is discount type");
+      throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI);
+    }
+
     checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
@@ -193,6 +199,12 @@ public class WalletServiceImpl implements WalletService {
     auditUtilities.logEnrollmentIban(userId,initiativeId,channel);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    if (wallet.getInitiativeRewardType() != null &&
+            wallet.getInitiativeRewardType().equals(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)){
+      auditUtilities.logEnrollmentIbanKO("the initiative is discount type", userId, initiativeId, channel);
+      throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_IBAN);
+    }
 
     checkEndDate(wallet.getEndDate());
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
@@ -538,6 +550,11 @@ public class WalletServiceImpl implements WalletService {
     auditUtilities.logEnrollmentInstrumentIssuer(userId,initiativeId, body.getChannel());
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    if (wallet.getInitiativeRewardType() != null &&
+            wallet.getInitiativeRewardType().equals(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)){
+      throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI);
+    }
 
     checkEndDate(wallet.getEndDate());
 
