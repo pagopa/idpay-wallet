@@ -39,6 +39,7 @@ class WalletMapperTest {
           .accrued(BigDecimal.valueOf(0.00))
           .refunded(BigDecimal.valueOf(0.00))
           .lastCounterUpdate(TEST_DATE)
+          .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
           .build();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
@@ -51,7 +52,8 @@ class WalletMapperTest {
           OPERATION_DATE.atStartOfDay(),
           OPERATION_DATE.atStartOfDay(),
           List.of(),
-          new BigDecimal(500));
+          new BigDecimal(500),
+          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
 
   private static final WalletDTO INITIATIVE_DTO =
       WalletDTO.builder()
@@ -64,6 +66,7 @@ class WalletMapperTest {
           .refunded(BigDecimal.valueOf(0.00))
           .nInstr(0)
           .lastCounterUpdate(TEST_DATE)
+          .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
           .build();
 
   private static final WalletDTO ISSUER_INITIATIVE_DTO =

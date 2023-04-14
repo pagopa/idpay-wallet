@@ -37,5 +37,5 @@ public class WalletDTO {
 
   private BigDecimal refunded;
   private LocalDateTime lastCounterUpdate;
-
+  private String initiativeRewardType;
 }
