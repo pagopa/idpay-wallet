@@ -140,8 +140,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    if (wallet.getInitiativeRewardType() != null &&
-            wallet.getInitiativeRewardType().equals(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)){
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())){
       auditUtilities.logEnrollmentInstrumentKO(userId, initiativeId, idWallet, "the initiative is discount type");
       throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI);
     }
@@ -200,8 +199,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    if (wallet.getInitiativeRewardType() != null &&
-            wallet.getInitiativeRewardType().equals(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)){
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())){
       auditUtilities.logEnrollmentIbanKO("the initiative is discount type", userId, initiativeId, channel);
       throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_IBAN);
     }
@@ -551,8 +549,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    if (wallet.getInitiativeRewardType() != null &&
-            wallet.getInitiativeRewardType().equals(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)){
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())){
       throw new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI);
     }
 
