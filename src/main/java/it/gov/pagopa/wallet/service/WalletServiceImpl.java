@@ -332,6 +332,11 @@ public class WalletServiceImpl implements WalletService {
       Wallet wallet = walletMapper.map(evaluationDTO);
       if(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(evaluationDTO.getInitiativeRewardType())){
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
+        paymentInstrumentRestConnector.enrollDiscountInitiative(
+            InstrumentFromDiscountDTO.builder()
+                .initiativeId(evaluationDTO.getInitiativeId())
+                .userId(evaluationDTO.getUserId())
+                .build());
       }
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));

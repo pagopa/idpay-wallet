@@ -39,4 +39,9 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
     return paymentInstrumentRestClient.getInstrumentInitiativesDetail(idWallet, userId, statusList);
   }
 
+  @Override
+  public void enrollDiscountInitiative(InstrumentFromDiscountDTO body) {
+    paymentInstrumentRestClient.enrollDiscountInitiative(body);
+  }
+
 }

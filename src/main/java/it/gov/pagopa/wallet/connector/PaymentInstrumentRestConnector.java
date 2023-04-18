@@ -20,4 +20,5 @@ public interface PaymentInstrumentRestConnector {
   InstrumentDetailDTO getInstrumentInitiativesDetail(@PathVariable("idWallet") String idWallet,
                                                      @PathVariable("userId") String userId,
                                                      @RequestParam("statusList") List<String> statusList);
+  void enrollDiscountInitiative(@RequestBody InstrumentFromDiscountDTO body);
 }
