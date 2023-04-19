@@ -66,7 +66,7 @@ class WalletControllerTest {
   private static final String BRAND = "brand";
   private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
           ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
-
+  private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
 
   private static final LocalDate DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
@@ -84,7 +84,8 @@ class WalletControllerTest {
           null,
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
-          LOGO_URL);
+          LOGO_URL,
+          ORGANIZATION_NAME);
   private static final IbanBodyDTO IBAN_BODY_DTO =
       new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -104,7 +105,8 @@ class WalletControllerTest {
           new BigDecimal("0.00"),
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
-          LOGO_URL);
+          LOGO_URL,
+          ORGANIZATION_NAME);
   private static final WalletDTO INITIATIVE_ISSUER_DTO =
       new WalletDTO(
           null,
@@ -118,7 +120,8 @@ class WalletControllerTest {
           new BigDecimal("0.00"),
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
-          LOGO_URL);
+          LOGO_URL,
+          ORGANIZATION_NAME);
 
   @MockBean WalletService walletServiceMock;
 

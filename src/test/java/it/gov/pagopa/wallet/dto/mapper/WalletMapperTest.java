@@ -33,6 +33,7 @@ class WalletMapperTest {
   private static final String ID_WALLET = "ID_WALLET";
   private static final LocalDate OPERATION_DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+  private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
 
   private static final Wallet WALLET =
       Wallet.builder()
@@ -48,6 +49,7 @@ class WalletMapperTest {
           .refunded(BigDecimal.valueOf(0.00))
           .lastCounterUpdate(TEST_DATE)
           .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
+          .organizationName(ORGANIZATION_NAME)
           .build();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
@@ -61,7 +63,8 @@ class WalletMapperTest {
           OPERATION_DATE.atStartOfDay(),
           List.of(),
           new BigDecimal(500),
-          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND);
+          WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+          ORGANIZATION_NAME);
 
   private static final WalletDTO INITIATIVE_DTO =
       WalletDTO.builder()
@@ -75,6 +78,7 @@ class WalletMapperTest {
           .nInstr(0)
           .lastCounterUpdate(TEST_DATE)
           .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
+          .organizationName(ORGANIZATION_NAME)
           .build();
 
   private static final WalletDTO INITIATIVE_DTO_WITH_LOGO =

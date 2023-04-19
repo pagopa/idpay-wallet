@@ -39,4 +39,5 @@ public class WalletDTO {
   private LocalDateTime lastCounterUpdate;
   private String initiativeRewardType;
   private String logoURL;
+  private String organizationName;
 }
