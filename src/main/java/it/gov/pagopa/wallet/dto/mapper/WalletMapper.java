@@ -27,6 +27,7 @@ public class WalletMapper {
         .refunded(BigDecimal.valueOf(0.00))
         .lastCounterUpdate(LocalDateTime.now())
         .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
+        .organizationName(evaluationDTO.getOrganizationName())
         .build();
   }
 
@@ -43,6 +44,7 @@ public class WalletMapper {
         .iban(wallet.getIban())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
         .initiativeRewardType(wallet.getInitiativeRewardType())
+        .organizationName(wallet.getOrganizationName())
         .build();
   }
 
