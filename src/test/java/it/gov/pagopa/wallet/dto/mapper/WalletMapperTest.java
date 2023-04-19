@@ -11,17 +11,25 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.gov.pagopa.wallet.utils.Utilities;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = WalletMapper.class)
 class WalletMapperTest {
+
+  @MockBean
+  Utilities utilities;
   private static final String USER_ID = "test_user";
   private static final String INITIATIVE_ID = "test_initiative";
+  private static final String ORGANIZATION_ID = "test_organization";
   private static final String ID_WALLET = "ID_WALLET";
   private static final LocalDate OPERATION_DATE = LocalDate.now();
   private static final LocalDateTime TEST_DATE = LocalDateTime.now();
@@ -32,7 +40,7 @@ class WalletMapperTest {
           .initiativeId(INITIATIVE_ID)
           .initiativeName(INITIATIVE_ID)
           .endDate(OPERATION_DATE)
-          .organizationId(INITIATIVE_ID)
+          .organizationId(ORGANIZATION_ID)
           .userId(USER_ID)
           .acceptanceDate(OPERATION_DATE.atStartOfDay())
           .status(WalletStatus.NOT_REFUNDABLE.name())
@@ -49,7 +57,7 @@ class WalletMapperTest {
           INITIATIVE_ID,
           INITIATIVE_ID,
           OPERATION_DATE,
-          INITIATIVE_ID,
+          ORGANIZATION_ID,
           WalletConstants.STATUS_ONBOARDING_OK,
           OPERATION_DATE.atStartOfDay(),
           OPERATION_DATE.atStartOfDay(),
@@ -73,6 +81,23 @@ class WalletMapperTest {
           .organizationName(ORGANIZATION_NAME)
           .build();
 
+  private static final WalletDTO INITIATIVE_DTO_WITH_LOGO =
+          WalletDTO.builder()
+                  .initiativeId(INITIATIVE_ID)
+                  .initiativeName(INITIATIVE_ID)
+                  .endDate(OPERATION_DATE)
+                  .status(WalletStatus.NOT_REFUNDABLE.name())
+                  .amount(new BigDecimal(500))
+                  .accrued(BigDecimal.valueOf(0.00))
+                  .refunded(BigDecimal.valueOf(0.00))
+                  .nInstr(0)
+                  .lastCounterUpdate(TEST_DATE)
+                  .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
+                  .logoURL("https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
+                          ORGANIZATION_ID,INITIATIVE_ID, Utilities.LOGO_NAME))
+                  .organizationName(ORGANIZATION_NAME)
+                  .build();
+
   private static final WalletDTO ISSUER_INITIATIVE_DTO =
       WalletDTO.builder()
           .amount(new BigDecimal(500))
@@ -92,9 +117,14 @@ class WalletMapperTest {
 
   @Test
   void toInitiativeDTO(){
+
+    Mockito.when(utilities.createLogoUrl(WALLET.getOrganizationId(), WALLET.getInitiativeId()))
+            .thenReturn("https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
+            WALLET.getOrganizationId(),WALLET.getInitiativeId(), Utilities.LOGO_NAME));
+
     WalletDTO actual = walletMapper.toInitiativeDTO(WALLET);
 
-    assertEquals(INITIATIVE_DTO, actual);
+    assertEquals(INITIATIVE_DTO_WITH_LOGO, actual);
   }
 
   @Test

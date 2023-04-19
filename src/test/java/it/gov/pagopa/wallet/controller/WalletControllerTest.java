@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.gov.pagopa.wallet.utils.Utilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
@@ -50,6 +52,7 @@ class WalletControllerTest {
   private static final String SUSPEND_URL = "/suspend";
   private static final String READMIT_URL = "/readmit";
   private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
+  private static final String ORGANIZATION_ID = "TEST_ORGANIZATION_ID";
   private static final String ID_WALLET = "TEST_ID_WALLET";
   private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String IBAN_OK = "it99C1234567890123456789012";
@@ -61,6 +64,8 @@ class WalletControllerTest {
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
   private static final String BRAND = "brand";
+  private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
+          ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
   private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
 
   private static final LocalDate DATE = LocalDate.now();
@@ -79,6 +84,7 @@ class WalletControllerTest {
           null,
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+          LOGO_URL,
           ORGANIZATION_NAME);
   private static final IbanBodyDTO IBAN_BODY_DTO =
       new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
@@ -99,6 +105,7 @@ class WalletControllerTest {
           new BigDecimal("0.00"),
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+          LOGO_URL,
           ORGANIZATION_NAME);
   private static final WalletDTO INITIATIVE_ISSUER_DTO =
       new WalletDTO(
@@ -113,6 +120,7 @@ class WalletControllerTest {
           new BigDecimal("0.00"),
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+          LOGO_URL,
           ORGANIZATION_NAME);
 
   @MockBean WalletService walletServiceMock;

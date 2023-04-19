@@ -8,10 +8,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import it.gov.pagopa.wallet.utils.Utilities;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WalletMapper {
+  @Autowired
+  Utilities utilities;
 
   public Wallet map(EvaluationDTO evaluationDTO) {
     return Wallet.builder()
@@ -44,6 +48,7 @@ public class WalletMapper {
         .iban(wallet.getIban())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
         .initiativeRewardType(wallet.getInitiativeRewardType())
+        .logoURL(utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()))
         .organizationName(wallet.getOrganizationName())
         .build();
   }

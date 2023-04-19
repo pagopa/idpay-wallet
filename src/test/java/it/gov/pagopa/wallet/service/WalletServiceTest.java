@@ -85,6 +85,7 @@ class WalletServiceTest {
     private static final String INITIATIVE_ID_REFUNDABLE = "TEST_INITIATIVE_ID_REFUNDABLE";
     private static final String INITIATIVE_ID_UNSUBSCRIBED = "TEST_INITIATIVE_ID_UNSUBSCRIBED";
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
+    private static final String ORGANIZATION_ID = "TEST_ORGANIZATION_ID";
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
     private static final String MASKED_PAN = "masked_pan";
     private static final String BRAND_LOGO = "brand_logo";
@@ -117,6 +118,8 @@ class WalletServiceTest {
     private static final LocalDate NOTIFICATION_DATE = LocalDate.now();
     private static final String REWARD_STATUS = "reward_status";
     private static final String REFUND_TYPE = "refund_type";
+    private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
+            ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
 
     private static final Wallet TEST_WALLET =
       Wallet.builder()
@@ -220,6 +223,7 @@ class WalletServiceTest {
           TEST_REFUNDED,
           TEST_DATE,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+          LOGO_URL,
           ORGANIZATION_NAME);
 
     private static final WalletDTO WALLET_REFUNDABLE_DTO =
@@ -235,6 +239,7 @@ class WalletServiceTest {
                     TEST_REFUNDED,
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+                    LOGO_URL,
                     ORGANIZATION_NAME);
 
     private static final WalletDTO WALLET_UNSUBSCRIBED_DTO =
@@ -250,12 +255,13 @@ class WalletServiceTest {
                     TEST_REFUNDED,
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+                    LOGO_URL,
                     ORGANIZATION_NAME);
 
 
   private static final WalletDTO WALLET_ISSUER_DTO =
       new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE,
-              WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, ORGANIZATION_NAME);
+              WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME);
 
     private static final RewardDTO REWARD_DTO =
             RewardDTO.builder()
@@ -1754,10 +1760,10 @@ class WalletServiceTest {
 
         WalletDTO walletDtoRef= new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
-                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, ORGANIZATION_NAME);
+                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME);
         WalletDTO walletDtoUnsub = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
-                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, ORGANIZATION_NAME);
+                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
