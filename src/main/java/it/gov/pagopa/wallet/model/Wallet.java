@@ -40,6 +40,7 @@ public class Wallet {
   private LocalDateTime lastCounterUpdate;
   private LocalDateTime suspensionDate;
   private String initiativeRewardType;
+  private String organizationName;
 
   @Data
   @NoArgsConstructor
