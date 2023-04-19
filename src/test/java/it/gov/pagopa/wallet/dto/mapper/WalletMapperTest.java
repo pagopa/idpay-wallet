@@ -95,6 +95,7 @@ class WalletMapperTest {
                   .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                   .logoURL("https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
                           ORGANIZATION_ID,INITIATIVE_ID, Utilities.LOGO_NAME))
+                  .organizationName(ORGANIZATION_NAME)
                   .build();
 
   private static final WalletDTO ISSUER_INITIATIVE_DTO =
