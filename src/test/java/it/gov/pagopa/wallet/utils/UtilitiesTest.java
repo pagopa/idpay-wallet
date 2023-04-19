@@ -6,6 +6,7 @@ import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
 import it.gov.pagopa.wallet.dto.ErrorDTO;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -33,6 +34,14 @@ class UtilitiesTest {
 
     private static final String BAD_REQUEST = "BAD REQUEST";
     private static final String MESSAGE = "test";
+    private static final String INITIATIVE_ID = "test_initiative";
+    private static final String ORGANIZATION_ID = "test_organization";
+    private static final String LOGO_URL = String.format(Utilities.LOGO_PATH_TEMPLATE,
+            ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
+
+    private static final String PATH_LOGO = String.format(Utilities.LOGO_PATH_TEMPLATE, ORGANIZATION_ID,
+            INITIATIVE_ID, Utilities.LOGO_NAME);
+
 
     @Test
     void exceptionConverter_ok() throws JsonProcessingException {
@@ -77,6 +86,15 @@ class UtilitiesTest {
 
     }
 
+    @Test
+    void testCreateLogoUrl() {
+        Assertions.assertTrue(utilities.createLogoUrl(ORGANIZATION_ID, INITIATIVE_ID).contains(LOGO_URL));
+    }
+
+    @Test
+    void testGetPathLogo() {
+        assertEquals(PATH_LOGO, utilities.getPathLogo(ORGANIZATION_ID, INITIATIVE_ID));
+    }
 
 }
 
