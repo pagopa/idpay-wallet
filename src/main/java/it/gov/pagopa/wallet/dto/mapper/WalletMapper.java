@@ -23,6 +23,7 @@ public class WalletMapper {
         .initiativeName(evaluationDTO.getInitiativeName())
         .endDate(evaluationDTO.getInitiativeEndDate())
         .organizationId(evaluationDTO.getOrganizationId())
+        .organizationName(evaluationDTO.getOrganizationName())
         .userId(evaluationDTO.getUserId())
         .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
         .status(WalletStatus.NOT_REFUNDABLE.name())
@@ -31,7 +32,7 @@ public class WalletMapper {
         .refunded(BigDecimal.valueOf(0.00))
         .lastCounterUpdate(LocalDateTime.now())
         .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
-        .organizationName(evaluationDTO.getOrganizationName())
+        .isLogoPresent(evaluationDTO.getIsLogoPresent())
         .build();
   }
 
@@ -48,7 +49,7 @@ public class WalletMapper {
         .iban(wallet.getIban())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
         .initiativeRewardType(wallet.getInitiativeRewardType())
-        .logoURL(utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()))
+        .logoURL(Boolean.TRUE.equals(wallet.getIsLogoPresent()) ? utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()): null)
         .organizationName(wallet.getOrganizationName())
         .build();
   }
