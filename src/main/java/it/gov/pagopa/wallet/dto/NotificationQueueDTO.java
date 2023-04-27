@@ -22,4 +22,5 @@ public class NotificationQueueDTO {
   private String rejectionCode;
   private String rejectionReason;
   private Long refundFeedbackProgressive;
+  private String initiativeName;
 }

@@ -264,13 +264,15 @@ public class WalletServiceImpl implements WalletService {
       } catch (Exception e) {
         auditUtilities.logSuspensionKO(userId, initiativeId);
         this.rollbackWallet(backupStatus, wallet);
-        performanceLog(startTime, "SUSPENSION");
+        performanceLog(startTime, WalletConstants.SUSPENSION);
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+      sendSuspensionNotification(initiativeId, userId, wallet.getInitiativeName());
+
       auditUtilities.logSuspension(userId, initiativeId);
     }
-    performanceLog(startTime, "SUSPENSION");
+    performanceLog(startTime, WalletConstants.SUSPENSION);
   }
 
   @Override
@@ -524,23 +526,7 @@ public class WalletServiceImpl implements WalletService {
     QueueOperationDTO queueOperationDTO = timelineMapper.refundToTimeline(refundDTO);
 
     sendToTimeline(queueOperationDTO);
-
-    NotificationQueueDTO notificationQueueDTO =
-        NotificationQueueDTO.builder()
-            .operationType("REFUND")
-            .userId(refundDTO.getUserId())
-            .initiativeId(refundDTO.getInitiativeId())
-            .rewardNotificationId(refundDTO.getRewardNotificationId())
-            .refundReward(refundDTO.getEffectiveRewardCents())
-            .rejectionCode(refundDTO.getRejectionCode())
-            .rejectionReason(refundDTO.getRejectionReason())
-            .refundDate(refundDTO.getExecutionDate())
-            .refundFeedbackProgressive(refundDTO.getFeedbackProgressive())
-            .refundCro(refundDTO.getCro())
-            .status(refundDTO.getStatus())
-            .build();
-
-    sendNotification(notificationQueueDTO);
+    sendRefundNotification(refundDTO);
 
     performanceLog(startTime, SERVICE_PROCESS_REFUND);
   }
@@ -679,11 +665,39 @@ public class WalletServiceImpl implements WalletService {
 
     sendNotification(notificationQueueDTO);
   }
+  private void sendRefundNotification(RefundDTO refundDTO) {
+      NotificationQueueDTO notificationQueueDTO =
+            NotificationQueueDTO.builder()
+                    .operationType(WalletConstants.REFUND)
+                    .userId(refundDTO.getUserId())
+                    .initiativeId(refundDTO.getInitiativeId())
+                    .rewardNotificationId(refundDTO.getRewardNotificationId())
+                    .refundReward(refundDTO.getEffectiveRewardCents())
+                    .rejectionCode(refundDTO.getRejectionCode())
+                    .rejectionReason(refundDTO.getRejectionReason())
+                    .refundDate(refundDTO.getExecutionDate())
+                    .refundFeedbackProgressive(refundDTO.getFeedbackProgressive())
+                    .refundCro(refundDTO.getCro())
+                    .status(refundDTO.getStatus())
+                    .build();
 
+      sendNotification(notificationQueueDTO);
+  }
+  private void sendSuspensionNotification(String initiativeId, String userId, String initiativeName) {
+    NotificationQueueDTO notificationQueueDTO =
+            NotificationQueueDTO.builder()
+                    .operationType(WalletConstants.SUSPENSION)
+                    .userId(userId)
+                    .initiativeId(initiativeId)
+                    .initiativeName(initiativeName)
+                    .build();
+
+    sendNotification(notificationQueueDTO);
+  }
   private void sendNotification(NotificationQueueDTO notificationQueueDTO) {
     try {
       log.info("[SEND_NOTIFICATION] Sending event to Notification");
-      notificationProducer.sendCheckIban(notificationQueueDTO);
+      notificationProducer.sendNotification(notificationQueueDTO);
     } catch (Exception e) {
       log.error("[SEND_NOTIFICATION] An error has occurred. Sending message to Error queue");
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(notificationQueueDTO);

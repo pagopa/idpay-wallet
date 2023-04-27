@@ -1010,7 +1010,7 @@ class WalletServiceTest {
 
         Mockito.doThrow(new WalletException(400, ""))
                 .when(notificationProducer)
-                .sendCheckIban(Mockito.any(NotificationQueueDTO.class));
+                .sendNotification(Mockito.any(NotificationQueueDTO.class));
 
         try {
             walletService.deleteOperation(iban);
@@ -1033,7 +1033,7 @@ class WalletServiceTest {
 
         Mockito.doNothing()
                 .when(notificationProducer)
-                .sendCheckIban(Mockito.any(NotificationQueueDTO.class));
+                .sendNotification(Mockito.any(NotificationQueueDTO.class));
         try {
             walletService.deleteOperation(iban);
         } catch (WalletException e) {
@@ -1829,12 +1829,18 @@ class WalletServiceTest {
                 .when(walletUpdatesRepositoryMock)
                 .suspendWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
 
+        Mockito.doNothing()
+                .when(notificationProducer)
+                .sendNotification(Mockito.any(NotificationQueueDTO.class));
+
         walletService.suspendWallet(INITIATIVE_ID, USER_ID);
 
         Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
                 .suspendWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
         Mockito.verify(onboardingRestConnector, Mockito.times(1))
                 .suspendOnboarding(INITIATIVE_ID, USER_ID);
+        Mockito.verify(notificationProducer, Mockito.times(1))
+                .sendNotification(Mockito.any());
         assertEquals(WalletStatus.SUSPENDED, TEST_WALLET.getStatus());
     }
 
