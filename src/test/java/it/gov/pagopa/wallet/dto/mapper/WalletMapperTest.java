@@ -50,7 +50,25 @@ class WalletMapperTest {
           .lastCounterUpdate(TEST_DATE)
           .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
           .organizationName(ORGANIZATION_NAME)
+          .isLogoPresent(Boolean.TRUE)
           .build();
+  private static final Wallet WALLET_NO_LOGO =
+          Wallet.builder()
+                  .initiativeId(INITIATIVE_ID)
+                  .initiativeName(INITIATIVE_ID)
+                  .endDate(OPERATION_DATE)
+                  .organizationId(ORGANIZATION_ID)
+                  .userId(USER_ID)
+                  .acceptanceDate(OPERATION_DATE.atStartOfDay())
+                  .status(WalletStatus.NOT_REFUNDABLE.name())
+                  .amount(new BigDecimal(500))
+                  .accrued(BigDecimal.valueOf(0.00))
+                  .refunded(BigDecimal.valueOf(0.00))
+                  .lastCounterUpdate(TEST_DATE)
+                  .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
+                  .organizationName(ORGANIZATION_NAME)
+                  .isLogoPresent(Boolean.FALSE)
+                  .build();
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
           USER_ID,
@@ -64,7 +82,8 @@ class WalletMapperTest {
           List.of(),
           new BigDecimal(500),
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
-          ORGANIZATION_NAME);
+          ORGANIZATION_NAME,
+          Boolean.FALSE);
 
   private static final WalletDTO INITIATIVE_DTO =
       WalletDTO.builder()
@@ -112,6 +131,7 @@ class WalletMapperTest {
   void map() {
     Wallet actual = walletMapper.map(EVALUATION_DTO);
     actual.setLastCounterUpdate(TEST_DATE);
+    actual.setIsLogoPresent(true);
     assertEquals(WALLET, actual);
   }
 
@@ -125,6 +145,13 @@ class WalletMapperTest {
     WalletDTO actual = walletMapper.toInitiativeDTO(WALLET);
 
     assertEquals(INITIATIVE_DTO_WITH_LOGO, actual);
+  }
+  @Test
+  void toInitiativeDTO_noLogo(){
+
+    WalletDTO actual = walletMapper.toInitiativeDTO(WALLET_NO_LOGO);
+
+    assertEquals(INITIATIVE_DTO, actual);
   }
 
   @Test

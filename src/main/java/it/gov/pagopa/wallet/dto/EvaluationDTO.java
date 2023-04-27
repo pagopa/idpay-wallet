@@ -30,4 +30,5 @@ public class EvaluationDTO {
   private BigDecimal beneficiaryBudget;
   private String initiativeRewardType;
   private String organizationName;
+  private Boolean isLogoPresent;
 }

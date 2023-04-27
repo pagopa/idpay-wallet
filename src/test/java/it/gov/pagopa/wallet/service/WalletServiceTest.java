@@ -292,7 +292,9 @@ class WalletServiceTest {
                     TEST_DATE,
                     List.of(),
                     new BigDecimal(500),
-                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, ORGANIZATION_NAME);
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+                    ORGANIZATION_NAME,
+                    Boolean.FALSE);
 
     private static final EvaluationDTO OUTCOME_OK =
             new EvaluationDTO(
@@ -306,7 +308,9 @@ class WalletServiceTest {
                     TEST_DATE,
                     List.of(),
                     new BigDecimal(500),
-                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, ORGANIZATION_NAME);
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+                    ORGANIZATION_NAME,
+                    Boolean.FALSE);
 
     private static final EvaluationDTO OUTCOME_OK_DISCOUNT =
             new EvaluationDTO(
@@ -320,7 +324,9 @@ class WalletServiceTest {
                     TEST_DATE,
                     List.of(),
                     new BigDecimal(500),
-                    WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT, ORGANIZATION_NAME);
+                    WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
+                    ORGANIZATION_NAME,
+                    Boolean.FALSE);
     @Test
     void enrollInstrument_ok() {
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))

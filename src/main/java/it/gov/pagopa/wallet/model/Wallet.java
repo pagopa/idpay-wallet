@@ -25,6 +25,7 @@ public class Wallet {
   private String initiativeId;
   private String initiativeName;
   private String organizationId;
+  private String organizationName;
   private String status;
   private LocalDateTime acceptanceDate;
   private LocalDate endDate;
@@ -40,7 +41,7 @@ public class Wallet {
   private LocalDateTime lastCounterUpdate;
   private LocalDateTime suspensionDate;
   private String initiativeRewardType;
-  private String organizationName;
+  private Boolean isLogoPresent;
 
   @Data
   @NoArgsConstructor
