@@ -51,6 +51,7 @@ microservice-chart:
     APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL: "OFF"
     APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED: "false"
     APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED: "false"
+    INITIATIVE_LOGO_URL: "https://idpaydinitiativestorage.blob.core.windows.net/logo/"
 
   envConfigMapExternals:
     idpay-common:

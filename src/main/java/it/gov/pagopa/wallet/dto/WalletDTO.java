@@ -38,4 +38,6 @@ public class WalletDTO {
   private BigDecimal refunded;
   private LocalDateTime lastCounterUpdate;
   private String initiativeRewardType;
+  private String logoURL;
+  private String organizationName;
 }

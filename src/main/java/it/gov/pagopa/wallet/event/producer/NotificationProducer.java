@@ -13,7 +13,7 @@ public class NotificationProducer {
   @Autowired
   StreamBridge streamBridge;
 
-  public void sendCheckIban(NotificationQueueDTO notificationQueueDTO){
+  public void sendNotification(NotificationQueueDTO notificationQueueDTO){
     streamBridge.send("walletQueue-out-2", binder, notificationQueueDTO);
   }
 }

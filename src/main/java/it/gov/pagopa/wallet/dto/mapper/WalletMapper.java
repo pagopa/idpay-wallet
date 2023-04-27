@@ -8,10 +8,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import it.gov.pagopa.wallet.utils.Utilities;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WalletMapper {
+  @Autowired
+  Utilities utilities;
 
   public Wallet map(EvaluationDTO evaluationDTO) {
     return Wallet.builder()
@@ -19,6 +23,7 @@ public class WalletMapper {
         .initiativeName(evaluationDTO.getInitiativeName())
         .endDate(evaluationDTO.getInitiativeEndDate())
         .organizationId(evaluationDTO.getOrganizationId())
+        .organizationName(evaluationDTO.getOrganizationName())
         .userId(evaluationDTO.getUserId())
         .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
         .status(WalletStatus.NOT_REFUNDABLE.name())
@@ -27,6 +32,7 @@ public class WalletMapper {
         .refunded(BigDecimal.valueOf(0.00))
         .lastCounterUpdate(LocalDateTime.now())
         .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
+        .isLogoPresent(evaluationDTO.getIsLogoPresent())
         .build();
   }
 
@@ -43,6 +49,8 @@ public class WalletMapper {
         .iban(wallet.getIban())
         .lastCounterUpdate(wallet.getLastCounterUpdate())
         .initiativeRewardType(wallet.getInitiativeRewardType())
+        .logoURL(Boolean.TRUE.equals(wallet.getIsLogoPresent()) ? utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()): null)
+        .organizationName(wallet.getOrganizationName())
         .build();
   }
 
