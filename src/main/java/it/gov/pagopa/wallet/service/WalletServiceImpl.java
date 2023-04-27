@@ -801,20 +801,18 @@ public class WalletServiceImpl implements WalletService {
       if (!instrumentDetailDTO.getInitiativeList().isEmpty()) {
         List<StatusOnInitiativeDTO> instrStatusList = instrumentDetailDTO.getInitiativeList();
 
-        Map<String, InitiativesStatusDTO> activeInitiativesMap = initiativesStatusDTO.stream()
-                .collect(Collectors.toMap(InitiativesStatusDTO::getInitiativeId, Function.identity()));
-
         Map<String, StatusOnInitiativeDTO> instrumentStatusOnInitiativeMap = instrStatusList.stream()
                 .collect(Collectors.toMap(StatusOnInitiativeDTO::getInitiativeId, Function.identity()));
 
         log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Updating initiatives list with payment status");
-        initiativesStatusDTO = activeInitiativesMap.keySet().stream()
-                .map(key -> new InitiativesStatusDTO(key,
-                        activeInitiativesMap.get(key).getInitiativeName(),
-                        (instrumentStatusOnInitiativeMap.get(key) != null ? instrumentStatusOnInitiativeMap.get(key).getIdInstrument() : null),
-                        (instrumentStatusOnInitiativeMap.get(key) != null ? instrumentStatusOnInitiativeMap.get(key).getStatus() :
-                                WalletConstants.INSTRUMENT_STATUS_DEFAULT)))
-                .toList();
+        initiativesStatusDTO = initiativesStatusDTO.stream()
+                .map(i -> new InitiativesStatusDTO(i.getInitiativeId(),
+                        i.getInitiativeName(),
+                        (instrumentStatusOnInitiativeMap.get(i.getInitiativeId()) != null ?
+                                instrumentStatusOnInitiativeMap.get(i.getInitiativeId()).getIdInstrument() : null),
+                        (instrumentStatusOnInitiativeMap.get(i.getInitiativeId()) != null ?
+                                instrumentStatusOnInitiativeMap.get(i.getInitiativeId()).getStatus() :
+                                WalletConstants.INSTRUMENT_STATUS_DEFAULT))).toList();
       }
 
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
