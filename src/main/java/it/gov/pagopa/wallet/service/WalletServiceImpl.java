@@ -716,13 +716,11 @@ public class WalletServiceImpl implements WalletService {
 
   private void rollbackWallet(String statusToRollback, Wallet wallet) {
     log.info("[ROLLBACK_WALLET] Wallet, old status: {}", wallet.getStatus());
-    switch (wallet.getStatus()) {
-      case WalletStatus.UNSUBSCRIBED:
-        wallet.setRequestUnsubscribeDate(null);
-        break;
-      case WalletStatus.SUSPENDED:
-        wallet.setSuspensionDate(null);
-        break;
+    if(WalletStatus.UNSUBSCRIBED.equals(wallet.getStatus())){
+      wallet.setRequestUnsubscribeDate(null);
+    }
+    if(WalletStatus.SUSPENDED.equals(wallet.getStatus())){
+      wallet.setSuspensionDate(null);
     }
     wallet.setStatus(statusToRollback);
     wallet.setUpdateDate(LocalDateTime.now());
