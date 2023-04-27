@@ -315,6 +315,7 @@ public class WalletServiceImpl implements WalletService {
   public InitiativeListDTO getInitiativeList(String userId) {
     long startTime = System.currentTimeMillis();
     List<Wallet> walletList = walletRepository.findByUserId(userId);
+    walletList.sort(Comparator.comparing(Wallet::getAcceptanceDate).reversed());
     InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
     List<WalletDTO> walletDTOList = new ArrayList<>();
 
