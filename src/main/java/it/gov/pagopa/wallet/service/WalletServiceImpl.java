@@ -268,8 +268,9 @@ public class WalletServiceImpl implements WalletService {
         throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
       }
       sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
-      sendSuspensionNotification(initiativeId, userId, wallet.getInitiativeName());
+      sendSuspensionReadmissionNotification(WalletConstants.SUSPENSION, initiativeId, userId, wallet.getInitiativeName());
 
+      log.info("[SUSPENSION] Wallet is suspended from the initiative {}", initiativeId);
       auditUtilities.logSuspension(userId, initiativeId);
     }
     performanceLog(startTime, WalletConstants.SUSPENSION);
@@ -302,13 +303,15 @@ public class WalletServiceImpl implements WalletService {
       wallet.setSuspensionDate(backupSuspensionDate);
       wallet.setUpdateDate(localDateTime);
       walletRepository.save(wallet);
-      performanceLog(startTime, "READMISSION");
+      performanceLog(startTime, WalletConstants.READMISSION);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
     sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, localDateTime));
+    sendSuspensionReadmissionNotification(WalletConstants.READMISSION, initiativeId, userId, wallet.getInitiativeName());
+
     log.info("[READMISSION] Wallet is readmitted to the initiative {}", initiativeId);
     auditUtilities.logReadmission(userId, initiativeId);
-    performanceLog(startTime, "READMISSION");
+    performanceLog(startTime, WalletConstants.READMISSION);
   }
 
   @Override
@@ -684,10 +687,11 @@ public class WalletServiceImpl implements WalletService {
 
       sendNotification(notificationQueueDTO);
   }
-  private void sendSuspensionNotification(String initiativeId, String userId, String initiativeName) {
+  private void sendSuspensionReadmissionNotification(String operationType, String initiativeId,
+                                                     String userId, String initiativeName) {
     NotificationQueueDTO notificationQueueDTO =
             NotificationQueueDTO.builder()
-                    .operationType(WalletConstants.SUSPENSION)
+                    .operationType(operationType)
                     .userId(userId)
                     .initiativeId(initiativeId)
                     .initiativeName(initiativeName)
