@@ -330,6 +330,8 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
+    log.info("[CREATE_WALLET] EvaluationDTO received: {}", evaluationDTO);
+
     long startTime = System.currentTimeMillis();
     if (WalletConstants.STATUS_ONBOARDING_OK.equals(evaluationDTO.getStatus()) ||
             WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
