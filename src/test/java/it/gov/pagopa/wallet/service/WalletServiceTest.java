@@ -1216,6 +1216,7 @@ class WalletServiceTest {
                                 Mockito.eq(USER_ID),
                                 Mockito.any(),
                                 Mockito.any(),
+                                Mockito.any(),
                                 Mockito.any()))
                 .thenReturn(TEST_WALLET);
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
@@ -1228,6 +1229,7 @@ class WalletServiceTest {
                         walletUpdatesRepositoryMock.rewardTransaction(
                                 Mockito.eq(INITIATIVE_ID),
                                 Mockito.eq(USER_ID),
+                                Mockito.any(),
                                 Mockito.any(),
                                 Mockito.any(),
                                 Mockito.any()))
