@@ -22,6 +22,7 @@ public class Wallet {
 
   @Id private String id;
   private String userId;
+  private String familyId;
   private String initiativeId;
   private String initiativeName;
   private String organizationId;

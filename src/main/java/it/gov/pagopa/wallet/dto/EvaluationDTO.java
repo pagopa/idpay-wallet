@@ -15,6 +15,7 @@ public class EvaluationDTO {
 
   @NotEmpty
   private String userId;
+  private String familyId;
   @NotEmpty
   private String initiativeId;
   private String initiativeName;

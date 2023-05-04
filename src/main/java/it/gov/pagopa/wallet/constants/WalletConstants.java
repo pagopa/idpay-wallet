@@ -11,6 +11,7 @@ public class WalletConstants {
 
   public static final String ERROR_WALLET_NOT_FOUND = "The requested initiative is not active for the current user!";
   public static final String STATUS_ONBOARDING_OK = "ONBOARDING_OK";
+  public static final String STATUS_JOINED = "JOINED";
   public static final String STATUS_ONBOARDING_KO = "ONBOARDING_KO";
   public static final String ONBOARDING_OPERATION = "ONBOARDING";
   public static final String TIMELINE_READMITTED = "READMITTED";

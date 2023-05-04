@@ -331,7 +331,8 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
     long startTime = System.currentTimeMillis();
-    if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
+    if (WalletConstants.STATUS_ONBOARDING_OK.equals(evaluationDTO.getStatus()) ||
+            WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       if(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(evaluationDTO.getInitiativeRewardType())){
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
