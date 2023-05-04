@@ -19,14 +19,6 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
@@ -38,6 +30,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -330,8 +330,11 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
+    log.info("[CREATE_WALLET] EvaluationDTO received {}", evaluationDTO);
+
     long startTime = System.currentTimeMillis();
-    if (evaluationDTO.getStatus().equals(WalletConstants.STATUS_ONBOARDING_OK)) {
+    if (WalletConstants.STATUS_ONBOARDING_OK.equals(evaluationDTO.getStatus()) ||
+            WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
       Wallet wallet = walletMapper.map(evaluationDTO);
       if(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(evaluationDTO.getInitiativeRewardType())){
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
