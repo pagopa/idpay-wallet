@@ -40,6 +40,7 @@ public class WalletMapper {
 
     public WalletDTO toInitiativeDTO(Wallet wallet) {
         return WalletDTO.builder()
+                .familyId(wallet.getFamilyId())
                 .initiativeId(wallet.getInitiativeId())
                 .initiativeName(wallet.getInitiativeName())
                 .endDate(wallet.getEndDate())

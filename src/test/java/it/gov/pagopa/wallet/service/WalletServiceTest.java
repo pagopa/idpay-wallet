@@ -213,6 +213,7 @@ class WalletServiceTest {
 
     private static final WalletDTO WALLET_DTO =
             new WalletDTO(
+                    FAMILY_ID,
                     INITIATIVE_ID,
                     INITIATIVE_NAME,
                     WalletStatus.NOT_REFUNDABLE.name(),
@@ -229,6 +230,7 @@ class WalletServiceTest {
 
     private static final WalletDTO WALLET_REFUNDABLE_DTO =
             new WalletDTO(
+                    FAMILY_ID,
                     INITIATIVE_ID_REFUNDABLE,
                     INITIATIVE_NAME,
                     WalletStatus.REFUNDABLE.name(),
@@ -245,6 +247,7 @@ class WalletServiceTest {
 
     private static final WalletDTO WALLET_UNSUBSCRIBED_DTO =
             new WalletDTO(
+                    FAMILY_ID,
                     INITIATIVE_ID_UNSUBSCRIBED,
                     INITIATIVE_NAME,
                     WalletStatus.UNSUBSCRIBED,
@@ -261,7 +264,7 @@ class WalletServiceTest {
 
 
     private static final WalletDTO WALLET_ISSUER_DTO =
-            new WalletDTO(null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE,
+            new WalletDTO(null, null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME);
 
     private static final RewardDTO REWARD_DTO =
@@ -1799,10 +1802,10 @@ class WalletServiceTest {
         walletList.add(TEST_WALLET_REFUNDABLE);
         walletList.add(TEST_WALLET_UNSUBSCRIBED);
 
-        WalletDTO walletDtoRef = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
+        WalletDTO walletDtoRef = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME);
-        WalletDTO walletDtoUnsub = new WalletDTO(INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
+        WalletDTO walletDtoUnsub = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME);
 

@@ -92,6 +92,7 @@ class WalletMapperTest {
 
     private static final WalletDTO INITIATIVE_DTO =
             WalletDTO.builder()
+                    .familyId(FAMILY_ID)
                     .initiativeId(INITIATIVE_ID)
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
@@ -107,6 +108,7 @@ class WalletMapperTest {
 
     private static final WalletDTO INITIATIVE_DTO_WITH_LOGO =
             WalletDTO.builder()
+                    .familyId(FAMILY_ID)
                     .initiativeId(INITIATIVE_ID)
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
