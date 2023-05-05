@@ -330,12 +330,25 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public void createWallet(EvaluationDTO evaluationDTO) {
-        log.info("[CREATE_WALLET] EvaluationDTO received {}", evaluationDTO);
+        log.info("[CREATE_WALLET] EvaluationDTO received. userId: {}; initiativeId: {}; status: {}",
+                evaluationDTO.getUserId(), evaluationDTO.getInitiativeId(), evaluationDTO.getStatus());
 
         long startTime = System.currentTimeMillis();
+
         if (WalletConstants.STATUS_ONBOARDING_OK.equals(evaluationDTO.getStatus()) ||
                 WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
             Wallet wallet = walletMapper.map(evaluationDTO);
+
+            if (evaluationDTO.getFamilyId() != null) {
+                List<Wallet> familyWallets = walletRepository.findByInitiativeIdAndFamilyId(
+                        evaluationDTO.getInitiativeId(),
+                        evaluationDTO.getFamilyId()
+                );
+                if (!familyWallets.isEmpty()) {
+                    wallet.setAmount(familyWallets.get(0).getAmount());
+                }
+            }
+
             if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(evaluationDTO.getInitiativeRewardType())) {
                 wallet.setStatus(WalletStatus.REFUNDABLE.name());
                 paymentInstrumentRestConnector.enrollDiscountInitiative(
@@ -344,6 +357,7 @@ public class WalletServiceImpl implements WalletService {
                                 .userId(evaluationDTO.getUserId())
                                 .build());
             }
+
             walletRepository.save(wallet);
             sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
         }
