@@ -133,13 +133,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
         UpdateResult result = mongoTemplate.updateMulti(
                 Query.query(
-                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)
-                                .andOperator(
-                                        Criteria.where(FIELD_FAMILY_ID).is(familyId).orOperator(
-                                                Criteria.where(FIELD_LAST_COUNTER_UPDATE).isNull(),
-                                                Criteria.where(FIELD_LAST_COUNTER_UPDATE).lt(trxElaborationTimestamp)
-                                        )
-                                )
+                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_FAMILY_ID).is(familyId)
                 ),
                 new Update().set(FIELD_AMOUNT, amount).set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
                         .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
