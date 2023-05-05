@@ -89,7 +89,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public Wallet rewardTransaction(
-            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp,  BigDecimal amount, BigDecimal accrued, Long nTrx) {
+            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued, Long nTrx) {
 
         log.trace(
                 "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [amount: {}, accrued: {}, nTrx: {}]",
@@ -113,14 +113,23 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     }
 
     @Override
-    public boolean rewardFamilyTransaction(
-            String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued, Long nTrx) {
+    public BigDecimal getFamilyTotalReward(String initiativeId, String familyId) {
+        return mongoTemplate.find(
+                        Query.query(
+                                Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)
+                                        .and(FIELD_FAMILY_ID).is(FIELD_FAMILY_ID)
+                        ),
+                        Wallet.class
+                ).stream()
+                .map(Wallet::getAccrued)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
-        log.trace(
-                "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [amount: {}, accrued: {}, nTrx: {}]",
-                amount,
-                accrued,
-                nTrx);
+    @Override
+    public boolean rewardFamilyTransaction(
+            String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount) {
+
+        log.trace("[UPDATE_WALLET_FROM_TRANSACTION][REWARD_TRANSACTION] Updating Family Wallet [amount: {}]", amount);
 
         UpdateResult result = mongoTemplate.updateMulti(
                 Query.query(
