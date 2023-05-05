@@ -117,7 +117,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         return mongoTemplate.find(
                         Query.query(
                                 Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)
-                                        .and(FIELD_FAMILY_ID).is(FIELD_FAMILY_ID)
+                                        .and(FIELD_FAMILY_ID).is(familyId)
                         ),
                         Wallet.class
                 ).stream()
