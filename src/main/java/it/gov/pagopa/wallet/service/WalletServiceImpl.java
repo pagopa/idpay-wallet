@@ -614,12 +614,15 @@ public class WalletServiceImpl implements WalletService {
 
         if (userWallet.getFamilyId() != null) {
             BigDecimal familyTotalReward = walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
+            log.info("[TEST] family total reward: {}", familyTotalReward);
 
             boolean updateResult = walletUpdatesRepository.rewardFamilyTransaction(
                     initiativeId,
                     userWallet.getFamilyId(),
                     rewardTransactionDTO.getElaborationDateTime(),
-                    familyTotalReward);
+                    counters.getInitiativeBudget()
+                            .subtract(familyTotalReward)
+                            .setScale(2, RoundingMode.HALF_DOWN));
 
             if (!updateResult) {
                 //TODO send error queue
