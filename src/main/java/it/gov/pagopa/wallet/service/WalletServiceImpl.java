@@ -239,7 +239,6 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
     }
 
-    sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
     performanceLog(startTime, SERVICE_ENROLL_IBAN);
   }
 
@@ -622,8 +621,9 @@ public class WalletServiceImpl implements WalletService {
   public void deleteOperation(IbanQueueWalletDTO iban) {
     long startTime = System.currentTimeMillis();
 
-    if (!iban.getStatus().equals("KO")) {
+    if (!iban.getStatus().equals(WalletConstants.STATUS_KO)) {
       log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
+      sendToTimeline(timelineMapper.ibanToTimeline(iban.getInitiativeId(), iban.getUserId(), iban.getIban(), iban.getChannel()));
       performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
       return;
     }
