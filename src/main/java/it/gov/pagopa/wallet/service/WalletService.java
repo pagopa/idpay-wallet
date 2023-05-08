@@ -13,7 +13,7 @@ public interface WalletService {
   void readmitWallet(String initiativeId, String userId);
   InitiativeListDTO getInitiativeList(String userId);
   void createWallet(EvaluationDTO evaluationDTO);
-  void deleteOperation(IbanQueueWalletDTO ibanQueueWalletDTO);
+  void processIbanOutcome(IbanQueueWalletDTO ibanQueueWalletDTO);
   void unsubscribe(String initiativeId, String userId);
   void processTransaction(RewardTransactionDTO rewardTransactionDTO);
   void updateWallet(WalletPIBodyDTO walletPIBodyDTO);

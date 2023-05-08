@@ -618,7 +618,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void deleteOperation(IbanQueueWalletDTO iban) {
+  public void processIbanOutcome(IbanQueueWalletDTO iban) {
     long startTime = System.currentTimeMillis();
 
     if (!iban.getStatus().equals(WalletConstants.STATUS_KO)) {
