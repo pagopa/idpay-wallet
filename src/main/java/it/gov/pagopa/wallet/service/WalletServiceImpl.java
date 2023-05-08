@@ -649,15 +649,16 @@ public class WalletServiceImpl implements WalletService {
         return WalletStatus.getByBooleans(hasIban, hasInstrument).name();
     }
 
-    @Override
-    public void deleteOperation(IbanQueueWalletDTO iban) {
-        long startTime = System.currentTimeMillis();
+  @Override
+  public void processIbanOutcome(IbanQueueWalletDTO iban) {
+    long startTime = System.currentTimeMillis();
 
-        if (!iban.getStatus().equals("KO")) {
-            log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
-            performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
-            return;
-        }
+    if (!iban.getStatus().equals(WalletConstants.STATUS_KO)) {
+      log.info("[CHECK_IBAN_OUTCOME] Skipping outcome with status {}.", iban.getStatus());
+      sendToTimeline(timelineMapper.ibanToTimeline(iban.getInitiativeId(), iban.getUserId(), iban.getIban(), iban.getChannel()));
+      performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
+      return;
+    }
 
         Wallet wallet =
                 walletRepository
