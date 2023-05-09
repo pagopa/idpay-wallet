@@ -37,7 +37,7 @@ class WalletMapperTest {
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
 
-    private static final Wallet WALLET =
+    private static final Wallet NEW_WALLET =
             Wallet.builder()
                     .initiativeId(INITIATIVE_ID)
                     .initiativeName(INITIATIVE_ID)
@@ -55,6 +55,25 @@ class WalletMapperTest {
                     .organizationName(ORGANIZATION_NAME)
                     .isLogoPresent(Boolean.TRUE)
                     .build();
+
+    private static final Wallet WALLET =
+            Wallet.builder()
+                    .initiativeId(INITIATIVE_ID)
+                    .initiativeName(INITIATIVE_ID)
+                    .endDate(OPERATION_DATE)
+                    .organizationId(ORGANIZATION_ID)
+                    .userId(USER_ID)
+                    .familyId(FAMILY_ID)
+                    .acceptanceDate(OPERATION_DATE.atStartOfDay())
+                    .status(WalletStatus.NOT_REFUNDABLE.name())
+                    .amount(new BigDecimal(490))
+                    .accrued(BigDecimal.valueOf(10.00))
+                    .refunded(BigDecimal.valueOf(1.00))
+                    .lastCounterUpdate(TEST_DATE)
+                    .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
+                    .organizationName(ORGANIZATION_NAME)
+                    .isLogoPresent(Boolean.TRUE)
+                    .build();
     private static final Wallet WALLET_NO_LOGO =
             Wallet.builder()
                     .initiativeId(INITIATIVE_ID)
@@ -65,9 +84,9 @@ class WalletMapperTest {
                     .familyId(FAMILY_ID)
                     .acceptanceDate(OPERATION_DATE.atStartOfDay())
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(500))
-                    .accrued(BigDecimal.valueOf(0.00))
-                    .refunded(BigDecimal.valueOf(0.00))
+                    .amount(new BigDecimal(490))
+                    .accrued(BigDecimal.valueOf(10.00))
+                    .refunded(BigDecimal.valueOf(1.00))
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
@@ -97,9 +116,9 @@ class WalletMapperTest {
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(500))
-                    .accrued(BigDecimal.valueOf(0.00))
-                    .refunded(BigDecimal.valueOf(0.00))
+                    .amount(new BigDecimal(490))
+                    .accrued(BigDecimal.valueOf(9.00))
+                    .refunded(BigDecimal.valueOf(1.00))
                     .nInstr(0)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
@@ -113,9 +132,9 @@ class WalletMapperTest {
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(500))
-                    .accrued(BigDecimal.valueOf(0.00))
-                    .refunded(BigDecimal.valueOf(0.00))
+                    .amount(new BigDecimal(490))
+                    .accrued(BigDecimal.valueOf(9.00))
+                    .refunded(BigDecimal.valueOf(1.00))
                     .nInstr(0)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
@@ -126,9 +145,9 @@ class WalletMapperTest {
 
     private static final WalletDTO ISSUER_INITIATIVE_DTO =
             WalletDTO.builder()
-                    .amount(new BigDecimal(500))
-                    .accrued(BigDecimal.valueOf(0.00))
-                    .refunded(BigDecimal.valueOf(0.00))
+                    .amount(new BigDecimal(490))
+                    .accrued(BigDecimal.valueOf(9.00))
+                    .refunded(BigDecimal.valueOf(1.00))
                     .lastCounterUpdate(TEST_DATE)
                     .build();
 
@@ -140,7 +159,7 @@ class WalletMapperTest {
         Wallet actual = walletMapper.map(EVALUATION_DTO);
         actual.setLastCounterUpdate(TEST_DATE);
         actual.setIsLogoPresent(true);
-        assertEquals(WALLET, actual);
+        assertEquals(NEW_WALLET, actual);
     }
 
     @Test
