@@ -46,7 +46,7 @@ public class WalletMapper {
                 .endDate(wallet.getEndDate())
                 .status(wallet.getStatus())
                 .amount(wallet.getAmount())
-                .accrued(wallet.getAccrued())
+                .accrued(wallet.getAccrued().subtract(wallet.getRefunded()))
                 .refunded(wallet.getRefunded())
                 .nInstr(wallet.getNInstr())
                 .iban(wallet.getIban())
@@ -60,7 +60,7 @@ public class WalletMapper {
     public WalletDTO toIssuerInitiativeDTO(Wallet wallet) {
         return WalletDTO.builder()
                 .amount(wallet.getAmount())
-                .accrued(wallet.getAccrued())
+                .accrued(wallet.getAccrued().subtract(wallet.getRefunded()))
                 .refunded(wallet.getRefunded())
                 .lastCounterUpdate(wallet.getLastCounterUpdate())
                 .build();
