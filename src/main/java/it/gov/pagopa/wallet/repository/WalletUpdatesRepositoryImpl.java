@@ -121,7 +121,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         ),
                         Wallet.class
                 ).stream()
-                .map(Wallet::getAccrued)
+                .map(w -> w.getAccrued().add(w.getRefunded()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
