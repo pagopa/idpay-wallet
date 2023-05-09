@@ -14,6 +14,7 @@ import it.gov.pagopa.wallet.event.producer.IbanProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
 import it.gov.pagopa.wallet.exception.WalletException;
+import it.gov.pagopa.wallet.exception.WalletUpdateException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
@@ -49,6 +50,7 @@ public class WalletServiceImpl implements WalletService {
     public static final String SERVICE_ENROLL_INSTRUMENT_ISSUER = "ENROLL_INSTRUMENT_ISSUER";
     private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
     public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
+    public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
 
     @Autowired
     WalletRepository walletRepository;
@@ -91,12 +93,17 @@ public class WalletServiceImpl implements WalletService {
     @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}")
     String notificationTopic;
 
-    @Value(
-            "${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}")
+    @Value("${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}")
     String ibanServer;
 
     @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}")
     String ibanTopic;
+
+    @Value("${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}")
+    String transactionServer;
+
+    @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}")
+    String transactionTopic;
 
     @Override
     public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -239,7 +246,6 @@ public class WalletServiceImpl implements WalletService {
             performanceLog(startTime, SERVICE_ENROLL_IBAN);
         }
 
-        sendToTimeline(timelineMapper.ibanToTimeline(initiativeId, userId, iban, channel));
         performanceLog(startTime, SERVICE_ENROLL_IBAN);
     }
 
@@ -412,7 +418,7 @@ public class WalletServiceImpl implements WalletService {
 
         if (!rewardTransactionDTO.getStatus().equals("REWARDED")) {
             log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
-            performanceLog(startTime, "PROCESS_TRANSACTION");
+            performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
             return;
         }
         log.info("[PROCESS_TRANSACTION] New trx from Rule Engine");
@@ -421,13 +427,20 @@ public class WalletServiceImpl implements WalletService {
                 .forEach(
                         (initiativeId, reward) -> {
                             log.info("[PROCESS_TRANSACTION] Processing initiative: {}", initiativeId);
-                            updateWalletFromTransaction(
-                                    initiativeId,
-                                    rewardTransactionDTO,
-                                    reward.getCounters(),
-                                    reward.getAccruedReward());
+                            try {
+                                updateWalletFromTransaction(
+                                        initiativeId,
+                                        rewardTransactionDTO,
+                                        reward.getCounters(),
+                                        reward.getAccruedReward());
+                            } catch (WalletUpdateException e) {
+                                log.error("[PROCESS_TRANSACTION] An error has occurred. Sending message to Error queue", e);
+                                final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(rewardTransactionDTO);
+                                this.sendToQueueError(e, errorMessage,transactionServer, transactionTopic);
+                                performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
+                            }
                         });
-        performanceLog(startTime, "PROCESS_TRANSACTION");
+        performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
     }
 
     @Override
@@ -614,7 +627,7 @@ public class WalletServiceImpl implements WalletService {
 
         if (userWallet.getFamilyId() != null) {
             BigDecimal familyTotalReward = walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
-            log.info("[TEST] family total reward: {}", familyTotalReward);
+            log.info("[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}", userWallet.getFamilyId(), familyTotalReward);
 
             boolean updateResult = walletUpdatesRepository.rewardFamilyTransaction(
                     initiativeId,
@@ -625,8 +638,8 @@ public class WalletServiceImpl implements WalletService {
                             .setScale(2, RoundingMode.HALF_DOWN));
 
             if (!updateResult) {
-                //TODO send error queue
-                return;
+                throw new WalletUpdateException("[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
+                        .formatted(userWallet.getFamilyId()));
             }
         }
 

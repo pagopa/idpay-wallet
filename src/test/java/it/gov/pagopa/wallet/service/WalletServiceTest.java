@@ -135,6 +135,21 @@ class WalletServiceTest {
                     .refunded(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .build();
+
+    private static final Wallet TEST_WALLET_FAMILY =
+            Wallet.builder()
+                    .userId(USER_ID)
+                    .familyId(FAMILY_ID)
+                    .initiativeId(INITIATIVE_ID)
+                    .initiativeName(INITIATIVE_NAME)
+                    .acceptanceDate(TEST_DATE)
+                    .status(WalletStatus.NOT_REFUNDABLE.name())
+                    .endDate(TEST_DATE_ONLY_DATE)
+                    .amount(TEST_AMOUNT)
+                    .accrued(TEST_ACCRUED)
+                    .refunded(TEST_REFUNDED)
+                    .lastCounterUpdate(TEST_DATE)
+                    .build();
     private static final Wallet TEST_WALLET_DISCOUNT =
             Wallet.builder()
                     .userId(USER_ID)
@@ -1224,6 +1239,59 @@ class WalletServiceTest {
                 .thenReturn(TEST_WALLET);
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+    }
+
+    @Test
+    void processTransaction_family_ok() {
+        Mockito.when(walletUpdatesRepositoryMock.rewardTransaction(
+                        Mockito.eq(INITIATIVE_ID),
+                        Mockito.eq(USER_ID),
+                        Mockito.any(),
+                        Mockito.any(),
+                        Mockito.any(),
+                        Mockito.any()))
+                .thenReturn(TEST_WALLET_FAMILY);
+        Mockito.when(walletUpdatesRepositoryMock.getFamilyTotalReward(
+                INITIATIVE_ID,
+                FAMILY_ID
+        )).thenReturn(BigDecimal.valueOf(100L));
+        Mockito.when(walletUpdatesRepositoryMock.rewardFamilyTransaction(
+                        Mockito.eq(INITIATIVE_ID),
+                        Mockito.eq(FAMILY_ID),
+                        Mockito.any(),
+                        Mockito.any()))
+                .thenReturn(true);
+
+        walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
+
+        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+    }
+
+    @Test
+    void processTransaction_family_ko() {
+        Mockito.when(walletUpdatesRepositoryMock.rewardTransaction(
+                        Mockito.eq(INITIATIVE_ID),
+                        Mockito.eq(USER_ID),
+                        Mockito.any(),
+                        Mockito.any(),
+                        Mockito.any(),
+                        Mockito.any()))
+                .thenReturn(TEST_WALLET_FAMILY);
+        Mockito.when(walletUpdatesRepositoryMock.getFamilyTotalReward(
+                INITIATIVE_ID,
+                FAMILY_ID
+        )).thenReturn(BigDecimal.valueOf(100L));
+        Mockito.when(walletUpdatesRepositoryMock.rewardFamilyTransaction(
+                        Mockito.eq(INITIATIVE_ID),
+                        Mockito.eq(FAMILY_ID),
+                        Mockito.any(),
+                        Mockito.any()))
+                .thenReturn(false);
+
+        walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
+
+        Mockito.verify(timelineProducer, Mockito.never()).sendEvent(Mockito.any());
+        Mockito.verify(errorProducer).sendEvent(Mockito.any());
     }
 
     @Test
