@@ -1034,6 +1034,20 @@ class WalletServiceTest {
     }
 
     @Test
+    void createWalletFamily() {
+        Wallet wallet = TEST_WALLET_FAMILY.toBuilder().userId(USER_ID.concat("_1")).build();
+        Mockito.when(walletMapper.map(Mockito.any())).thenReturn(wallet);
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndFamilyId(INITIATIVE_ID, FAMILY_ID))
+                        .thenReturn(List.of(TEST_WALLET_FAMILY.toBuilder().amount(TEST_AMOUNT).build()));
+
+        walletService.createWallet(EVALUATION_ONBOARDING_OK);
+
+        Assertions.assertEquals(0, TEST_AMOUNT.compareTo(wallet.getAmount()));
+        Mockito.verify(walletRepositoryMock).save(Mockito.any(Wallet.class));
+        Mockito.verify(timelineProducer).sendEvent(Mockito.any());
+    }
+
+    @Test
     void createWalletJoined() {
         Mockito.when(walletMapper.map(Mockito.any())).thenReturn(TEST_WALLET);
         walletService.createWallet(EVALUATION_JOINED);
@@ -1264,7 +1278,7 @@ class WalletServiceTest {
 
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
 
-        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+        Mockito.verify(timelineProducer).sendEvent(Mockito.any());
     }
 
     @Test
