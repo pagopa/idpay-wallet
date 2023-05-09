@@ -1044,6 +1044,7 @@ class WalletServiceTest {
 
     @Test
     void processIbanOutcome_error_queue() {
+        TEST_WALLET.setIban(IBAN_OK);
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
                         USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
@@ -1065,7 +1066,7 @@ class WalletServiceTest {
     }
 
     @Test
-    void processIbanOutcome_ok() {
+    void processIbanOutcome_statusKO_ok() {
         TEST_WALLET.setIban(IBAN_OK);
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
