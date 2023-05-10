@@ -42,6 +42,7 @@ public class TimelineMapper {
         .idTrxIssuer(rewardTransaction.getIdTrxIssuer())
         .idTrxAcquirer(rewardTransaction.getIdTrxAcquirer())
         .channel(rewardTransaction.getChannel())
+        .status(rewardTransaction.getStatus())
         .build();
     }
 
