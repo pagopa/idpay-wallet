@@ -290,15 +290,32 @@ class WalletServiceTest {
     private static final RewardTransactionDTO REWARD_TRX_DTO_REWARDED =
             RewardTransactionDTO.builder()
                     .userId(USER_ID)
+                    .channel("RTD")
                     .status("REWARDED")
                     .rewards(Map.of(INITIATIVE_ID, REWARD_DTO))
                     .build();
 
+    private static final RewardTransactionDTO REWARD_TRX_DTO_SYNC_REWARDED =
+        RewardTransactionDTO.builder()
+            .userId(USER_ID)
+            .channel("QRCODE")
+            .status("REWARDED")
+            .rewards(Map.of(INITIATIVE_ID, REWARD_DTO))
+            .build();
+
     private static final RewardTransactionDTO REWARD_TRX_DTO =
             RewardTransactionDTO.builder()
+                    .channel("RTD")
                     .status("NOT_REWARDED")
                     .rewards(Map.of(INITIATIVE_ID, new RewardDTO()))
                     .build();
+
+    private static final RewardTransactionDTO REWARD_TRX_DTO_SYNC_NOT_AUTH =
+        RewardTransactionDTO.builder()
+            .channel("QRCODE")
+            .status("NOT_REWARDED")
+            .rewards(Map.of(INITIATIVE_ID, new RewardDTO()))
+            .build();
     private static final EvaluationDTO OUTCOME_KO =
             new EvaluationDTO(
                     USER_ID,
@@ -1256,6 +1273,21 @@ class WalletServiceTest {
     }
 
     @Test
+    void processTransaction_sync_ok() {
+        Mockito.when(
+                walletUpdatesRepositoryMock.rewardTransaction(
+                    Mockito.eq(INITIATIVE_ID),
+                    Mockito.eq(USER_ID),
+                    Mockito.any(),
+                    Mockito.any(),
+                    Mockito.any(),
+                    Mockito.any()))
+            .thenReturn(TEST_WALLET);
+        walletService.processTransaction(REWARD_TRX_DTO_SYNC_REWARDED);
+        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+    }
+
+    @Test
     void processTransaction_family_ok() {
         Mockito.when(walletUpdatesRepositoryMock.rewardTransaction(
                         Mockito.eq(INITIATIVE_ID),
@@ -1370,6 +1402,13 @@ class WalletServiceTest {
     @Test
     void processTransaction_not_rewarded() {
         walletService.processTransaction(REWARD_TRX_DTO);
+        Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
+        Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any());
+    }
+
+    @Test
+    void processTransaction_sync_not_authorized() {
+        walletService.processTransaction(REWARD_TRX_DTO_SYNC_NOT_AUTH);
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(Mockito.any());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(Mockito.any());
     }

@@ -91,6 +91,7 @@ class TimelineMapperTest {
                     .amount(BIG_DECIMAL)
                     .idTrxIssuer(USER_ID)
                     .idTrxAcquirer(USER_ID)
+                    .channel("RTD")
                     .build();
 
     private static final RewardTransactionDTO REWARD_TRX_DTO_REVERSAL =
@@ -107,6 +108,7 @@ class TimelineMapperTest {
                     .amount(BIG_DECIMAL)
                     .idTrxIssuer(USER_ID)
                     .idTrxAcquirer(USER_ID)
+                    .channel("RTD")
                     .build();
 
     private static final RefundDTO REFUND_DTO =
@@ -218,6 +220,7 @@ class TimelineMapperTest {
         assertEquals(BIG_DECIMAL, actual.getAccrued());
         assertEquals(USER_ID, actual.getIdTrxIssuer());
         assertEquals(USER_ID, actual.getIdTrxAcquirer());
+        assertEquals("RTD", actual.getChannel());
     }
 
     @Test
