@@ -261,25 +261,26 @@ public class WalletServiceImpl implements WalletService {
                         HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
             }
 
-            LocalDateTime localDateTime = LocalDateTime.now();
-            String backupStatus = wallet.getStatus();
-            try {
-                walletUpdatesRepository.suspendWallet(initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
-                log.info("[SUSPEND_USER] Sending event to ONBOARDING");
-                onboardingRestConnector.suspendOnboarding(initiativeId, userId);
-            } catch (Exception e) {
-                auditUtilities.logSuspensionKO(userId, initiativeId);
-                this.rollbackWallet(backupStatus, wallet);
-                performanceLog(startTime, WalletConstants.SUSPENSION);
-                throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-            }
-            sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
-            sendSuspensionNotification(initiativeId, userId, wallet.getInitiativeName());
-
-            auditUtilities.logSuspension(userId, initiativeId);
-        }
+      LocalDateTime localDateTime = LocalDateTime.now();
+      String backupStatus = wallet.getStatus();
+      try {
+        walletUpdatesRepository.suspendWallet(initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
+        log.info("[SUSPEND_USER] Sending event to ONBOARDING");
+        onboardingRestConnector.suspendOnboarding(initiativeId, userId);
+      } catch (Exception e) {
+        auditUtilities.logSuspensionKO(userId, initiativeId);
+        this.rollbackWallet(backupStatus, wallet);
         performanceLog(startTime, WalletConstants.SUSPENSION);
+        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+      }
+      sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+      sendSuspensionReadmissionNotification(WalletConstants.SUSPENSION, initiativeId, userId, wallet.getInitiativeName());
+
+      log.info("[SUSPENSION] Wallet is suspended from the initiative {}", initiativeId);
+      auditUtilities.logSuspension(userId, initiativeId);
     }
+    performanceLog(startTime, WalletConstants.SUSPENSION);
+  }
 
     @Override
     public void readmitWallet(String initiativeId, String userId) {
@@ -293,29 +294,31 @@ public class WalletServiceImpl implements WalletService {
                     HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
         }
 
-        LocalDateTime localDateTime = LocalDateTime.now();
-        String backupStatus = wallet.getStatus();
-        LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
-        String readmittedStatus = setStatus(wallet);
-        try {
-            walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
-            log.info("[READMIT_USER] Sending event to ONBOARDING");
-            onboardingRestConnector.readmitOnboarding(initiativeId, userId);
-        } catch (Exception e) {
-            auditUtilities.logReadmissionKO(userId, initiativeId);
-            log.info("[READMISSION] Wallet readmission to the initiative {} is failed", initiativeId);
-            wallet.setStatus(backupStatus);
-            wallet.setSuspensionDate(backupSuspensionDate);
-            wallet.setUpdateDate(localDateTime);
-            walletRepository.save(wallet);
-            performanceLog(startTime, "READMISSION");
-            throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-        }
-        sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, localDateTime));
-        log.info("[READMISSION] Wallet is readmitted to the initiative {}", initiativeId);
-        auditUtilities.logReadmission(userId, initiativeId);
-        performanceLog(startTime, "READMISSION");
+    LocalDateTime localDateTime = LocalDateTime.now();
+    String backupStatus = wallet.getStatus();
+    LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
+    String readmittedStatus = setStatus(wallet);
+    try{
+      walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
+      log.info("[READMIT_USER] Sending event to ONBOARDING");
+      onboardingRestConnector.readmitOnboarding(initiativeId, userId);
+    } catch (Exception e) {
+      auditUtilities.logReadmissionKO(userId,initiativeId);
+      log.info("[READMISSION] Wallet readmission to the initiative {} is failed", initiativeId);
+      wallet.setStatus(backupStatus);
+      wallet.setSuspensionDate(backupSuspensionDate);
+      wallet.setUpdateDate(localDateTime);
+      walletRepository.save(wallet);
+      performanceLog(startTime, WalletConstants.READMISSION);
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
+    sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, localDateTime));
+    sendSuspensionReadmissionNotification(WalletConstants.READMISSION, initiativeId, userId, wallet.getInitiativeName());
+
+    log.info("[READMISSION] Wallet is readmitted to the initiative {}", initiativeId);
+    auditUtilities.logReadmission(userId, initiativeId);
+    performanceLog(startTime, WalletConstants.READMISSION);
+  }
 
     @Override
     public InitiativeListDTO getInitiativeList(String userId) {
@@ -731,17 +734,17 @@ public class WalletServiceImpl implements WalletService {
                         .status(refundDTO.getStatus())
                         .build();
 
-        sendNotification(notificationQueueDTO);
-    }
-
-    private void sendSuspensionNotification(String initiativeId, String userId, String initiativeName) {
-        NotificationQueueDTO notificationQueueDTO =
-                NotificationQueueDTO.builder()
-                        .operationType(WalletConstants.SUSPENSION)
-                        .userId(userId)
-                        .initiativeId(initiativeId)
-                        .initiativeName(initiativeName)
-                        .build();
+      sendNotification(notificationQueueDTO);
+  }
+  private void sendSuspensionReadmissionNotification(String operationType, String initiativeId,
+                                                     String userId, String initiativeName) {
+    NotificationQueueDTO notificationQueueDTO =
+            NotificationQueueDTO.builder()
+                    .operationType(operationType)
+                    .userId(userId)
+                    .initiativeId(initiativeId)
+                    .initiativeName(initiativeName)
+                    .build();
 
         sendNotification(notificationQueueDTO);
     }

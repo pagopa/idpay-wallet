@@ -2038,12 +2038,18 @@ class WalletServiceTest {
                 .when(walletUpdatesRepositoryMock)
                 .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
 
+        Mockito.doNothing()
+                .when(notificationProducer)
+                .sendNotification(Mockito.any(NotificationQueueDTO.class));
+
         walletService.readmitWallet(INITIATIVE_ID, USER_ID);
 
         Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
                 .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
         Mockito.verify(onboardingRestConnector, Mockito.times(1))
                 .readmitOnboarding(INITIATIVE_ID, USER_ID);
+        Mockito.verify(notificationProducer, Mockito.times(1))
+                .sendNotification(Mockito.any());
         assertEquals(status, TEST_WALLET_SUSPENDED.getStatus());
     }
 
