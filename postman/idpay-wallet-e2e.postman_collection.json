@@ -3,12 +3,1415 @@
 		"_postman_id": "4e2115d6-d699-48a2-87fb-f1d174b1c10c",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036736"
+		"_exporter_id": "26036679",
+		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-4e2115d6-d699-48a2-87fb-f1d174b1c10c?action=share&creator=26036679&source=collection_link"
 	},
 	"item": [
 		{
 			"name": "Happy Case",
 			"item": [
+				{
+					"name": "Initiative with NF",
+					"item": [
+						{
+							"name": "ENTE - Initiative creation",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Enroll instrument - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"aud\": \"idpay.welfare.pagopa.it\",\r\n    \"uid\": \"{{uid_Ente}}\",\r\n    \"name\": \"{{name_Ente}}\",\r\n    \"familyName\": \"{{familyName_Ente}}\",\r\n    \"email\": \"{{email_Ente}}\",\r\n    \"orgId\": \"{{orgId_Ente}}\",\r\n    \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n    \"orgName\": \"Ente di test IdPay\",\r\n    \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n    \"orgRole\": \"{{orgRole_Ente}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP1-Insert Initiative (Service Info)",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
+													"let moment = require('moment');\r",
+													"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+													"const serviceName = 'Test funzionali App IO Wallet ' + now;\r",
+													"pm.collectionVariables.set('serviceName', serviceName);\r",
+													"\r",
+													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+													"\r",
+													"pm.collectionVariables.set('channel_type', 'web');\r",
+													"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);\r",
+													"// console.log('jsondata', jsonData);\r",
+													"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
+													"pm.collectionVariables.set('initiativeId', jsonData.initiativeId);\r",
+													"\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP1 - Status test 201\", function () {\r",
+													"    pm.response.to.have.status(201);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"serviceIO\": true,\n    \"serviceName\": \"{{serviceName}}\",\n    \"serviceScope\": \"LOCAL\",\n    \"description\": \"{{description}}\",\n    \"privacyLink\": \"https://www.google.it\",\n    \"tcLink\": \"https://www.google.com\",\n    \"channels\": [\n        {\n            \"type\": \"{{channel_type}}\",\n            \"contact\": \"{{channel_contact}}\"\n        }\n    ]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/info",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"info"
+											]
+										},
+										"description": "Save initiative and first subset of data 'general info'"
+									},
+									"response": []
+								},
+								{
+									"name": "STEP2-Update Initiative (general Info)",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"let moment = require('moment');\r",
+													"//Format: YYYY-MM-DD\r",
+													"let today = String(moment().format('YYYY-MM-DD'));\r",
+													"let todayP1 = String(moment().add(1,'months').format('YYYY-MM-DD'));\r",
+													"let todayP2 = String(moment().add(2,'months').format('YYYY-MM-DD'));\r",
+													"let todayP3 = String(moment().add(3,'months').format('YYYY-MM-DD'));\r",
+													"\r",
+													"/*\r",
+													"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
+													"pm.collectionVariables.set('...', _.random(0, 180));\r",
+													"*/\r",
+													"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+													"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
+													"pm.collectionVariables.set('beneficiaryType', 'NF');\r",
+													"const familyUnitCompositionValue = [\"INPS\", \"ANPR\"];\r",
+													"familyUnitCompositionRandomIndex = _.random(0, familyUnitCompositionValue.length - 1);\r",
+													"const selectedFamilyUnitCompositionValue = familyUnitCompositionValue[familyUnitCompositionRandomIndex];\r",
+													"pm.collectionVariables.set('familyUnitComposition', selectedFamilyUnitCompositionValue);\r",
+													"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+													"pm.collectionVariables.set('beneficiaryKnown', false);\r",
+													"pm.collectionVariables.set('rankingEnabled', false);\r",
+													"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+													"pm.collectionVariables.set('rankingStartDate', today);\r",
+													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
+													"pm.collectionVariables.set('startDate', todayP2);\r",
+													"pm.collectionVariables.set('endDate', todayP3);"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP2 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"familyUnitComposition\": \"{{familyUnitComposition}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/general",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"general"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										},
+										"description": "Save initiative and first subset of data 'general info'"
+									},
+									"response": []
+								},
+								{
+									"name": "STEP3-Update Initiative (criteria)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP3 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"automatedCriteria\": [\r\n        {\r\n            \"authority\": \"INPS\",\r\n            \"code\": \"ISEE\",\r\n            \"operator\": \"GT\",\r\n            \"value\": \"1\",\r\n            \"value2\": \"\",\r\n            \"iseeTypes\": [\r\n                \"ORDINARIO\",\r\n                \"MINORENNE\",\r\n                \"UNIVERSITARIO\",\r\n                \"SOCIOSANITARIO\",\r\n                \"DOTTORATO\",\r\n                \"RESIDENZIALE\",\r\n                \"CORRENTE\"\r\n            ]\r\n        }\r\n    ],\r\n    \"selfDeclarationCriteria\": []\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeId}}/beneficiary",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeId}}",
+												"beneficiary"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP4-Update Initiative Trx-Reward rules",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP4 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"const d = new Date();\r",
+													"dateString = d.toISOString()\r",
+													"let endTime = dateString.split('T');\r",
+													"endTime = endTime[1].split('Z');\r",
+													"\r",
+													"pm.collectionVariables.set('rewardRuleType', 'rewardValue');\r",
+													"const rewardValueTypes = [\"PERCENTAGE\", \"ABSOLUTE\"];\r",
+													"rewardValueTypeRandomIndex = _.random(0, rewardValueTypes.length - 1);\r",
+													"const selectedRewardValueType = rewardValueTypes[rewardValueTypeRandomIndex];\r",
+													"pm.collectionVariables.set('rewardValueType', selectedRewardValueType);\r",
+													"if (selectedRewardValueType == \"PERCENTAGE\") {\r",
+													"    pm.collectionVariables.set('rewardRuleValue', 100);\r",
+													"} else {\r",
+													"    pm.collectionVariables.set('rewardRuleValue', 1);\r",
+													"}\r",
+													"\r",
+													"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
+													"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
+													"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+													"pm.collectionVariables.set('trxThresholdTo', 50);\r",
+													"pm.collectionVariables.set('trxCountFrom', 3);\r",
+													"pm.collectionVariables.set('trxCountTo', 11);\r",
+													"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
+													"pm.collectionVariables.set('trxRewardLimitValue', 3);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/reward",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"reward"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP5-Update Initiative Refund Rule",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative creation - STEP5 - Status test 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"/*const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+													"timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"\r",
+													"const accumulatedType = [\"BUDGET_EXHAUSTED\",\"THRESHOLD_REACHED\"];\r",
+													"accumulatedTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"\r",
+													"pm.collectionVariables.set('timeType', timeType[timeTypeRandomIndex]);\r",
+													"pm.collectionVariables.set('accumulatedType', accumulatedType[accumulatedTypeRandomIndex]);\r",
+													"pm.collectionVariables.set('identificationCode', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+													"*/\r",
+													"\r",
+													"\r",
+													"let refundType = [\"timeParameter\", \"accumulatedAmount\"];\r",
+													"refundTypeRandomIndex = _.random(0, refundType.length - 1);\r",
+													"\r",
+													"const refundTypeSelected = refundType[refundTypeRandomIndex];\r",
+													"let body = {};\r",
+													"if (refundTypeSelected == \"timeParameter\") {\r",
+													"    const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+													"    timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"    body = {\r",
+													"        timeParameter: {\r",
+													"            timeType: timeType[timeTypeRandomIndex]\r",
+													"        }\r",
+													"    };\r",
+													"} else {\r",
+													"    const accumulatedType = [\"BUDGET_EXHAUSTED\", \"THRESHOLD_REACHED\"];\r",
+													"    accumulatedTypeRandomIndex = _.random(0, accumulatedType.length - 1);\r",
+													"    const accumulatedTypeSelected = accumulatedType[accumulatedTypeRandomIndex];\r",
+													"    if (accumulatedTypeSelected == \"BUDGET_EXHAUSTED\") {\r",
+													"        body = {\r",
+													"            accumulatedAmount: {\r",
+													"                accumulatedType: \"BUDGET_EXHAUSTED\"\r",
+													"            }\r",
+													"        };\r",
+													"    } else {\r",
+													"        body = {\r",
+													"            accumulatedAmount: {\r",
+													"                accumulatedType: \"THRESHOLD_REACHED\",\r",
+													"                refundThreshold: 10\r",
+													"            }\r",
+													"        };\r",
+													"    }\r",
+													"}\r",
+													"\r",
+													"pm.collectionVariables.set('body', JSON.stringify(body));"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{{body}}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/refund",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"refund"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeId}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "PAGOPA - Initiative update status APPROVED",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Enroll instrument - Initiative approving - Generate Portal Token (PagoPA Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
+													"});\r",
+													"\r",
+													"//response time is less than 1s\r",
+													"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Pagopa}}\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update initiative into APPROVED status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - Initiative approving - PagoPA Admin updates initiative status into APPROVED - (Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//setTimeout(function(){}, 20000); //milliseconds"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalTokenPagopa}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeId}}/approved",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeId}}",
+												"approved"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "ENTE - Initiative PUBLISHED",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+													"});\r",
+													"\r",
+													"//response time is less than 1s\r",
+													"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Initiative PUBLISHED",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 30000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disabledSystemHeaders": {}
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeId}}/published",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeId}}",
+												"published"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Onboarding User with NF",
+							"item": [
+								{
+									"name": "Generate Token IO",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Generate Token IO', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "",
+												"type": "default"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"bpd",
+												"pagopa",
+												"api",
+												"v1",
+												"login"
+											],
+											"query": [
+												{
+													"key": "fiscalCode",
+													"value": "{{CF_2}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Accept T&C",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Accept T&C - Response status is 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 20000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prerequisites Check",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Prerequisites Check - Response status is 200,202\", function () {\r",
+													"    pm.expect(pm.response.code).to.be.oneOf([200,202]);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/initiative",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												"initiative"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "PDND + Autocertification",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - PDND + Autocertification - Response status is 202\", function () {\r",
+													"    pm.response.to.have.status(202);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 2000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId}}\",\r\n    \"pdndAccept\": true,\r\n    \"selfDeclarationList\": []\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/consent",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												"consent"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Wallet Detail",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative with NF - Get wallet detail - Response status is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking amount corresponds to beneficiaryBudget', function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse.amount).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget')));\r",
+													"});\r",
+													"var jsonData = JSON.parse(responseBody);\r",
+													"pm.collectionVariables.set('familyId', jsonData.familyId);\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking familyId is present', function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse).have.property(\"familyId\");\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 20000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "{{Ocp-Apim-Trace}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"wallet",
+												"{{initiativeId}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Onboarding User 2 with NF",
+							"item": [
+								{
+									"name": "Generate Token IO",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Generate Token IO', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "",
+												"type": "default"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_3}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"bpd",
+												"pagopa",
+												"api",
+												"v1",
+												"login"
+											],
+											"query": [
+												{
+													"key": "fiscalCode",
+													"value": "{{CF_3}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Accept T&C",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Accept T&C - Response status is 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 5000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prerequisites Check",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Prerequisites Check - Response status is 200,202\", function () {\r",
+													"    pm.expect(pm.response.code).to.be.oneOf([200,202]);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/initiative",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												"initiative"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Wallet Detail",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative with NF - Check detail wallet amount - Get wallet detail - Response status is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Initiative with NF - Check detail wallet amount - Get wallet detail - Response status is 200', function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse.amount).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget')));\r",
+													"});\r",
+													"\r",
+													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking familyId is the same', function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse.familyId).eqls(pm.collectionVariables.get('familyId'));\r",
+													"});\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 20000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "{{Ocp-Apim-Trace}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"wallet",
+												"{{initiativeId}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
 				{
 					"name": "Enroll Instrument",
 					"item": [
@@ -836,7 +2239,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{$randomPassword}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -850,7 +2253,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{$randomPassword}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -1205,7 +2608,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"setTimeout(() => {}, 15000);"
+											"setTimeout(() => {}, 20000);"
 										],
 										"type": "text/javascript"
 									}
@@ -1569,6 +2972,114 @@
 						},
 						{
 							"name": "Get Wallet Detail",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Wallet - Happy case - Enroll iban - Get wallet detail - Response status is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.collectionVariables.set(\"iban\", pm.response.json().iban);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{tokenIO}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Ocp-Apim-Subscription-Key",
+										"value": "{{apimSubscriptionKey}}",
+										"type": "text"
+									},
+									{
+										"key": "Ocp-Apim-Trace",
+										"value": "{{Ocp-Apim-Trace}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"idpay",
+										"wallet",
+										"{{initiativeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Wallet List",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Wallet - Happy case - Enroll iban - Get wallet detail - Response status is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.collectionVariables.set(\"iban\", pm.response.json().iban);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{tokenIO}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Ocp-Apim-Subscription-Key",
+										"value": "{{apimSubscriptionKey}}",
+										"type": "text"
+									},
+									{
+										"key": "Ocp-Apim-Trace",
+										"value": "{{Ocp-Apim-Trace}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"idpay",
+										"wallet",
+										"{{initiativeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Wallet Detail Copy",
 							"event": [
 								{
 									"listen": "test",
@@ -8885,7 +10396,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{$randomPassword}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -8899,7 +10410,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{$randomPassword}}"
+													"value": "{{CF_1}}"
 												}
 											]
 										}
@@ -9024,7 +10535,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{$randomPassword}}",
+											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -9038,7 +10549,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{$randomPassword}}"
+													"value": "{{CF_2}}"
 												}
 											]
 										}
@@ -9312,6 +10823,14 @@
 		},
 		{
 			"key": "initiativeId",
+			"value": ""
+		},
+		{
+			"key": "familyUnitComposition",
+			"value": ""
+		},
+		{
+			"key": "familyId",
 			"value": ""
 		}
 	]

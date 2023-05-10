@@ -11,6 +11,7 @@ public class WalletConstants {
 
   public static final String ERROR_WALLET_NOT_FOUND = "The requested initiative is not active for the current user!";
   public static final String STATUS_ONBOARDING_OK = "ONBOARDING_OK";
+  public static final String STATUS_JOINED = "JOINED";
   public static final String STATUS_ONBOARDING_KO = "ONBOARDING_KO";
   public static final String ONBOARDING_OPERATION = "ONBOARDING";
   public static final String TIMELINE_READMITTED = "READMITTED";
@@ -35,6 +36,7 @@ public class WalletConstants {
   public static final String CHECKIBAN_KO = "CHECKIBAN_KO";
   public static final String REFUND = "REFUND";
   public static final String SUSPENSION = "SUSPENSION";
+  public static final String READMISSION = "READMISSION";
   public static final List<String> FILTER_INSTRUMENT_STATUS_LIST = List.of("ACTIVE", "PENDING_ENROLL_RTD",
           "PENDING_ENROLL_RE", "PENDING_DEACTIVATION_REQUEST");
   public static final String INITIATIVE_REWARD_TYPE_DISCOUNT = "DISCOUNT";

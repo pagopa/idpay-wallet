@@ -15,4 +15,6 @@ public interface WalletRepository extends MongoRepository<Wallet, String> {
 
   Optional<Wallet> findByUserIdAndIban(String userId, String iban);
 
+  List<Wallet> findByInitiativeIdAndFamilyId(String initiativeId, String familyId);
+
 }
