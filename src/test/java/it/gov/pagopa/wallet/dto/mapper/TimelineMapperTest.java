@@ -28,6 +28,7 @@ class TimelineMapperTest {
     private static final String REFUND_ID = "test_refund_id";
     private static final String REFUND_EXTERNAL_ID = "test_refund_external";
     private static final String USER_ID = "test_user";
+    private static final String FAMILY_ID = "test_family";
     private static final String INITIATIVE_ID = "test_initiative";
     private static final String ORGANIZATION_ID = "organization_id";
     private static final String REWARD_NOTIFICATION_ID = "reward_notification_id";
@@ -51,6 +52,7 @@ class TimelineMapperTest {
     private static final EvaluationDTO EVALUATION_DTO =
             new EvaluationDTO(
                     USER_ID,
+                    FAMILY_ID,
                     INITIATIVE_ID,
                     INITIATIVE_ID,
                     OPERATION_DATE_ONLY_DATE,

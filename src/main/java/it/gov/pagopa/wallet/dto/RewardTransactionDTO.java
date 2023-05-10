@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.dto;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,4 +24,5 @@ public class RewardTransactionDTO extends TransactionDTO {
   private Map<String, List<String>> initiativeRejectionReasons = new HashMap<>();
 
   private Map<String, RewardDTO> rewards;
+  private LocalDateTime elaborationDateTime;
 }
