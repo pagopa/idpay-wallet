@@ -320,8 +320,16 @@ class WalletServiceTest {
     private static final RewardTransactionDTO REWARD_TRX_DTO_AUTH =
         RewardTransactionDTO.builder()
             .channel("RTD")
-            .status("NOT_REWARDED")
+            .status("AUTHORIZED")
             .rewards(Map.of(INITIATIVE_ID, new RewardDTO()))
+            .build();
+
+    private static final RewardTransactionDTO REWARD_TRX_DTO_SYNC_AUTHORIZED =
+        RewardTransactionDTO.builder()
+            .userId(USER_ID)
+            .channel("QRCODE")
+            .status("AUTHORIZED")
+            .rewards(Map.of(INITIATIVE_ID, REWARD_DTO))
             .build();
 
     private static final EvaluationDTO OUTCOME_KO =
@@ -1292,6 +1300,21 @@ class WalletServiceTest {
                     Mockito.any()))
             .thenReturn(TEST_WALLET);
         walletService.processTransaction(REWARD_TRX_DTO_SYNC_REWARDED);
+        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
+    }
+
+    @Test
+    void processTransaction_sync_ok_auth() {
+        Mockito.when(
+                walletUpdatesRepositoryMock.rewardTransaction(
+                    Mockito.eq(INITIATIVE_ID),
+                    Mockito.eq(USER_ID),
+                    Mockito.any(),
+                    Mockito.any(),
+                    Mockito.any(),
+                    Mockito.any()))
+            .thenReturn(TEST_WALLET);
+        walletService.processTransaction(REWARD_TRX_DTO_SYNC_AUTHORIZED);
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
     }
 
