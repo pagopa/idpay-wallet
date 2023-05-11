@@ -22,6 +22,7 @@ public class TimelineMapper {
     public QueueOperationDTO transactionToTimeline(
             String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
     return QueueOperationDTO.builder()
+        .transactionId(rewardTransaction.getId())
         .initiativeId(initiativeId)
         .userId(rewardTransaction.getUserId())
         .operationType(

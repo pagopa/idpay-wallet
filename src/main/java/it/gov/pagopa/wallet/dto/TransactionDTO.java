@@ -15,6 +15,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
+  private String id;
+
   private String idTrxAcquirer;
 
   private String acquirerCode;
