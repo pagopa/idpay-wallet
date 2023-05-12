@@ -12,8 +12,6 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QueueOperationDTO {
 
-  private String transactionId;
-
   private String userId;
 
   private String initiativeId;
