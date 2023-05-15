@@ -88,7 +88,8 @@ class WalletControllerTest {
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     LOGO_URL,
-                    ORGANIZATION_NAME);
+                    ORGANIZATION_NAME,
+                    null);
     private static final IbanBodyDTO IBAN_BODY_DTO =
             new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -110,7 +111,8 @@ class WalletControllerTest {
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     LOGO_URL,
-                    ORGANIZATION_NAME);
+                    ORGANIZATION_NAME,
+                    100L);
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
                     null,
@@ -126,7 +128,8 @@ class WalletControllerTest {
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     LOGO_URL,
-                    ORGANIZATION_NAME);
+                    ORGANIZATION_NAME,
+                    null);
 
     @MockBean
     WalletService walletServiceMock;
@@ -536,6 +539,7 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getAmount(), walletDTO.getAmount());
         assertEquals(INITIATIVE_DTO.getAccrued(), walletDTO.getAccrued());
         assertEquals(INITIATIVE_DTO.getRefunded(), walletDTO.getRefunded());
+        assertEquals(INITIATIVE_DTO.getTotalNTrx(), walletDTO.getTotalNTrx());
     }
 
     @Test

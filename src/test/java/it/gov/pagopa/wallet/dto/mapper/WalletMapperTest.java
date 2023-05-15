@@ -73,6 +73,7 @@ class WalletMapperTest {
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
                     .isLogoPresent(Boolean.TRUE)
+                    .nTrx(10L)
                     .build();
     private static final Wallet WALLET_NO_LOGO =
             Wallet.builder()
@@ -91,6 +92,7 @@ class WalletMapperTest {
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
                     .isLogoPresent(Boolean.FALSE)
+                    .nTrx(10L)
                     .build();
     private static final EvaluationDTO EVALUATION_DTO =
             new EvaluationDTO(
@@ -123,6 +125,7 @@ class WalletMapperTest {
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
+                    .totalNTrx(10L)
                     .build();
 
     private static final WalletDTO INITIATIVE_DTO_WITH_LOGO =
@@ -141,6 +144,7 @@ class WalletMapperTest {
                     .logoURL("https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
                             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME))
                     .organizationName(ORGANIZATION_NAME)
+                    .totalNTrx(10L)
                     .build();
 
     private static final WalletDTO ISSUER_INITIATIVE_DTO =

@@ -54,6 +54,7 @@ public class WalletMapper {
                 .initiativeRewardType(wallet.getInitiativeRewardType())
                 .logoURL(Boolean.TRUE.equals(wallet.getIsLogoPresent()) ? utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()) : null)
                 .organizationName(wallet.getOrganizationName())
+                .totalNTrx(wallet.getNTrx())
                 .build();
     }
 
