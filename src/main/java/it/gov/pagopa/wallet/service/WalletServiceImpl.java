@@ -298,7 +298,7 @@ public class WalletServiceImpl implements WalletService {
     LocalDateTime localDateTime = LocalDateTime.now();
     String backupStatus = wallet.getStatus();
     LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
-    String readmittedStatus = setStatus(wallet);
+    String readmittedStatus = WalletStatus.getByBooleans(wallet.getIban() != null, wallet.getNInstr() > 0).name();
     try {
       walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
       log.info("[READMIT_USER] Sending event to ONBOARDING");
@@ -685,9 +685,12 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private String setStatus(Wallet wallet) {
-    boolean hasIban = wallet.getIban() != null;
-    boolean hasInstrument = wallet.getNInstr() > 0;
-    return WalletStatus.getByBooleans(hasIban, hasInstrument).name();
+    if(!wallet.getStatus().equals(WalletStatus.SUSPENDED)){
+      boolean hasIban = wallet.getIban() != null;
+      boolean hasInstrument = wallet.getNInstr() > 0;
+      return WalletStatus.getByBooleans(hasIban, hasInstrument).name();
+    }
+    return WalletStatus.SUSPENDED;
   }
 
   @Override
