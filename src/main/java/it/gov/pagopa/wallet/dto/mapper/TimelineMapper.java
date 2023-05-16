@@ -21,23 +21,30 @@ public class TimelineMapper {
 
     public QueueOperationDTO transactionToTimeline(
             String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
-        return QueueOperationDTO.builder()
-                .initiativeId(initiativeId)
-                .userId(rewardTransaction.getUserId())
-                .operationType(
-                        rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
-                .operationDate(rewardTransaction.getTrxDate().atZoneSameInstant(ZoneId.of("Europe/Rome")).toLocalDateTime())
-                .maskedPan(rewardTransaction.getMaskedPan())
-                .instrumentId(rewardTransaction.getInstrumentId())
-                .brandLogo(rewardTransaction.getBrandLogo())
-                .brand(rewardTransaction.getBrand())
-                .circuitType(rewardTransaction.getCircuitType())
-                .amount(rewardTransaction.getAmount())
-                .effectiveAmount(rewardTransaction.getEffectiveAmount())
-                .accrued(accruedReward)
-                .idTrxIssuer(rewardTransaction.getIdTrxIssuer())
-                .idTrxAcquirer(rewardTransaction.getIdTrxAcquirer())
-                .build();
+    return QueueOperationDTO.builder()
+        .eventId(rewardTransaction.getId())
+        .initiativeId(initiativeId)
+        .userId(rewardTransaction.getUserId())
+        .operationType(
+            rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
+        .operationDate(
+            rewardTransaction
+                .getTrxDate()
+                .atZoneSameInstant(ZoneId.of("Europe/Rome"))
+                .toLocalDateTime())
+        .maskedPan(rewardTransaction.getMaskedPan())
+        .instrumentId(rewardTransaction.getInstrumentId())
+        .brandLogo(rewardTransaction.getBrandLogo())
+        .brand(rewardTransaction.getBrand())
+        .circuitType(rewardTransaction.getCircuitType())
+        .amount(rewardTransaction.getAmount())
+        .effectiveAmount(rewardTransaction.getEffectiveAmount())
+        .accrued(accruedReward)
+        .idTrxIssuer(rewardTransaction.getIdTrxIssuer())
+        .idTrxAcquirer(rewardTransaction.getIdTrxAcquirer())
+        .channel(rewardTransaction.getChannel())
+        .status(rewardTransaction.getStatus())
+        .build();
     }
 
     public QueueOperationDTO deleteInstrumentToTimeline(
