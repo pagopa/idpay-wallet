@@ -35,6 +35,7 @@ public class WalletMapper {
                 .lastCounterUpdate(LocalDateTime.now())
                 .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
                 .isLogoPresent(evaluationDTO.getIsLogoPresent())
+                .maxTrx(evaluationDTO.getMaxTrx())
                 .build();
     }
 
@@ -54,7 +55,8 @@ public class WalletMapper {
                 .initiativeRewardType(wallet.getInitiativeRewardType())
                 .logoURL(Boolean.TRUE.equals(wallet.getIsLogoPresent()) ? utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()) : null)
                 .organizationName(wallet.getOrganizationName())
-                .totalNTrx(wallet.getNTrx())
+                .nTrx(wallet.getNTrx())
+                .maxTrx(wallet.getMaxTrx())
                 .build();
     }
 

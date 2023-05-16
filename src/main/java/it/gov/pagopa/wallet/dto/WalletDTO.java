@@ -35,6 +35,6 @@ public class WalletDTO {
     private String initiativeRewardType;
     private String logoURL;
     private String organizationName;
-    private Long totalNTrx;
-//    private Long totalNTrxPerformed; //TODO ask what is meant?
+    private Long nTrx;
+    private Long maxTrx;
 }
