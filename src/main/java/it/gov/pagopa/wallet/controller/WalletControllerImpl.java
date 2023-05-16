@@ -1,12 +1,6 @@
 package it.gov.pagopa.wallet.controller;
 
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -63,6 +57,18 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
+  public ResponseEntity<Void> suspendWallet(String initiativeId, String userId) {
+    walletService.suspendWallet(initiativeId, userId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<Void> readmitWallet(String initiativeId, String userId) {
+    walletService.readmitWallet(initiativeId, userId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
   public ResponseEntity<InitiativeListDTO> initiativeList(String userId) {
     InitiativeListDTO initiativeDTO = walletService.getInitiativeList(userId);
     return new ResponseEntity<>(initiativeDTO, HttpStatus.OK);
@@ -85,5 +91,11 @@ public class WalletControllerImpl implements WalletController {
       String userId) {
     walletService.enrollInstrumentIssuer(initiativeId, userId, body);
     return new ResponseEntity<>(HttpStatus.OK);
+  }
+  @Override
+  public ResponseEntity<InitiativesWithInstrumentDTO> getInitiativesWithInstrument(String idWallet,
+                                                                                   String userId) {
+    InitiativesWithInstrumentDTO initiativesWithInstrumentDTO = walletService.getInitiativesWithInstrument(idWallet, userId);
+    return new ResponseEntity<>(initiativesWithInstrumentDTO, HttpStatus.OK);
   }
 }

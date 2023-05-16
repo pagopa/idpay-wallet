@@ -1,12 +1,7 @@
 package it.gov.pagopa.wallet.controller;
 
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.*;
+
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,6 +50,16 @@ public interface WalletController {
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId);
 
+  @PutMapping("/{initiativeId}/{userId}/suspend")
+  ResponseEntity<Void> suspendWallet(
+          @PathVariable("initiativeId") String initiativeId,
+          @PathVariable("userId") String userId);
+
+  @PutMapping("/{initiativeId}/{userId}/readmit")
+  ResponseEntity<Void> readmitWallet(
+          @PathVariable("initiativeId") String initiativeId,
+          @PathVariable("userId") String userId);
+
   @GetMapping("/{userId}")
   ResponseEntity<InitiativeListDTO> initiativeList(@PathVariable("userId") String userId);
 
@@ -63,11 +68,15 @@ public interface WalletController {
       @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
 
   @PutMapping("/acknowledge")
-  ResponseEntity<Void> processAck(@Valid @RequestBody InstrumentAckDTO body);
+  ResponseEntity<Void> processAck(@RequestBody InstrumentAckDTO body);
 
   @PutMapping("/{initiativeId}/{userId}/instruments")
   ResponseEntity<Void> enrollInstrumentIssuer(
       @Valid @RequestBody InstrumentIssuerDTO body,
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId);
+
+  @GetMapping("/instrument/{idWallet}/{userId}/initiatives")
+  ResponseEntity<InitiativesWithInstrumentDTO> getInitiativesWithInstrument(@PathVariable("idWallet") String idWallet,
+                                                                            @PathVariable("userId") String userId);
 }

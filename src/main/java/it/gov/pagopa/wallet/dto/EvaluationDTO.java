@@ -8,13 +8,16 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
+@ToString(callSuper = true)
 public class EvaluationDTO {
 
   @NotEmpty
   private String userId;
+  private String familyId;
   @NotEmpty
   private String initiativeId;
   private String initiativeName;
@@ -28,4 +31,7 @@ public class EvaluationDTO {
   @NotNull
   private List<OnboardingRejectionReason> onboardingRejectionReasons;
   private BigDecimal beneficiaryBudget;
+  private String initiativeRewardType;
+  private String organizationName;
+  private Boolean isLogoPresent;
 }

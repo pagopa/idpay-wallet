@@ -1,10 +1,11 @@
 package it.gov.pagopa.wallet.connector;
 
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.*;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 public interface PaymentInstrumentRestConnector {
 
@@ -15,4 +16,9 @@ public interface PaymentInstrumentRestConnector {
   void deleteInstrument(@RequestBody DeactivationBodyDTO body);
 
   void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);
+
+  InstrumentDetailDTO getInstrumentInitiativesDetail(@PathVariable("idWallet") String idWallet,
+                                                     @PathVariable("userId") String userId,
+                                                     @RequestParam("statusList") List<String> statusList);
+  void enrollDiscountInitiative(@RequestBody InstrumentFromDiscountDTO body);
 }

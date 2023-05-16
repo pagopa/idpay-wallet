@@ -15,6 +15,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
+  private String id;
+
   private String idTrxAcquirer;
 
   private String acquirerCode;
@@ -23,6 +25,8 @@ public class TransactionDTO {
   private OffsetDateTime trxDate;
 
   private String brandLogo;
+
+  private String brand;
 
   private String maskedPan;
 
@@ -64,4 +68,6 @@ public class TransactionDTO {
   private String userId;
 
   private BigDecimal effectiveAmount;
+
+  private String channel;
 }

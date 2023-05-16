@@ -4,10 +4,11 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
+import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentFromDiscountDTO;
 import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -92,10 +93,32 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_issuer_test() {
 
     final InstrumentIssuerCallDTO instrument =
-        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "***");
+        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "VISA", "***");
 
     try {
       restConnector.enrollInstrumentIssuer(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void get_instrument_initiatives_detail_test() {
+    try {
+      restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID, WalletConstants.FILTER_INSTRUMENT_STATUS_LIST);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void enroll_instrument_discount_test() {
+
+    final InstrumentFromDiscountDTO instrument =
+        new InstrumentFromDiscountDTO(INITIATIVE_ID, USER_ID);
+
+    try {
+      restConnector.enrollDiscountInitiative(instrument);
     } catch (Exception e) {
       Assertions.fail();
     }

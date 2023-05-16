@@ -20,6 +20,15 @@ public class OnboardingRestConnectorImpl implements OnboardingRestConnector {
   }
 
   @Override
+  public void suspendOnboarding(String initiativeId, String userId) {
+    onboardingRestClient.suspendOnboarding(initiativeId,userId);
+  }
+  @Override
+  public void readmitOnboarding(String initiativeId, String userId) {
+    onboardingRestClient.readmitOnboarding(initiativeId,userId);
+  }
+
+  @Override
   public void rollback(String initiativeId, String userId) {
   onboardingRestClient.rollback(initiativeId, userId);
   }

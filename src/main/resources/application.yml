@@ -9,6 +9,9 @@ logging:
         cloud: ${LOG_LEVEL_SPRING_CLOUD:WARN}
         data: ${LOG_LEVEL_SPRING_DATA:INFO}
     root: ${LOG_LEVEL_ROOT:INFO}
+management.endpoints:
+  web:
+    exposure.include: info, health
 rest-client:
   onboarding:
     serviceCode: idpay-onboarding
@@ -21,7 +24,9 @@ rest-client:
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
 spring:
   application:
-    name: idpay-wallet
+    name: "@project.artifactId@"
+    version: "@project.version@"
+  jmx.enabled: true
   cloud:
     stream:
       binders:
@@ -48,9 +53,8 @@ spring:
                     binder:
                       brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
                       configuration:
-                        sasl:
-                          jaas:
-                            config: ${KAFKA_IBAN_SASL_JAAS_CONFIG:}
+                        sasl.jaas.config: ${KAFKA_IBAN_SASL_JAAS_CONFIG:}
+                        key.serializer: org.apache.kafka.common.serialization.StringSerializer
         kafka-outcome:
           type: kafka
           environment:
@@ -167,7 +171,7 @@ spring:
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
       function:
-        definition: walletQueue;consumerIban;trxConsumer;consumerOutcome;consumerRefund
+        definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund
       kafka:
         binder:
           auto-create-topics: false
@@ -288,3 +292,8 @@ spring:
           maxConnectionLifeTimeMS: ${MONGODB_CONNECTIONPOOL_MAX_CONNECTION_LIFE_MS:0}
           maxConnectionIdleTimeMS: ${MONGODB_CONNECTIONPOOL_MAX_CONNECTION_IDLE_MS:120000}
           maxConnecting: ${MONGODB_CONNECTIONPOOL_MAX_CONNECTING:2}
+
+app:
+  initiative:
+    logo:
+      url: ${INITIATIVE_LOGO_URL}

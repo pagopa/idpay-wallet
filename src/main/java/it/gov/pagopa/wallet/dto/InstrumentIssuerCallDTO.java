@@ -19,5 +19,7 @@ public class InstrumentIssuerCallDTO {
 
   String brandLogo;
 
+  String brand;
+
   String maskedPan;
 }

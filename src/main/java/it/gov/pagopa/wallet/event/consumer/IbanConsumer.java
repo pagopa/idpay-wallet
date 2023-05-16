@@ -11,7 +11,7 @@ public class IbanConsumer {
 
   @Bean
   public Consumer<IbanQueueWalletDTO> consumerIban(WalletService walletService){
-    return walletService::deleteOperation;
+    return walletService::processIbanOutcome;
   }
 
 }
