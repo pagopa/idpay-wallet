@@ -64,7 +64,8 @@ class TimelineMapperTest {
                     new BigDecimal(500),
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
-                    Boolean.FALSE);
+                    Boolean.FALSE,
+                    100L);
     private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
             new InstrumentAckDTO(
                     INITIATIVE_ID,

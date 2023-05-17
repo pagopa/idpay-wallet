@@ -35,4 +35,6 @@ public class WalletDTO {
     private String initiativeRewardType;
     private String logoURL;
     private String organizationName;
+    private Long nTrx;
+    private Long maxTrx;
 }
