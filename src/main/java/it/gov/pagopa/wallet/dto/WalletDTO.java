@@ -37,4 +37,5 @@ public class WalletDTO {
     private String organizationName;
     private Long nTrx;
     private Long maxTrx;
+    private String serviceId;
 }

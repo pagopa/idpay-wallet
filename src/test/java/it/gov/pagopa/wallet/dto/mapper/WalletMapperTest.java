@@ -36,6 +36,7 @@ class WalletMapperTest {
     private static final LocalDate OPERATION_DATE = LocalDate.now();
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
+    private static final String SERVICE_ID = "SERVICE_ID";
 
     private static final Wallet NEW_WALLET =
             Wallet.builder()
@@ -55,6 +56,7 @@ class WalletMapperTest {
                     .organizationName(ORGANIZATION_NAME)
                     .isLogoPresent(Boolean.TRUE)
                     .maxTrx(100L)
+                    .serviceId(SERVICE_ID)
                     .build();
 
     private static final Wallet WALLET =
@@ -76,6 +78,7 @@ class WalletMapperTest {
                     .isLogoPresent(Boolean.TRUE)
                     .nTrx(10L)
                     .maxTrx(100L)
+                    .serviceId(SERVICE_ID)
                     .build();
     private static final Wallet WALLET_NO_LOGO =
             Wallet.builder()
@@ -96,6 +99,7 @@ class WalletMapperTest {
                     .isLogoPresent(Boolean.FALSE)
                     .nTrx(10L)
                     .maxTrx(100L)
+                    .serviceId(SERVICE_ID)
                     .build();
     private static final EvaluationDTO EVALUATION_DTO =
             new EvaluationDTO(
@@ -113,7 +117,8 @@ class WalletMapperTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L);
+                    100L,
+                    SERVICE_ID);
 
     private static final WalletDTO INITIATIVE_DTO =
             WalletDTO.builder()
@@ -131,6 +136,7 @@ class WalletMapperTest {
                     .organizationName(ORGANIZATION_NAME)
                     .nTrx(10L)
                     .maxTrx(100L)
+                    .serviceId(SERVICE_ID)
                     .build();
 
     private static final WalletDTO INITIATIVE_DTO_WITH_LOGO =
@@ -151,6 +157,7 @@ class WalletMapperTest {
                     .organizationName(ORGANIZATION_NAME)
                     .nTrx(10L)
                     .maxTrx(100L)
+                    .serviceId(SERVICE_ID)
                     .build();
 
     private static final WalletDTO ISSUER_INITIATIVE_DTO =

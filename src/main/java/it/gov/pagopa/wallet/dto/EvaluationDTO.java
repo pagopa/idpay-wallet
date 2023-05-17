@@ -35,4 +35,5 @@ public class EvaluationDTO {
   private String organizationName;
   private Boolean isLogoPresent;
   private Long maxTrx;
+  private String serviceId;
 }

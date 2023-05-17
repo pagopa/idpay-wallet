@@ -42,6 +42,7 @@ class TimelineMapperTest {
     private static final String INSTRUMENT_ID = "instrument_id";
     private static final String CIRCUIT_TYPE = "test_circuit";
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
+    private static final String SERVICE_ID = "SERVICE_ID";
     private static final BigDecimal BIG_DECIMAL = BigDecimal.valueOf(0.00);
     private static final LocalDateTime OPERATION_DATE = LocalDateTime.now();
     private static final LocalDate OPERATION_DATE_ONLY_DATE = LocalDate.now();
@@ -65,7 +66,8 @@ class TimelineMapperTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L);
+                    100L,
+                    SERVICE_ID);
     private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
             new InstrumentAckDTO(
                     INITIATIVE_ID,

@@ -69,6 +69,7 @@ class WalletControllerTest {
     private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
+    private static final String SERVICE_ID = "SERVICE_ID";
 
     private static final LocalDate DATE = LocalDate.now();
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
@@ -90,7 +91,8 @@ class WalletControllerTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     null,
-                    100L);
+                    100L,
+                    SERVICE_ID);
     private static final IbanBodyDTO IBAN_BODY_DTO =
             new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -114,7 +116,8 @@ class WalletControllerTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     10L,
-                    100L);
+                    100L,
+                    SERVICE_ID);
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
                     null,
@@ -132,7 +135,8 @@ class WalletControllerTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     null,
-                    100L);
+                    100L,
+                    SERVICE_ID);
 
     @MockBean
     WalletService walletServiceMock;
@@ -544,6 +548,7 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getRefunded(), walletDTO.getRefunded());
         assertEquals(INITIATIVE_DTO.getNTrx(), walletDTO.getNTrx());
         assertEquals(INITIATIVE_DTO.getMaxTrx(),walletDTO.getMaxTrx());
+        assertEquals(INITIATIVE_DTO.getServiceId(), walletDTO.getServiceId());
     }
 
     @Test

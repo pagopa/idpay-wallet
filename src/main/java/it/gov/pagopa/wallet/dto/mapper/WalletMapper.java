@@ -36,6 +36,7 @@ public class WalletMapper {
                 .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
                 .isLogoPresent(evaluationDTO.getIsLogoPresent())
                 .maxTrx(evaluationDTO.getMaxTrx())
+                .serviceId(evaluationDTO.getServiceId())
                 .build();
     }
 
@@ -57,6 +58,7 @@ public class WalletMapper {
                 .organizationName(wallet.getOrganizationName())
                 .nTrx(wallet.getNTrx())
                 .maxTrx(wallet.getMaxTrx())
+                .serviceId(wallet.getServiceId())
                 .build();
     }
 
