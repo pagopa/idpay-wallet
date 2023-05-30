@@ -46,7 +46,7 @@ class WalletControllerTest {
     private static final String FAMILY_ID = "TEST_FAMILY_ID";
     private static final String ENROLL_INSTRUMENT_URL = "/instruments";
     private static final String INSTRUMENTS_URL = "/instruments/";
-    private static final String ENROLL_IBAN_URL = "/iban/";
+    private static final String ENROLL_IBAN_URL = "/iban";
     private static final String STATUS_URL = "/status";
     private static final String UNSUBSCRIBE_URL = "/unsubscribe";
     private static final String UPDATE_WALLET_URL = "/updateWallet";
