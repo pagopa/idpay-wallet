@@ -28,6 +28,8 @@ spring:
     version: "@project.version@"
   jmx.enabled: true
   cloud:
+    function:
+      definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund
     stream:
       binders:
         kafka-checkiban-outcome:
@@ -170,8 +172,6 @@ spring:
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
-      function:
-        definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund
       kafka:
         binder:
           auto-create-topics: false
