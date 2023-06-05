@@ -1,7 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
 import feign.FeignException;
-import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
@@ -62,7 +61,6 @@ public class WalletServiceImpl implements WalletService {
   @Autowired TimelineMapper timelineMapper;
   @Autowired ErrorProducer errorProducer;
   @Autowired NotificationProducer notificationProducer;
-  @Autowired InitiativeRestConnector initiativeRestConnector;
   @Autowired AuditUtilities auditUtilities;
   @Autowired Utilities utilities;
 
@@ -428,7 +426,8 @@ public class WalletServiceImpl implements WalletService {
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(rewardTransactionDTO.getChannel().equals("QRCODE")
-            && rewardTransactionDTO.getStatus().equals("AUTHORIZED"))) {
+            && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
+            || rewardTransactionDTO.getStatus().equals("CANCELLED")))) {
       log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
       performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
       return;
