@@ -43,6 +43,7 @@ public class Wallet {
   private LocalDateTime suspensionDate;
   private String initiativeRewardType;
   private Boolean isLogoPresent;
+  private Long maxTrx;
 
   @Data
   @NoArgsConstructor

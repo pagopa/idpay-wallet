@@ -1,11 +1,11 @@
 package it.gov.pagopa.wallet.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -34,4 +34,5 @@ public class EvaluationDTO {
   private String initiativeRewardType;
   private String organizationName;
   private Boolean isLogoPresent;
+  private Long maxTrx;
 }

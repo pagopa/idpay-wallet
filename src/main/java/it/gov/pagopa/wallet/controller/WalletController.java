@@ -2,7 +2,7 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
