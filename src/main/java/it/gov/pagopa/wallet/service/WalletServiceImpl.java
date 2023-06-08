@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -529,11 +530,17 @@ public class WalletServiceImpl implements WalletService {
   public void processRefund(RefundDTO refundDTO) {
     long startTime = System.currentTimeMillis();
 
+    if (BeneficiaryType.MERCHANT.equals(refundDTO.getBeneficiaryType())) {
+      log.info("[PROCESS_REFUND] Beneficiary type is a merchant, skipping message");
+      performanceLog(startTime, SERVICE_PROCESS_REFUND);
+      return;
+    }
+
     log.info("[PROCESS_REFUND] Processing new refund");
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getUserId())
+            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getBeneficiaryId())
             .orElse(null);
 
     if (wallet == null) {
@@ -565,7 +572,7 @@ public class WalletServiceImpl implements WalletService {
 
     walletUpdatesRepository.processRefund(
         refundDTO.getInitiativeId(),
-        refundDTO.getUserId(),
+        refundDTO.getBeneficiaryId(),
         wallet.getRefunded().add(refunded),
         history);
 
@@ -753,7 +760,7 @@ public class WalletServiceImpl implements WalletService {
     NotificationQueueDTO notificationQueueDTO =
         NotificationQueueDTO.builder()
             .operationType(WalletConstants.REFUND)
-            .userId(refundDTO.getUserId())
+            .userId(refundDTO.getBeneficiaryId())
             .initiativeId(refundDTO.getInitiativeId())
             .rewardNotificationId(refundDTO.getRewardNotificationId())
             .refundReward(refundDTO.getEffectiveRewardCents())

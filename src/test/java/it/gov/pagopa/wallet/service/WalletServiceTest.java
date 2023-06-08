@@ -10,6 +10,7 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -1562,6 +1563,7 @@ class WalletServiceTest {
                         "NOT_ID",
                         INITIATIVE_ID,
                         USER_ID,
+                        BeneficiaryType.CITIZEN,
                         "ORG_ID",
                         IBAN_OK,
                         "ACCEPTED",
@@ -1607,6 +1609,7 @@ class WalletServiceTest {
                         "NOT_ID",
                         INITIATIVE_ID,
                         USER_ID,
+                        BeneficiaryType.CITIZEN,
                         "ORG_ID",
                         IBAN_OK,
                         "ACCEPTED",
@@ -1655,6 +1658,7 @@ class WalletServiceTest {
                         "NOT_ID",
                         INITIATIVE_ID,
                         USER_ID,
+                        BeneficiaryType.CITIZEN,
                         "ORG_ID",
                         IBAN_OK,
                         "REJECTED",
@@ -1703,6 +1707,7 @@ class WalletServiceTest {
                         "NOT_ID",
                         INITIATIVE_ID,
                         USER_ID,
+                        BeneficiaryType.CITIZEN,
                         "ORG_ID",
                         IBAN_OK,
                         "REJECTED",
@@ -1741,6 +1746,43 @@ class WalletServiceTest {
     }
 
     @Test
+    void processRefund_merchantBeneficiaryTypeSkipped() {
+        final RefundDTO dto =
+                new RefundDTO(
+                        "ID",
+                        "EXT_ID",
+                        "NOT_ID",
+                        INITIATIVE_ID,
+                        USER_ID,
+                        BeneficiaryType.MERCHANT,
+                        "ORG_ID",
+                        IBAN_OK,
+                        "REJECTED",
+                        REWARD_STATUS,
+                        REFUND_TYPE,
+                        0L,
+                        4000L,
+                        START_DATE,
+                        END_DATE,
+                        LocalDateTime.now(),
+                        null,
+                        null,
+                        1L,
+                        LocalDate.now(),
+                        TRANSFER_DATE,
+                        NOTIFICATION_DATE,
+                        "CRO");
+
+        walletService.processRefund(dto);
+
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
+                .processRefund(
+                        Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.any(), Mockito.any());
+        Mockito.verify(timelineProducer, Mockito.times(0))
+                .sendEvent(Mockito.any(QueueOperationDTO.class));
+        Mockito.verify(errorProducer, Mockito.times(0)).sendEvent(Mockito.any());
+    }
+    @Test
     void processRefund_rejected_not_accepted_before() {
 
         final RefundDTO dto =
@@ -1750,6 +1792,7 @@ class WalletServiceTest {
                         "NOT_ID",
                         INITIATIVE_ID,
                         USER_ID,
+                        BeneficiaryType.CITIZEN,
                         "ORG_ID",
                         IBAN_OK,
                         "REJECTED",
@@ -1794,6 +1837,7 @@ class WalletServiceTest {
                         "NOT_ID",
                         INITIATIVE_ID,
                         USER_ID,
+                        BeneficiaryType.CITIZEN,
                         "ORG_ID",
                         IBAN_OK,
                         "REJECTED",
