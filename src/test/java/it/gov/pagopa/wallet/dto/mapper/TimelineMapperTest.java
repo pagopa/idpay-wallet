@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -119,6 +120,7 @@ class TimelineMapperTest {
                     REWARD_NOTIFICATION_ID,
                     INITIATIVE_ID,
                     USER_ID,
+                    BeneficiaryType.CITIZEN,
                     ORGANIZATION_ID,
                     IBAN,
                     "ACCEPTED",
@@ -144,6 +146,7 @@ class TimelineMapperTest {
                     REWARD_NOTIFICATION_ID,
                     INITIATIVE_ID,
                     USER_ID,
+                    BeneficiaryType.CITIZEN,
                     ORGANIZATION_ID,
                     IBAN,
                     "REJECTED",

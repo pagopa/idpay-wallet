@@ -1,13 +1,13 @@
 package it.gov.pagopa.wallet.service;
 
 import feign.FeignException;
-import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -62,7 +62,6 @@ public class WalletServiceImpl implements WalletService {
   @Autowired TimelineMapper timelineMapper;
   @Autowired ErrorProducer errorProducer;
   @Autowired NotificationProducer notificationProducer;
-  @Autowired InitiativeRestConnector initiativeRestConnector;
   @Autowired AuditUtilities auditUtilities;
   @Autowired Utilities utilities;
 
@@ -428,7 +427,8 @@ public class WalletServiceImpl implements WalletService {
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(rewardTransactionDTO.getChannel().equals("QRCODE")
-            && rewardTransactionDTO.getStatus().equals("AUTHORIZED"))) {
+            && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
+            || rewardTransactionDTO.getStatus().equals("CANCELLED")))) {
       log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
       performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
       return;
@@ -530,11 +530,17 @@ public class WalletServiceImpl implements WalletService {
   public void processRefund(RefundDTO refundDTO) {
     long startTime = System.currentTimeMillis();
 
+    if (BeneficiaryType.MERCHANT.equals(refundDTO.getBeneficiaryType())) {
+      log.info("[PROCESS_REFUND] Beneficiary type is a merchant, skipping message");
+      performanceLog(startTime, SERVICE_PROCESS_REFUND);
+      return;
+    }
+
     log.info("[PROCESS_REFUND] Processing new refund");
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getUserId())
+            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getBeneficiaryId())
             .orElse(null);
 
     if (wallet == null) {
@@ -566,7 +572,7 @@ public class WalletServiceImpl implements WalletService {
 
     walletUpdatesRepository.processRefund(
         refundDTO.getInitiativeId(),
-        refundDTO.getUserId(),
+        refundDTO.getBeneficiaryId(),
         wallet.getRefunded().add(refunded),
         history);
 
@@ -754,7 +760,7 @@ public class WalletServiceImpl implements WalletService {
     NotificationQueueDTO notificationQueueDTO =
         NotificationQueueDTO.builder()
             .operationType(WalletConstants.REFUND)
-            .userId(refundDTO.getUserId())
+            .userId(refundDTO.getBeneficiaryId())
             .initiativeId(refundDTO.getInitiativeId())
             .rewardNotificationId(refundDTO.getRewardNotificationId())
             .refundReward(refundDTO.getEffectiveRewardCents())

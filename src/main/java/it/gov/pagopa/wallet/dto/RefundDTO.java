@@ -2,6 +2,8 @@ package it.gov.pagopa.wallet.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,7 +14,8 @@ public class RefundDTO {
   private String externalId;
   private String rewardNotificationId;
   private String initiativeId;
-  private String userId;
+  private String beneficiaryId;
+  private BeneficiaryType beneficiaryType;
   private String organizationId;
   private String iban;
   private String status;
