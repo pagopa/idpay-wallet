@@ -107,7 +107,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         )
                 ),
                 new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                        .set(FIELD_LAST_COUNTER_UPDATE, trxElaborationTimestamp).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
     }
