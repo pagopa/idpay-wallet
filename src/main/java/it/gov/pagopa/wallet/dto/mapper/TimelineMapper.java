@@ -119,7 +119,7 @@ public class TimelineMapper {
         return QueueOperationDTO.builder()
                 .eventId(dto.getExternalId())
                 .initiativeId(dto.getInitiativeId())
-                .userId(dto.getUserId())
+                .userId(dto.getBeneficiaryId())
                 .iban(dto.getIban())
                 .status(dto.getRewardStatus())
                 .refundType(dto.getRefundType())
