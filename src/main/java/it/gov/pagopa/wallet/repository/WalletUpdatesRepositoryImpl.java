@@ -100,14 +100,11 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         return mongoTemplate.findAndModify(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).andOperator(
-                                Criteria.where(FIELD_USER_ID).is(userId).orOperator(
-                                        Criteria.where(FIELD_LAST_COUNTER_UPDATE).isNull(),
-                                        Criteria.where(FIELD_LAST_COUNTER_UPDATE).lt(trxElaborationTimestamp)
-                                )
+                                Criteria.where(FIELD_USER_ID).is(userId)
                         )
                 ),
                 new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx)
-                        .set(FIELD_LAST_COUNTER_UPDATE, trxElaborationTimestamp).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
     }
