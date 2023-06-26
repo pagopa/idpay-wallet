@@ -9,9 +9,11 @@ logging:
         cloud: ${LOG_LEVEL_SPRING_CLOUD:WARN}
         data: ${LOG_LEVEL_SPRING_DATA:INFO}
     root: ${LOG_LEVEL_ROOT:INFO}
+
 management.endpoints:
   web:
     exposure.include: info, health
+
 rest-client:
   onboarding:
     serviceCode: idpay-onboarding
@@ -22,6 +24,7 @@ rest-client:
   initiative:
     serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
+
 spring:
   application:
     name: "@project.artifactId@"
@@ -281,8 +284,8 @@ spring:
       on-profile: default
   data:
     mongodb:
-      database: ${MONGODB_DBNAME:}
-      uri: ${MONGODB_URI:}
+      uri: ${MONGODB_URI:mongodb://localhost:27017}
+      database: ${MONGODB_DBNAME:idpay}
       # custom configured properties
       config:
         connectionPool:
