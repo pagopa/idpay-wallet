@@ -425,6 +425,13 @@ public class WalletServiceImpl implements WalletService {
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
     long startTime = System.currentTimeMillis();
 
+    if (rewardTransactionDTO.getChannel().equals("QRCODE")
+            && rewardTransactionDTO.getStatus().equals("REWARDED")){
+      log.info("[PROCESS_TRANSACTION] Transaction in status REWARDED with channel QRCODE, skipping message");
+      performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
+      return;
+    }
+
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(rewardTransactionDTO.getChannel().equals("QRCODE")
             && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
