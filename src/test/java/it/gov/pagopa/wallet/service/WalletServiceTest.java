@@ -27,7 +27,6 @@ import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1302,7 +1301,7 @@ class WalletServiceTest {
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(Mockito.any());
     }
 
-    @Disabled
+    @Test
     void processTransaction_sync_ok() {
         Mockito.when(
                 walletUpdatesRepositoryMock.rewardTransaction(
