@@ -634,45 +634,49 @@ public class WalletServiceImpl implements WalletService {
       Counters counters,
       BigDecimal accruedReward) {
 
-    Wallet userWallet;
-    if ((userWallet =
-            walletUpdatesRepository.rewardTransaction(
-                initiativeId,
-                rewardTransactionDTO.getUserId(),
-                rewardTransactionDTO.getElaborationDateTime(),
-                counters
-                    .getInitiativeBudget()
-                    .subtract(counters.getTotalReward())
-                    .setScale(2, RoundingMode.HALF_DOWN),
-                counters.getTotalReward(),
-                counters.getTrxNumber()))
-        == null) {
-      log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
-      return;
-    }
+    if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
+            && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-    if (userWallet.getFamilyId() != null) {
-      BigDecimal familyTotalReward =
-          walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
-      log.info(
-          "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
-          userWallet.getFamilyId(),
-          familyTotalReward);
+      Wallet userWallet;
+      if ((userWallet =
+              walletUpdatesRepository.rewardTransaction(
+                      initiativeId,
+                      rewardTransactionDTO.getUserId(),
+                      rewardTransactionDTO.getElaborationDateTime(),
+                      counters
+                              .getInitiativeBudget()
+                              .subtract(counters.getTotalReward())
+                              .setScale(2, RoundingMode.HALF_DOWN),
+                      counters.getTotalReward(),
+                      counters.getTrxNumber()))
+              == null) {
+        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
+        return;
+      }
 
-      boolean updateResult =
-          walletUpdatesRepository.rewardFamilyTransaction(
-              initiativeId,
-              userWallet.getFamilyId(),
-              rewardTransactionDTO.getElaborationDateTime(),
-              counters
-                  .getInitiativeBudget()
-                  .subtract(familyTotalReward)
-                  .setScale(2, RoundingMode.HALF_DOWN));
+      if (userWallet.getFamilyId() != null) {
+        BigDecimal familyTotalReward =
+                walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
+        log.info(
+                "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
+                userWallet.getFamilyId(),
+                familyTotalReward);
 
-      if (!updateResult) {
-        throw new WalletUpdateException(
-            "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
-                .formatted(userWallet.getFamilyId()));
+        boolean updateResult =
+                walletUpdatesRepository.rewardFamilyTransaction(
+                        initiativeId,
+                        userWallet.getFamilyId(),
+                        rewardTransactionDTO.getElaborationDateTime(),
+                        counters
+                                .getInitiativeBudget()
+                                .subtract(familyTotalReward)
+                                .setScale(2, RoundingMode.HALF_DOWN));
+
+        if (!updateResult) {
+          throw new WalletUpdateException(
+                  "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
+                          .formatted(userWallet.getFamilyId()));
+        }
       }
     }
 
