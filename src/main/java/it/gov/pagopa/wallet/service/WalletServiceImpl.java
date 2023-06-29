@@ -378,47 +378,55 @@ public class WalletServiceImpl implements WalletService {
     performanceLog(startTime, "CREATE_WALLET");
     auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
-
   @Override
   public void unsubscribe(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
 
-    log.info("[UNSUBSCRIBE] Unsubscribing user");
+    log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}",userId,initiativeId);
     auditUtilities.logUnsubscribe(userId, initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    LocalDateTime localDateTime = LocalDateTime.now();
     String statusTemp = wallet.getStatus();
-    if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-      wallet.setStatus(WalletStatus.UNSUBSCRIBED);
-      wallet.setRequestUnsubscribeDate(LocalDateTime.now());
-      walletRepository.save(wallet);
-      log.info("[UNSUBSCRIBE] Wallet disabled");
-      UnsubscribeCallDTO unsubscribeCallDTO =
-          new UnsubscribeCallDTO(
-              initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
-
-      try {
-        onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-        log.info("[UNSUBSCRIBE] Onboarding disabled");
-      } catch (FeignException e) {
-        this.rollbackWallet(statusTemp, wallet);
-        performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-        auditUtilities.logUnsubscribeKO(
-            userId, initiativeId, "request of disabling onboarding failed");
-        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-      }
-      try {
-        paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-        log.info("[UNSUBSCRIBE] Payment instruments disabled");
-      } catch (FeignException e) {
-        this.rollbackWallet(statusTemp, wallet);
-        onboardingRestConnector.rollback(initiativeId, userId);
-        performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-        auditUtilities.logUnsubscribeKO(
-            userId, initiativeId, "request of disabling all payment instruments failed");
-        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-      }
+    wallet.setRequestUnsubscribeDate(LocalDateTime.now());
+    UnsubscribeCallDTO unsubscribeCallDTO =
+            new UnsubscribeCallDTO(
+                    initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
+    try {
+      paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
+      log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",initiativeId,userId);
+    } catch (FeignException e) {
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      auditUtilities.logUnsubscribeKO(
+              userId, initiativeId, "request of disabling all payment instruments failed");
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
-    performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+    try {
+      onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
+      log.info("[UNSUBSCRIBE] Onboarding disabled on initiative {} for user {}",initiativeId,userId);
+    } catch (FeignException e) {
+      paymentInstrumentRestConnector.rollback(initiativeId, userId);
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      auditUtilities.logUnsubscribeKO(
+              userId, initiativeId, "request of disabling onboarding failed");
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+    }
+    try {
+      if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+        wallet.setStatus(WalletStatus.UNSUBSCRIBED);
+        walletRepository.save(wallet);
+        log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}",initiativeId,userId);
+        sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, localDateTime));
+      }
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+    } catch (FeignException e) {
+      this.rollbackWallet(statusTemp, wallet);
+      onboardingRestConnector.rollback(initiativeId, userId);
+      paymentInstrumentRestConnector.rollback(initiativeId, userId);
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      auditUtilities.logUnsubscribeKO(
+              userId, initiativeId, "request of disabling wallet failed");
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+    }
   }
 
   @Override
