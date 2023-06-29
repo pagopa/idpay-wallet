@@ -21,4 +21,5 @@ public interface PaymentInstrumentRestConnector {
                                                      @PathVariable("userId") String userId,
                                                      @RequestParam("statusList") List<String> statusList);
   void enrollDiscountInitiative(@RequestBody InstrumentFromDiscountDTO body);
+  void rollback(@PathVariable String initiativeId,@PathVariable String userId);
 }

@@ -139,4 +139,13 @@ public class TimelineMapper {
                 .rewardFeedbackProgressive(dto.getFeedbackProgressive())
                 .build();
     }
+    public QueueOperationDTO unsubscribeToTimeline(
+            String initiativeId, String userId, LocalDateTime localDateTime) {
+        return QueueOperationDTO.builder()
+                .initiativeId(initiativeId)
+                .userId(userId)
+                .operationType(WalletStatus.UNSUBSCRIBED)
+                .operationDate(localDateTime)
+                .build();
+    }
 }
