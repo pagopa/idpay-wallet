@@ -123,6 +123,14 @@ class PaymentInstrumentRestClientTest {
       Assertions.fail();
     }
   }
+  @Test
+  void rollback_test() {
+    try{
+      restConnector.rollback(INITIATIVE_ID, USER_ID);
+    } catch (Exception e){
+      Assertions.fail();
+    }
+  }
 
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {

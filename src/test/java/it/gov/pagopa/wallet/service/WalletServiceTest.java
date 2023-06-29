@@ -1267,26 +1267,6 @@ class WalletServiceTest {
     }
 
     @Test
-    void unsubscribe_ko_feignexception() {
-        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-                .thenReturn(Optional.of(TEST_WALLET));
-
-        Request request =
-                Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
-
-        Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
-                .when(paymentInstrumentRestConnector)
-                .disableAllInstrument(Mockito.any(UnsubscribeCallDTO.class));
-
-        try {
-            walletService.unsubscribe(INITIATIVE_ID, USER_ID);
-            Assertions.fail();
-        } catch (WalletException e) {
-            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
-        }
-    }
-
-    @Test
     void processTransaction_ok() {
         Mockito.when(
                         walletUpdatesRepositoryMock.rewardTransaction(
@@ -1400,7 +1380,7 @@ class WalletServiceTest {
     }
 
     @Test
-    void unsubscribe_rollback_wallet() {
+    void unsubscribe_rollback_payment_instrument() {
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -1416,13 +1396,12 @@ class WalletServiceTest {
             walletService.unsubscribe(INITIATIVE_ID, USER_ID);
             Assertions.fail();
         } catch (WalletException e) {
-            assertNull(TEST_WALLET.getRequestUnsubscribeDate());
-            assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
+            Mockito.verify(paymentInstrumentRestConnector, Mockito.times(1)).rollback(INITIATIVE_ID,USER_ID);
         }
     }
 
     @Test
-    void unsubscribe_rollback_wallet_2() {
+    void unsubscribe_payment_instrument_ko() {
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET_2));
@@ -1438,8 +1417,33 @@ class WalletServiceTest {
             walletService.unsubscribe(INITIATIVE_ID, USER_ID);
             Assertions.fail();
         } catch (WalletException e) {
+            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
+        }
+    }
+    @Test
+    void unsubscribe_wallet_ko() {
+
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_2));
+
+        Request request =
+                Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
+
+        Mockito.doNothing().when(onboardingRestConnector).disableOnboarding(Mockito.any());
+        Mockito.doNothing().when(paymentInstrumentRestConnector).disableAllInstrument(Mockito.any());
+
+        Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+                .when(timelineMapper)
+                .unsubscribeToTimeline(anyString(),anyString(),Mockito.any());
+
+        try {
+            walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+            Assertions.fail();
+        } catch (WalletException e) {
             assertNull(TEST_WALLET_2.getRequestUnsubscribeDate());
             assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET_2.getStatus());
+            Mockito.verify(onboardingRestConnector, Mockito.times(1)).rollback(anyString(),anyString());
+            Mockito.verify(paymentInstrumentRestConnector, Mockito.times(1)).rollback(anyString(),anyString());
         }
     }
 
