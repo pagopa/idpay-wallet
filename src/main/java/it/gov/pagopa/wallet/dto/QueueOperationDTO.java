@@ -64,5 +64,7 @@ public class QueueOperationDTO {
 
   private LocalDate userNotificationDate;
 
+  private String businessName;
+
 }
 
