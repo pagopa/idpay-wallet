@@ -415,7 +415,7 @@ public class WalletServiceImpl implements WalletService {
         wallet.setStatus(WalletStatus.UNSUBSCRIBED);
         walletRepository.save(wallet);
         log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}",initiativeId,userId);
-        sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, localDateTime));
+        //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, localDateTime));
       }
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
     } catch (FeignException e) {
