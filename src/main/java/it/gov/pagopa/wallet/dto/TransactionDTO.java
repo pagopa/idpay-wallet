@@ -70,4 +70,6 @@ public class TransactionDTO {
   private BigDecimal effectiveAmount;
 
   private String channel;
+
+  private String businessName;
 }
