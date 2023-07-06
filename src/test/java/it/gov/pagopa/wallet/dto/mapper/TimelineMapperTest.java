@@ -302,5 +302,14 @@ class TimelineMapperTest {
         assertEquals(INITIATIVE_ID, actual.getInitiativeId());
         assertEquals(OPERATION_DATE, actual.getOperationDate());
     }
+    @Test
+    void unsubscribeToTimeline() {
+        QueueOperationDTO actual =
+                timelineMapper.unsubscribeToTimeline(INITIATIVE_ID, USER_ID, OPERATION_DATE);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(WalletStatus.UNSUBSCRIBED, actual.getOperationType());
+        assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+        assertEquals(OPERATION_DATE, actual.getOperationDate());
+    }
 
 }
