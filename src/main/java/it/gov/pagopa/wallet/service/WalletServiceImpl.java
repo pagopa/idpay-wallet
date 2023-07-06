@@ -385,9 +385,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}",userId,initiativeId);
     auditUtilities.logUnsubscribe(userId, initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
-    LocalDateTime localDateTime = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now();
     String statusTemp = wallet.getStatus();
-    wallet.setRequestUnsubscribeDate(LocalDateTime.now());
+    wallet.setRequestUnsubscribeDate(now);
     UnsubscribeCallDTO unsubscribeCallDTO =
             new UnsubscribeCallDTO(
                     initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
@@ -413,9 +413,11 @@ public class WalletServiceImpl implements WalletService {
     try {
       if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
         wallet.setStatus(WalletStatus.UNSUBSCRIBED);
+        wallet.setNInstr(0);
+        wallet.setUpdateDate(now);
         walletRepository.save(wallet);
         log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}",initiativeId,userId);
-        //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, localDateTime));
+        //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, now));
       }
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
     } catch (FeignException e) {
