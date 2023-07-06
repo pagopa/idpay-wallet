@@ -40,6 +40,7 @@ class TimelineMapperTest {
     private static final String CRO = "cro";
     private static final String MASKED_PAN = "masked_pan";
     private static final String BRAND_LOGO = "brand_logo";
+    private static final String BUSINESS_NAME = "business_name";
     private static final String INSTRUMENT_ID = "instrument_id";
     private static final String CIRCUIT_TYPE = "test_circuit";
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
@@ -91,9 +92,11 @@ class TimelineMapperTest {
                     .brand(BRAND_LOGO)
                     .circuitType(CIRCUIT_TYPE)
                     .amount(BIG_DECIMAL)
+                    .effectiveAmount(BIG_DECIMAL)
                     .idTrxIssuer(USER_ID)
                     .idTrxAcquirer(USER_ID)
                     .channel("RTD")
+                    .businessName(BUSINESS_NAME)
                     .build();
 
     private static final RewardTransactionDTO REWARD_TRX_DTO_REVERSAL =
@@ -221,10 +224,12 @@ class TimelineMapperTest {
         assertEquals(BRAND_LOGO, actual.getBrandLogo());
         assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
         assertEquals(BIG_DECIMAL, actual.getAmount());
+        assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
         assertEquals(BIG_DECIMAL, actual.getAccrued());
         assertEquals(USER_ID, actual.getIdTrxIssuer());
         assertEquals(USER_ID, actual.getIdTrxAcquirer());
         assertEquals("RTD", actual.getChannel());
+        assertEquals(BUSINESS_NAME, actual.getBusinessName());
     }
 
     @Test
@@ -294,6 +299,15 @@ class TimelineMapperTest {
                 timelineMapper.readmitToTimeline(INITIATIVE_ID, USER_ID, OPERATION_DATE);
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(WalletConstants.TIMELINE_READMITTED, actual.getOperationType());
+        assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+        assertEquals(OPERATION_DATE, actual.getOperationDate());
+    }
+    @Test
+    void unsubscribeToTimeline() {
+        QueueOperationDTO actual =
+                timelineMapper.unsubscribeToTimeline(INITIATIVE_ID, USER_ID, OPERATION_DATE);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(WalletStatus.UNSUBSCRIBED, actual.getOperationType());
         assertEquals(INITIATIVE_ID, actual.getInitiativeId());
         assertEquals(OPERATION_DATE, actual.getOperationDate());
     }
