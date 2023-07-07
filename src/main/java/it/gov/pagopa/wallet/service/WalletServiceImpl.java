@@ -383,7 +383,6 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}",userId,initiativeId);
-    auditUtilities.logUnsubscribe(userId, initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     LocalDateTime now = LocalDateTime.now();
     String statusTemp = wallet.getStatus();
@@ -398,6 +397,7 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
               userId, initiativeId, "request of disabling all payment instruments failed");
+      log.info("[UNSUBSCRIBE] Request of disabling all payment instruments on initiative {} for user {} failed",initiativeId,userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
     try {
@@ -408,6 +408,7 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
               userId, initiativeId, "request of disabling onboarding failed");
+      log.info("[UNSUBSCRIBE] Request of disabling onboarding on initiative {} for user {} failed",initiativeId,userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
     try {
@@ -416,6 +417,7 @@ public class WalletServiceImpl implements WalletService {
         wallet.setNInstr(0);
         wallet.setUpdateDate(now);
         walletRepository.save(wallet);
+        auditUtilities.logUnsubscribe(userId, initiativeId);
         log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}",initiativeId,userId);
         //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, now));
       }
@@ -427,6 +429,7 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
               userId, initiativeId, "request of disabling wallet failed");
+      log.info("[UNSUBSCRIBE] Request of disabling wallet on initiative {} for user {} failed",initiativeId,userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
   }
