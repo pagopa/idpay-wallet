@@ -109,7 +109,7 @@ public class AuditUtilities {
   public void logUnsubscribe(String userId, String initiativeId) {
     logAuditString(
             CEF_PATTERN,
-            "Request of unsubscription from initiative.", userId, initiativeId
+            "Wallet unsubscribed.", userId, initiativeId
     );
   }
   public void logUnsubscribeKO(String userId, String initiativeId, String msg) {
