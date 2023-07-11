@@ -28,10 +28,12 @@ public class TimelineMapper {
         .operationType(
             rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
         .operationDate(
-            rewardTransaction
-                .getTrxDate()
-                .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-                .toLocalDateTime())
+                "CANCELLED".equals(rewardTransaction.getStatus()) ?
+                        rewardTransaction.getElaborationDateTime()
+                        : rewardTransaction.getTrxDate()
+                        .atZoneSameInstant(ZoneId.of("Europe/Rome"))
+                        .toLocalDateTime()
+    )
         .maskedPan(rewardTransaction.getMaskedPan())
         .instrumentId(rewardTransaction.getInstrumentId())
         .brandLogo(rewardTransaction.getBrandLogo())
