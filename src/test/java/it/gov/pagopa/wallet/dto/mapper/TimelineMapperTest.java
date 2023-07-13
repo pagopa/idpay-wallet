@@ -99,6 +99,25 @@ class TimelineMapperTest {
                     .businessName(BUSINESS_NAME)
                     .build();
 
+    private static final RewardTransactionDTO REWARD_TRX_DTO_CANCELLED =
+            RewardTransactionDTO.builder()
+                    .userId(USER_ID)
+                    .status("CANCELLED")
+                    .operationType("00")
+                    .trxDate(OffsetDateTime.now())
+                    .instrumentId(INSTRUMENT_ID)
+                    .maskedPan(MASKED_PAN)
+                    .brandLogo(BRAND_LOGO)
+                    .brand(BRAND_LOGO)
+                    .circuitType(CIRCUIT_TYPE)
+                    .amount(BIG_DECIMAL)
+                    .effectiveAmount(BIG_DECIMAL)
+                    .idTrxIssuer(USER_ID)
+                    .idTrxAcquirer(USER_ID)
+                    .channel("QRCODE")
+                    .businessName(BUSINESS_NAME)
+                    .build();
+
     private static final RewardTransactionDTO REWARD_TRX_DTO_REVERSAL =
             RewardTransactionDTO.builder()
                     .userId(USER_ID)
@@ -229,6 +248,26 @@ class TimelineMapperTest {
         assertEquals(USER_ID, actual.getIdTrxIssuer());
         assertEquals(USER_ID, actual.getIdTrxAcquirer());
         assertEquals("RTD", actual.getChannel());
+        assertEquals(BUSINESS_NAME, actual.getBusinessName());
+    }
+
+    @Test
+    void transactionToTimelineCancelled() {
+        QueueOperationDTO actual =
+                timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_CANCELLED, BIG_DECIMAL);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(INITIATIVE_ID, actual.getInitiativeId());
+        assertEquals("TRANSACTION", actual.getOperationType());
+        assertEquals(MASKED_PAN, actual.getMaskedPan());
+        assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
+        assertEquals(BRAND_LOGO, actual.getBrandLogo());
+        assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
+        assertEquals(BIG_DECIMAL, actual.getAmount());
+        assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
+        assertEquals(BIG_DECIMAL, actual.getAccrued());
+        assertEquals(USER_ID, actual.getIdTrxIssuer());
+        assertEquals(USER_ID, actual.getIdTrxAcquirer());
+        assertEquals("QRCODE", actual.getChannel());
         assertEquals(BUSINESS_NAME, actual.getBusinessName());
     }
 
