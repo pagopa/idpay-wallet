@@ -378,47 +378,60 @@ public class WalletServiceImpl implements WalletService {
     performanceLog(startTime, "CREATE_WALLET");
     auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
-
   @Override
   public void unsubscribe(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
 
-    log.info("[UNSUBSCRIBE] Unsubscribing user");
-    auditUtilities.logUnsubscribe(userId, initiativeId);
+    log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}",userId,initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    LocalDateTime now = LocalDateTime.now();
     String statusTemp = wallet.getStatus();
-    if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-      wallet.setStatus(WalletStatus.UNSUBSCRIBED);
-      wallet.setRequestUnsubscribeDate(LocalDateTime.now());
-      walletRepository.save(wallet);
-      log.info("[UNSUBSCRIBE] Wallet disabled");
-      UnsubscribeCallDTO unsubscribeCallDTO =
-          new UnsubscribeCallDTO(
-              initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
-
-      try {
-        onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-        log.info("[UNSUBSCRIBE] Onboarding disabled");
-      } catch (FeignException e) {
-        this.rollbackWallet(statusTemp, wallet);
-        performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-        auditUtilities.logUnsubscribeKO(
-            userId, initiativeId, "request of disabling onboarding failed");
-        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-      }
-      try {
-        paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-        log.info("[UNSUBSCRIBE] Payment instruments disabled");
-      } catch (FeignException e) {
-        this.rollbackWallet(statusTemp, wallet);
-        onboardingRestConnector.rollback(initiativeId, userId);
-        performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-        auditUtilities.logUnsubscribeKO(
-            userId, initiativeId, "request of disabling all payment instruments failed");
-        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-      }
+    wallet.setRequestUnsubscribeDate(now);
+    UnsubscribeCallDTO unsubscribeCallDTO =
+            new UnsubscribeCallDTO(
+                    initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
+    try {
+      paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
+      log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",initiativeId,userId);
+    } catch (FeignException e) {
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      auditUtilities.logUnsubscribeKO(
+              userId, initiativeId, "request of disabling all payment instruments failed");
+      log.info("[UNSUBSCRIBE] Request of disabling all payment instruments on initiative {} for user {} failed",initiativeId,userId);
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
-    performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+    try {
+      onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
+      log.info("[UNSUBSCRIBE] Onboarding disabled on initiative {} for user {}",initiativeId,userId);
+    } catch (FeignException e) {
+      paymentInstrumentRestConnector.rollback(initiativeId, userId);
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      auditUtilities.logUnsubscribeKO(
+              userId, initiativeId, "request of disabling onboarding failed");
+      log.info("[UNSUBSCRIBE] Request of disabling onboarding on initiative {} for user {} failed",initiativeId,userId);
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+    }
+    try {
+      if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+        wallet.setStatus(WalletStatus.UNSUBSCRIBED);
+        wallet.setNInstr(0);
+        wallet.setUpdateDate(now);
+        walletRepository.save(wallet);
+        auditUtilities.logUnsubscribe(userId, initiativeId);
+        log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}",initiativeId,userId);
+        //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, now));
+      }
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+    } catch (FeignException e) {
+      this.rollbackWallet(statusTemp, wallet);
+      onboardingRestConnector.rollback(initiativeId, userId);
+      paymentInstrumentRestConnector.rollback(initiativeId, userId);
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      auditUtilities.logUnsubscribeKO(
+              userId, initiativeId, "request of disabling wallet failed");
+      log.info("[UNSUBSCRIBE] Request of disabling wallet on initiative {} for user {} failed",initiativeId,userId);
+      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+    }
   }
 
   @Override
@@ -634,45 +647,49 @@ public class WalletServiceImpl implements WalletService {
       Counters counters,
       BigDecimal accruedReward) {
 
-    Wallet userWallet;
-    if ((userWallet =
-            walletUpdatesRepository.rewardTransaction(
-                initiativeId,
-                rewardTransactionDTO.getUserId(),
-                rewardTransactionDTO.getElaborationDateTime(),
-                counters
-                    .getInitiativeBudget()
-                    .subtract(counters.getTotalReward())
-                    .setScale(2, RoundingMode.HALF_DOWN),
-                counters.getTotalReward(),
-                counters.getTrxNumber()))
-        == null) {
-      log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
-      return;
-    }
+    if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
+            && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-    if (userWallet.getFamilyId() != null) {
-      BigDecimal familyTotalReward =
-          walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
-      log.info(
-          "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
-          userWallet.getFamilyId(),
-          familyTotalReward);
+      Wallet userWallet;
+      if ((userWallet =
+              walletUpdatesRepository.rewardTransaction(
+                      initiativeId,
+                      rewardTransactionDTO.getUserId(),
+                      rewardTransactionDTO.getElaborationDateTime(),
+                      counters
+                              .getInitiativeBudget()
+                              .subtract(counters.getTotalReward())
+                              .setScale(2, RoundingMode.HALF_DOWN),
+                      counters.getTotalReward(),
+                      counters.getTrxNumber()))
+              == null) {
+        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
+        return;
+      }
 
-      boolean updateResult =
-          walletUpdatesRepository.rewardFamilyTransaction(
-              initiativeId,
-              userWallet.getFamilyId(),
-              rewardTransactionDTO.getElaborationDateTime(),
-              counters
-                  .getInitiativeBudget()
-                  .subtract(familyTotalReward)
-                  .setScale(2, RoundingMode.HALF_DOWN));
+      if (userWallet.getFamilyId() != null) {
+        BigDecimal familyTotalReward =
+                walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
+        log.info(
+                "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
+                userWallet.getFamilyId(),
+                familyTotalReward);
 
-      if (!updateResult) {
-        throw new WalletUpdateException(
-            "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
-                .formatted(userWallet.getFamilyId()));
+        boolean updateResult =
+                walletUpdatesRepository.rewardFamilyTransaction(
+                        initiativeId,
+                        userWallet.getFamilyId(),
+                        rewardTransactionDTO.getElaborationDateTime(),
+                        counters
+                                .getInitiativeBudget()
+                                .subtract(familyTotalReward)
+                                .setScale(2, RoundingMode.HALF_DOWN));
+
+        if (!updateResult) {
+          throw new WalletUpdateException(
+                  "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
+                          .formatted(userWallet.getFamilyId()));
+        }
       }
     }
 

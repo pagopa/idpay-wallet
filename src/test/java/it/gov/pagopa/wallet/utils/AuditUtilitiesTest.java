@@ -213,7 +213,7 @@ class AuditUtilitiesTest {
     auditUtilities.logUnsubscribe(USER_ID,INITIATIVE_ID);
 
     Assertions.assertEquals(
-            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request of unsubscription from initiative." +
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Wallet unsubscribed." +
                     " suser=%s cs1Label=initiativeId cs1=%s")
                     .formatted(
                             AuditUtilities.SRCIP,

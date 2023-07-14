@@ -27,11 +27,7 @@ public class TimelineMapper {
         .userId(rewardTransaction.getUserId())
         .operationType(
             rewardTransaction.getOperationType().equals("00") ? "TRANSACTION" : "REVERSAL")
-        .operationDate(
-            rewardTransaction
-                .getTrxDate()
-                .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-                .toLocalDateTime())
+        .operationDate(getOperationDate(rewardTransaction))
         .maskedPan(rewardTransaction.getMaskedPan())
         .instrumentId(rewardTransaction.getInstrumentId())
         .brandLogo(rewardTransaction.getBrandLogo())
@@ -44,9 +40,26 @@ public class TimelineMapper {
         .idTrxAcquirer(rewardTransaction.getIdTrxAcquirer())
         .channel(rewardTransaction.getChannel())
         .status(rewardTransaction.getStatus())
+        .businessName(rewardTransaction.getBusinessName())
         .build();
     }
 
+    private static LocalDateTime getOperationDate(RewardTransactionDTO rewardTransaction) {
+        if("CANCELLED".equals(rewardTransaction.getStatus())) {
+            return rewardTransaction.getElaborationDateTime();
+        }
+
+        if ("AUTHORIZED".equals(rewardTransaction.getStatus()) || "REWARDED".equals(rewardTransaction.getStatus())
+                && "QRCODE".equals(rewardTransaction.getChannel())) {
+            return rewardTransaction.getTrxChargeDate()
+                    .atZoneSameInstant(ZoneId.of("Europe/Rome"))
+                    .toLocalDateTime();
+        }
+
+        return rewardTransaction.getTrxDate()
+                .atZoneSameInstant(ZoneId.of("Europe/Rome"))
+                .toLocalDateTime();
+    }
     public QueueOperationDTO deleteInstrumentToTimeline(
             String initiativeId, String userId, String maskedPan, String brandLogo, String brand) {
         return QueueOperationDTO.builder()
@@ -136,6 +149,15 @@ public class TimelineMapper {
                 .transferDate(dto.getTransferDate())
                 .userNotificationDate(dto.getUserNotificationDate())
                 .rewardFeedbackProgressive(dto.getFeedbackProgressive())
+                .build();
+    }
+    public QueueOperationDTO unsubscribeToTimeline(
+            String initiativeId, String userId, LocalDateTime localDateTime) {
+        return QueueOperationDTO.builder()
+                .initiativeId(initiativeId)
+                .userId(userId)
+                .operationType(WalletStatus.UNSUBSCRIBED)
+                .operationDate(localDateTime)
                 .build();
     }
 }
