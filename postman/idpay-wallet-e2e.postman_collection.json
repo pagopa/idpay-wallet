@@ -1,15 +1,1492 @@
 {
 	"info": {
-		"_postman_id": "4e2115d6-d699-48a2-87fb-f1d174b1c10c",
+		"_postman_id": "9ddbb611-23e7-4aae-a078-6af62d717cd7",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "26036679",
-		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-4e2115d6-d699-48a2-87fb-f1d174b1c10c?action=share&creator=26036679&source=collection_link"
+		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-9ddbb611-23e7-4aae-a078-6af62d717cd7?action=share&creator=26036679&source=collection_link"
 	},
 	"item": [
 		{
 			"name": "Happy Case",
 			"item": [
+				{
+					"name": "Initiative discount - unsubscribe",
+					"item": [
+						{
+							"name": "Initiative creation",
+							"item": [
+								{
+									"name": "ENTE - Initiative creation",
+									"item": [
+										{
+											"name": "Generate Portal Token",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let textResponse = pm.response.text()\r",
+															"\r",
+															"pm.test('Wallet - Happy case - Initiative discount - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
+															"    //verify response HTTP status \r",
+															"    pm.response.to.have.status(200);\r",
+															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "POST",
+												"header": [
+													{
+														"key": "Ocp-Apim-Trace",
+														"value": "true",
+														"type": "default"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n    \"aud\": \"idpay.welfare.pagopa.it\",\r\n    \"uid\": \"{{uid_Ente}}\",\r\n    \"name\": \"{{name_Ente}}\",\r\n    \"familyName\": \"{{familyName_Ente}}\",\r\n    \"email\": \"{{email_Ente}}\",\r\n    \"orgId\": \"{{orgId_Ente}}\",\r\n    \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n    \"orgName\": \"Ente di test IdPay\",\r\n    \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n    \"orgRole\": \"{{orgRole_Ente}}\"\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlToken}}/welfare/token/test",
+													"host": [
+														"{{baseUrlToken}}"
+													],
+													"path": [
+														"welfare",
+														"token",
+														"test"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "STEP1-Insert Initiative (Service Info)",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"let moment = require('moment');\r",
+															"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+															"const serviceName = 'Test funzionali App IO Initiative with criteria and discount ' + now;\r",
+															"pm.collectionVariables.set('serviceName', serviceName);\r",
+															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+															"\r",
+															"pm.collectionVariables.set('channel_type', 'web');\r",
+															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"var jsonData = JSON.parse(responseBody);\r",
+															"// console.log('jsondata', jsonData);\r",
+															"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
+															"pm.collectionVariables.set('initiativeId_exhausted', jsonData.initiativeId);\r",
+															"\r",
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative creation - STEP1 - Responses with 201\", function () {\r",
+															"    pm.response.to.have.status(201);\r",
+															"});\r",
+															"\r",
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative creation - STEP1 - Verify response body\", function () {\r",
+															"    let jsonResponse = pm.response.json();\r",
+															"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"serviceIO\": true,\n    \"serviceName\": \"{{serviceName}}\",\n    \"serviceScope\": \"LOCAL\",\n    \"description\": \"{{description}}\",\n    \"privacyLink\": \"https://www.google.it\",\n    \"tcLink\": \"https://www.google.com\",\n    \"channels\": [\n        {\n            \"type\": \"{{channel_type}}\",\n            \"contact\": \"{{channel_contact}}\"\n        }\n    ]\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlInitiative}}/info",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														"info"
+													]
+												},
+												"description": "Save initiative and first subset of data 'general info'"
+											},
+											"response": []
+										},
+										{
+											"name": "STEP2-Update Initiative (general Info)",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"let moment = require('moment');\r",
+															"//Format: YYYY-MM-DD\r",
+															"let today = String(moment().format('YYYY-MM-DD'));\r",
+															"let todayP1 = String(moment().add(1,'months').format('YYYY-MM-DD'));\r",
+															"let todayP2 = String(moment().add(2,'months').format('YYYY-MM-DD'));\r",
+															"let todayP3 = String(moment().add(3,'months').format('YYYY-MM-DD'));\r",
+															"\r",
+															"let yesterday = String(moment().subtract(1, 'days').format('YYYY-MM-DD'));\r",
+															"\r",
+															"\r",
+															"/*\r",
+															"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
+															"pm.collectionVariables.set('...', _.random(0, 180));\r",
+															"*/\r",
+															"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+															"pm.collectionVariables.set('budget', 500);\r",
+															"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
+															"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+															"pm.collectionVariables.set('beneficiaryKnown', false);\r",
+															"pm.collectionVariables.set('rankingEnabled', false);\r",
+															"pm.collectionVariables.set('beneficiaryBudget', 100);//default max 1000\r",
+															"pm.collectionVariables.set('rankingStartDate', today);\r",
+															"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
+															"pm.collectionVariables.set('startDate', today);\r",
+															"pm.collectionVariables.set('endDate', todayP3);"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative creation - STEP2 - Responses with 204\", function () {\r",
+															"    pm.response.to.have.status(204);\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlInitiative}}/:initiativeId_exhausted/general",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														":initiativeId_exhausted",
+														"general"
+													],
+													"variable": [
+														{
+															"key": "initiativeId_exhausted",
+															"value": "{{initiativeId_exhausted}}"
+														}
+													]
+												},
+												"description": "Save initiative and first subset of data 'general info'"
+											},
+											"response": []
+										},
+										{
+											"name": "STEP3-Update Initiative (criteria)",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative creation - STEP3 - Responses with 204\", function () {\r",
+															"    pm.response.to.have.status(204);\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n    \"automatedCriteria\": [\r\n        {\r\n            \"authority\": \"INPS\",\r\n            \"code\": \"ISEE\",\r\n            \"operator\": \"GT\",\r\n            \"value\": \"1\",\r\n            \"value2\": \"\",\r\n            \"iseeTypes\": [\r\n                \"ORDINARIO\",\r\n                \"MINORENNE\",\r\n                \"UNIVERSITARIO\",\r\n                \"SOCIOSANITARIO\",\r\n                \"DOTTORATO\",\r\n                \"RESIDENZIALE\",\r\n                \"CORRENTE\"\r\n            ]\r\n        }\r\n    ],\r\n    \"selfDeclarationCriteria\": []\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlInitiative}}/{{initiativeId_exhausted}}/beneficiary",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														"{{initiativeId_exhausted}}",
+														"beneficiary"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "STEP4-Update Initiative Trx-Reward rules",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative creation - STEP4 - Responses with 204\", function () {\r",
+															"    pm.response.to.have.status(204);\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"setTimeout(()=> {}, 10000)\r",
+															"const d = new Date();\r",
+															"dateString = d.toISOString()\r",
+															"let endTime = dateString.split('T');\r",
+															"endTime = endTime[1].split('Z');\r",
+															"\r",
+															"pm.collectionVariables.set('rewardRuleType', 'rewardValue');\r",
+															"const rewardValueTypes = [\"PERCENTAGE\", \"ABSOLUTE\"];\r",
+															"rewardValueTypeRandomIndex = _.random(0, rewardValueTypes.length - 1);\r",
+															"const selectedRewardValueType = rewardValueTypes[rewardValueTypeRandomIndex];\r",
+															"pm.collectionVariables.set('rewardValueType', selectedRewardValueType);\r",
+															"if (selectedRewardValueType == \"PERCENTAGE\") {\r",
+															"    pm.collectionVariables.set('rewardRuleValue', 100);\r",
+															"} else {\r",
+															"    pm.collectionVariables.set('rewardRuleValue', 50);\r",
+															"}\r",
+															"\r",
+															"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
+															"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
+															"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+															"pm.collectionVariables.set('trxThresholdTo', 50);\r",
+															"pm.collectionVariables.set('trxCountFrom', 3);\r",
+															"pm.collectionVariables.set('trxCountTo', 11);\r",
+															"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
+															"pm.collectionVariables.set('trxRewardLimitValue', 3);"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"initiativeRewardType\": \"DISCOUNT\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n  }\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlInitiative}}/:initiativeId_exhausted/reward",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														":initiativeId_exhausted",
+														"reward"
+													],
+													"variable": [
+														{
+															"key": "initiativeId_exhausted",
+															"value": "{{initiativeId_exhausted}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "STEP5-Update Initiative Refund Rule",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative creation - STEP5 - Responses with 204\", function () {\r",
+															"    pm.response.to.have.status(204);\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"/*const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+															"timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+															"\r",
+															"const accumulatedType = [\"BUDGET_EXHAUSTED\",\"THRESHOLD_REACHED\"];\r",
+															"accumulatedTypeRandomIndex = _.random(0, timeType.length-1);\r",
+															"\r",
+															"pm.collectionVariables.set('timeType', timeType[timeTypeRandomIndex]);\r",
+															"pm.collectionVariables.set('accumulatedType', accumulatedType[accumulatedTypeRandomIndex]);\r",
+															"pm.collectionVariables.set('identificationCode', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+															"*/\r",
+															"\r",
+															"/*\r",
+															"let refundType = \"timeParameter\";\r",
+															"refundTypeRandomIndex = _.random(0, refundType.length - 1);\r",
+															"\r",
+															"const refundTypeSelected = \"timeParameter\";\r",
+															"let body = {};\r",
+															"if (refundTypeSelected == \"timeParameter\") {\r",
+															"    const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+															"    timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+															"    body = {\r",
+															"        timeParameter: {\r",
+															"            timeType: timeType[timeTypeRandomIndex]\r",
+															"        }\r",
+															"    };\r",
+															"} else {\r",
+															"    const accumulatedType = [\"BUDGET_EXHAUSTED\", \"THRESHOLD_REACHED\"];\r",
+															"    accumulatedTypeRandomIndex = _.random(0, accumulatedType.length - 1);\r",
+															"    const accumulatedTypeSelected = accumulatedType[accumulatedTypeRandomIndex];\r",
+															"    if (accumulatedTypeSelected == \"BUDGET_EXHAUSTED\") {\r",
+															"        body = {\r",
+															"            accumulatedAmount: {\r",
+															"                accumulatedType: \"BUDGET_EXHAUSTED\"\r",
+															"            }\r",
+															"        };\r",
+															"    } else {\r",
+															"        body = {\r",
+															"            accumulatedAmount: {\r",
+															"                accumulatedType: \"THRESHOLD_REACHED\",\r",
+															"                refundThreshold: 10\r",
+															"            }\r",
+															"        };\r",
+															"    }\r",
+															"}\r",
+															"*/\r",
+															"/*const timeType = [\"CLOSED\", \"DAILY\", \"WEEKLY\", \"MONTHLY\", \"QUARTERLY\"];\r",
+															"timeTypeRandomIndex = _.random(0, timeType.length - 1);\r",
+															"const body = {\r",
+															"    timeParameter: {\r",
+															"        timeType: timeType[timeTypeRandomIndex]\r",
+															"    }\r",
+															"};\r",
+															"pm.collectionVariables.set('body', JSON.stringify(body));\r",
+															"*/"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": " {\r\n     \"timeParameter\": {\r\n        \"timeType\": \"DAILY\"\r\n    }\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlInitiative}}/:initiativeId_exhausted/refund",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														":initiativeId_exhausted",
+														"refund"
+													],
+													"variable": [
+														{
+															"key": "initiativeId_exhausted",
+															"value": "{{initiativeId_exhausted}}"
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "PAGOPA - Initiative update status APPROVED",
+									"item": [
+										{
+											"name": "Generate Portal Token",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let textResponse = pm.response.text()\r",
+															"\r",
+															"pm.test('Wallet - Happy case - Initiative discount - Initiative updating - Generate Portal Token (PagoPA Admin)', () => {\r",
+															"    //verify response HTTP status \r",
+															"    pm.response.to.have.status(200);\r",
+															"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
+															"});\r",
+															"\r",
+															"//response time is less than 1s\r",
+															"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "POST",
+												"header": [
+													{
+														"key": "Ocp-Apim-Trace",
+														"value": "true",
+														"type": "default"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Pagopa}}\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlToken}}/welfare/token/test",
+													"host": [
+														"{{baseUrlToken}}"
+													],
+													"path": [
+														"welfare",
+														"token",
+														"test"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Update initiative into APPROVED status",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative updating - PagoPA Admin updates initiative status into APPROVED -(Responses with 204)\", function () {\r",
+															"    pm.response.to.have.status(204);\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"//setTimeout(function(){}, 20000); //milliseconds"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalTokenPagopa}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrlInitiative}}/{{initiativeId_exhausted}}/approved",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														"{{initiativeId_exhausted}}",
+														"approved"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "ENTE - Initiative PUBLISHED",
+									"item": [
+										{
+											"name": "Generate Portal Token",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let textResponse = pm.response.text()\r",
+															"\r",
+															"pm.test('Wallet - Happy case - Initiative discount - Initiative pubblication - Generate Portal Token (Ente Admin)', () => {\r",
+															"    //verify response HTTP status \r",
+															"    pm.response.to.have.status(200);\r",
+															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+															"});\r",
+															"\r",
+															"//response time is less than 1s\r",
+															"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "POST",
+												"header": [
+													{
+														"key": "Ocp-Apim-Trace",
+														"value": "true",
+														"type": "default"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n    \"aud\": \"idpay.welfare.pagopa.it\",\r\n    \"uid\": \"{{uid_Ente}}\",\r\n    \"name\": \"{{name_Ente}}\",\r\n    \"familyName\": \"{{familyName_Ente}}\",\r\n    \"email\": \"{{email_Ente}}\",\r\n    \"orgId\": \"{{orgId_Ente}}\",\r\n    \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n    \"orgName\": \"Ente di test IdPay\",\r\n    \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n    \"orgRole\": \"{{orgRole_Ente}}\"\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlToken}}/welfare/token/test",
+													"host": [
+														"{{baseUrlToken}}"
+													],
+													"path": [
+														"welfare",
+														"token",
+														"test"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Initiative PUBLISHED",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Initiative pubblication - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
+															"    pm.response.to.have.status(204);\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"/*let body;\r",
+															"baseUrlInitiative = pm.variables.get('baseUrlInitiative')\r",
+															"if(baseUrlInitiative.includes('localhost')){\r",
+															"    body = {\r",
+															"        mode: 'raw',\r",
+															"        raw: JSON.stringify({\r",
+															"            organizationName: 'Comune di Milano',\r",
+															"            organizationFiscalCode: '11122233344',\r",
+															"            organizationUserId: 'b8986bf2-1f93-4827-ab16-b21eb8aeae2b',\r",
+															"            organizationUserRole: 'admin'\r",
+															"        })\r",
+															"    }\r",
+															"    pm.request.headers.add({\r",
+															"        key: \"Content-Type\",\r",
+															"        value: \"application/json\"\r",
+															"    });\r",
+															"    pm.variables.set('body', JSON.stringify(body));\r",
+															"    pm.request.body.update(body);\r",
+															"}\r",
+															"*/"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"protocolProfileBehavior": {
+												"disabledSystemHeaders": {}
+											},
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrlInitiative}}/{{initiativeId_exhausted}}/published",
+													"host": [
+														"{{baseUrlInitiative}}"
+													],
+													"path": [
+														"{{initiativeId_exhausted}}",
+														"published"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "Upload csv",
+									"item": [
+										{
+											"name": "Generate Portal Token",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let textResponse = pm.response.text()\r",
+															"\r",
+															"pm.test('Wallet - Happy case - Initiative discount - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
+															"    //verify response HTTP status \r",
+															"    pm.response.to.have.status(200);\r",
+															"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "POST",
+												"header": [
+													{
+														"key": "Ocp-Apim-Trace",
+														"value": "true",
+														"type": "default"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n    \"aud\": \"idpay.welfare.pagopa.it\",\r\n    \"uid\": \"{{uid_Ente}}\",\r\n    \"name\": \"{{name_Ente}}\",\r\n    \"familyName\": \"{{familyName_Ente}}\",\r\n    \"email\": \"{{email_Ente}}\",\r\n    \"orgId\": \"{{orgId_Ente}}\",\r\n    \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n    \"orgName\": \"Ente di test IdPay\",\r\n    \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n    \"orgRole\": \"{{orgRole_Ente}}\"\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrlToken}}/welfare/token/test",
+													"host": [
+														"{{baseUrlToken}}"
+													],
+													"path": [
+														"welfare",
+														"token",
+														"test"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Upload csv",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Upload csv - Response status is 200\", function () {\r",
+															"    pm.response.to.have.status(200);\r",
+															"});\r",
+															"\r",
+															"pm.test(\"Wallet - Happy case - Initiative discount - Upload csv - Verify response body contains status: VALIDATED\", function () {\r",
+															"    let jsonResponse = pm.response.json();\r",
+															"    pm.expect(jsonResponse.status).eql(\"VALIDATED\");\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [],
+												"body": {
+													"mode": "formdata",
+													"formdata": [
+														{
+															"key": "file",
+															"type": "file",
+															"src": "./postman/example_merchant_valid.csv"
+														}
+													]
+												},
+												"url": {
+													"raw": "{{baseUrlToken}}/merchant/initiative/{{initiativeId_exhausted}}/upload",
+													"host": [
+														"{{baseUrlToken}}"
+													],
+													"path": [
+														"merchant",
+														"initiative",
+														"{{initiativeId_exhausted}}",
+														"upload"
+													],
+													"query": [
+														{
+															"key": "",
+															"value": null,
+															"disabled": true
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "Get Merchant list on initiative",
+									"item": [
+										{
+											"name": "Get Merchant List",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"pm.test(\"Wallet - Happy case - Initiative discount - Get merchant list - Response status is 200\", function () {\r",
+															"    pm.response.to.have.status(200);\r",
+															"});\r",
+															"\r",
+															"pm.test(\"Wallet - Happy case - Initiative discount - Get merchant list - Verify response body contains merchantId,businessName,fiscalCode,merchantStatus,updateStatusDate\", function () {\r",
+															"\r",
+															"    const response = pm.response.json().content[0];\r",
+															"    pm.expect(response).have.property(\"merchantId\");\r",
+															"    pm.expect(response).have.property(\"businessName\");\r",
+															"    pm.expect(response).have.property(\"fiscalCode\");\r",
+															"    pm.expect(response).have.property(\"merchantStatus\");\r",
+															"    pm.expect(response).have.property(\"updateStatusDate\");\r",
+															"\r",
+															"    //const filterByMerchantId = response.filter(merchantId => merchantId.merchantId === pm.collectionVariables.get(\"merchantId\"));\r",
+															"    pm.collectionVariables.set(\"merchantId\", response.merchantId);\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"setTimeout(() => {}, 18000);"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{identityPortalToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrlMerchant}}/initiative/{{initiativeId_exhausted}}/merchants",
+													"host": [
+														"{{baseUrlMerchant}}"
+													],
+													"path": [
+														"initiative",
+														"{{initiativeId_exhausted}}",
+														"merchants"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Onboarding",
+							"item": [
+								{
+									"name": "Generate Token IO",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Wallet - Happy case - Initiative discount - Onboarding - Generate Token IO', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 5000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{genericSubscriptionKey}}",
+												"type": "default"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "default"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"rtd",
+												"mock-io",
+												"login"
+											],
+											"query": [
+												{
+													"key": "fiscalCode",
+													"value": "{{CF_1}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Accept T&C",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative discount - Onboarding - Accept T&C - return status 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 15000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId_exhausted}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Prerequisites Check",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative discount - Onboarding - Prerequisites Check - return status 200 or 202\", function () {\r",
+													"    pm.expect(pm.response.code).to.be.oneOf([200,202]);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId_exhausted}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/initiative",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												"initiative"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "PDND + Autocertification",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative discount - Onboarding - PDND + Autocertification - return status 202\", function () {\r",
+													"    pm.response.to.have.status(202);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId_exhausted}}\",\r\n    \"pdndAccept\": true,\r\n    \"selfDeclarationList\": []\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/consent",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												"consent"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Unsubscribe Wallet & User",
+							"item": [
+								{
+									"name": "Unsubscribe - Ok",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative discount - Unsubscribed wallet & user - Unsubscribe - Response status is 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 10000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "true",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId_exhausted}}/unsubscribe",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"wallet",
+												"{{initiativeId_exhausted}}",
+												"unsubscribe"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Wallet Status Ok",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative discount - Unsubscribe wallet & user - Get wallet status - Response status is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Wallet - Happy case - Initiative discount - Unsubscribe wallet & user - Get wallet status - Wallet status is equals to UNSUBSCRIBED\", function () {\r",
+													"    let responseJson = pm.response.json()\r",
+													"    pm.expect(responseJson.status).to.be.equals('UNSUBSCRIBED');\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 2000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Ocp-Apim-Subscription-Key",
+												"value": "{{apimSubscriptionKey}}",
+												"type": "text"
+											},
+											{
+												"key": "Ocp-Apim-Trace",
+												"value": "{{Ocp-Apim-Trace}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/idpay/wallet/{{initiativeId_exhausted}}/status",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"wallet",
+												"{{initiativeId_exhausted}}",
+												"status"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Status Onboarding - ok",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Wallet - Happy case - Initiative discount - Unsubscribe wallet & user - Get status onboarding - Response status is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"setTimeout(()=>{ \r",
+													"\r",
+													"pm.test(\"Wallet - Happy case - Initiative discount - Unsubscribe wallet & user - Get status onboarding - Onboarding status is equals to UNSUBSCRIBED\", function () {\r",
+													"    let jsonResponse = pm.response.json()\r",
+													"    pm.expect(jsonResponse.status).to.eql('UNSUBSCRIBED');\r",
+													"});\r",
+													" },2000)"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(() => {}, 3000);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{tokenIO}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/idpay/onboarding/{{initiativeId_exhausted}}/status",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"idpay",
+												"onboarding",
+												"{{initiativeId_exhausted}}",
+												"status"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
 				{
 					"name": "Initiative with NF",
 					"item": [
@@ -817,7 +2294,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													""
+													"setTimeout(() => {}, 5000);"
 												],
 												"type": "text/javascript"
 											}
@@ -831,7 +2308,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -841,15 +2318,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -1156,7 +2631,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													""
+													"setTimeout(() => {}, 5000);"
 												],
 												"type": "text/javascript"
 											}
@@ -1170,7 +2645,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -1180,15 +2655,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_3}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_3}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -1596,7 +3069,7 @@
 													"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
 													"pm.collectionVariables.set('rankingStartDate', today);\r",
 													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
-													"pm.collectionVariables.set('startDate', todayP2);\r",
+													"pm.collectionVariables.set('startDate', today);\r",
 													"pm.collectionVariables.set('endDate', todayP3);"
 												],
 												"type": "text/javascript"
@@ -1638,7 +3111,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1787,7 +3260,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+											"raw": "{\n  \"initiativeRewardType\": \"REFUND\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n  }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1832,52 +3305,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													"/*const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
-													"timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
-													"\r",
-													"const accumulatedType = [\"BUDGET_EXHAUSTED\",\"THRESHOLD_REACHED\"];\r",
-													"accumulatedTypeRandomIndex = _.random(0, timeType.length-1);\r",
-													"\r",
-													"pm.collectionVariables.set('timeType', timeType[timeTypeRandomIndex]);\r",
-													"pm.collectionVariables.set('accumulatedType', accumulatedType[accumulatedTypeRandomIndex]);\r",
-													"pm.collectionVariables.set('identificationCode', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
-													"*/\r",
-													"\r",
-													"\r",
-													"let refundType = [\"timeParameter\", \"accumulatedAmount\"];\r",
-													"refundTypeRandomIndex = _.random(0, refundType.length - 1);\r",
-													"\r",
-													"const refundTypeSelected = refundType[refundTypeRandomIndex];\r",
-													"let body = {};\r",
-													"if (refundTypeSelected == \"timeParameter\") {\r",
-													"    const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
-													"    timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
-													"    body = {\r",
-													"        timeParameter: {\r",
-													"            timeType: timeType[timeTypeRandomIndex]\r",
-													"        }\r",
-													"    };\r",
-													"} else {\r",
-													"    const accumulatedType = [\"BUDGET_EXHAUSTED\", \"THRESHOLD_REACHED\"];\r",
-													"    accumulatedTypeRandomIndex = _.random(0, accumulatedType.length - 1);\r",
-													"    const accumulatedTypeSelected = accumulatedType[accumulatedTypeRandomIndex];\r",
-													"    if (accumulatedTypeSelected == \"BUDGET_EXHAUSTED\") {\r",
-													"        body = {\r",
-													"            accumulatedAmount: {\r",
-													"                accumulatedType: \"BUDGET_EXHAUSTED\"\r",
-													"            }\r",
-													"        };\r",
-													"    } else {\r",
-													"        body = {\r",
-													"            accumulatedAmount: {\r",
-													"                accumulatedType: \"THRESHOLD_REACHED\",\r",
-													"                refundThreshold: 10\r",
-													"            }\r",
-													"        };\r",
-													"    }\r",
-													"}\r",
-													"\r",
-													"pm.collectionVariables.set('body', JSON.stringify(body));"
+													""
 												],
 												"type": "text/javascript"
 											}
@@ -1907,7 +3335,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{{body}}",
+											"raw": " {\r\n     \"timeParameter\": {\r\n        \"timeType\": \"DAILY\"\r\n    }\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2229,7 +3657,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -2239,15 +3667,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -2350,7 +3776,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													""
+													"setTimeout(() => {}, 5000);"
 												],
 												"type": "text/javascript"
 											}
@@ -2364,7 +3790,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -2374,15 +3800,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -2413,7 +3837,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													"setTimeout(() => {}, 20000);"
+													"setTimeout(() => {}, 17000);"
 												],
 												"type": "text/javascript"
 											}
@@ -2599,7 +4023,9 @@
 										"exec": [
 											"pm.test(\"Wallet - Happy case -Enroll instrument - Enroll instrument - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
-											"});"
+											"});\r",
+											"\r",
+											"setTimeout(() => {}, 90000);"
 										],
 										"type": "text/javascript"
 									}
@@ -2608,7 +4034,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"setTimeout(() => {}, 20000);"
+											"setTimeout(() => {}, 10000);"
 										],
 										"type": "text/javascript"
 									}
@@ -2677,7 +4103,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"setTimeout(() => {}, 15000)"
+											"setTimeout(() => {}, 35000)"
 										],
 										"type": "text/javascript"
 									}
@@ -3521,6 +4947,830 @@
 					"name": "ISSUER Enroll Instrument",
 					"item": [
 						{
+							"name": "ENTE - Initiative Creation",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Initiative with whitelist - Happy case - Initiative creation - Generate Portal Token (Ente Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"aud\": \"idpay.welfare.pagopa.it\",\r\n    \"uid\": \"{{uid_Ente}}\",\r\n    \"name\": \"{{name_Ente}}\",\r\n    \"familyName\": \"{{familyName_Ente}}\",\r\n    \"email\": \"{{email_Ente}}\",\r\n    \"orgId\": \"{{orgId_Ente}}\",\r\n    \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n    \"orgName\": \"Ente di test IdPay\",\r\n    \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n    \"orgRole\": \"{{orgRole_Ente}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP1-Insert Initiative (Service Info)",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(()=> {}, 15000)",
+													"//pm.collectionVariables.set('serviceId', pm.variables.replaceIn('{{$randomUUID}}'));\r",
+													"let moment = require('moment');\r",
+													"const now = String(moment().format('DD-MM-YYYY hh:mm'));\r",
+													"const serviceName = 'Test funzionali App IO Initiative with whitelist ' + now;\r",
+													"pm.collectionVariables.set('serviceName', serviceName);\r",
+													"\r",
+													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+													"\r",
+													"pm.collectionVariables.set('channel_type', 'web');\r",
+													"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);\r",
+													"// console.log('jsondata', jsonData);\r",
+													"// console.log('jsondata.initiativeId', jsonData.initiativeId);\r",
+													"pm.collectionVariables.set('initiativeEnrollWhitelist', jsonData.initiativeId);\r",
+													"\r",
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP1 - Responses with 201\", function () {\r",
+													"    pm.response.to.have.status(201);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP1 - Response body must contain initiativeId field\", function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse).have.property(\"initiativeId\");\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"serviceIO\": true,\n    \"serviceName\": \"{{serviceName}}\",\n    \"serviceScope\": \"LOCAL\",\n    \"description\": \"{{description}}\",\n    \"privacyLink\": \"https://www.google.it\",\n    \"tcLink\": \"https://www.google.com\",\n    \"channels\": [\n        {\n            \"type\": \"{{channel_type}}\",\n            \"contact\": \"{{channel_contact}}\"\n        }\n    ]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/info",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"info"
+											]
+										},
+										"description": "Save initiative and first subset of data 'general info'"
+									},
+									"response": []
+								},
+								{
+									"name": "STEP2-Update Initiative (general Info)",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"let moment = require('moment');\r",
+													"//Format: YYYY-MM-DD\r",
+													"let today = String(moment().format('YYYY-MM-DD'));\r",
+													"let todayP1 = String(moment().add(1,'months').format('YYYY-MM-DD'));\r",
+													"let todayP2 = String(moment().add(2,'months').format('YYYY-MM-DD'));\r",
+													"let todayP3 = String(moment().add(3,'months').format('YYYY-MM-DD'));\r",
+													"\r",
+													"/*\r",
+													"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
+													"pm.collectionVariables.set('...', _.random(0, 180));\r",
+													"*/\r",
+													"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+													"//pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
+													"pm.collectionVariables.set('budget', 20);\r",
+													"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
+													"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+													"pm.collectionVariables.set('beneficiaryKnown', true);\r",
+													"//pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+													"pm.collectionVariables.set('beneficiaryBudget', 10);//default max 1000\r",
+													"pm.collectionVariables.set('rankingStartDate', today);\r",
+													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
+													"pm.collectionVariables.set('startDate', todayP2);\r",
+													"pm.collectionVariables.set('endDate', todayP3);"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP2 - Responses with 204\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/general",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"general"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeEnrollWhitelist}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										},
+										"description": "Save initiative and first subset of data 'general info'"
+									},
+									"response": []
+								},
+								{
+									"name": "STEP3 Update Groups - upload correct file",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP3 - Responses with 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP3 - Verify response body\", function () {\r",
+													"    let jsonResponse = pm.response.json();\r",
+													"    pm.expect(jsonResponse).have.property(\"status\");\r",
+													"    pm.expect(jsonResponse.status).contain('DRAFT');\r",
+													"    pm.expect(jsonResponse).have.property(\"elabTimeStamp\");\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "file",
+													"type": "file",
+													"src": "./postman/example_fiscal_code_issuer.csv"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrlGroup}}/:initiativeId/upload",
+											"host": [
+												"{{baseUrlGroup}}"
+											],
+											"path": [
+												":initiativeId",
+												"upload"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeEnrollWhitelist}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP4-Update Initiative Trx-Reward rules",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP4 - (Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(()=> {}, 15000)\r",
+													"const d = new Date();\r",
+													"dateString = d.toISOString()\r",
+													"let endTime = dateString.split('T');\r",
+													"endTime = endTime[1].split('Z');\r",
+													"\r",
+													"pm.collectionVariables.set('rewardRuleType', 'rewardValue');\r",
+													"const rewardValueTypes = [\"PERCENTAGE\", \"ABSOLUTE\"];\r",
+													"rewardValueTypeRandomIndex = _.random(0, rewardValueTypes.length - 1);\r",
+													"const selectedRewardValueType = rewardValueTypes[rewardValueTypeRandomIndex];\r",
+													"pm.collectionVariables.set('rewardValueType', selectedRewardValueType);\r",
+													"if (selectedRewardValueType == \"PERCENTAGE\") {\r",
+													"    pm.collectionVariables.set('rewardRuleValue', 100);\r",
+													"} else {\r",
+													"    pm.collectionVariables.set('rewardRuleValue', 1);\r",
+													"}\r",
+													"\r",
+													"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
+													"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
+													"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+													"pm.collectionVariables.set('trxThresholdTo', 50);\r",
+													"pm.collectionVariables.set('trxCountFrom', 3);\r",
+													"pm.collectionVariables.set('trxCountTo', 11);\r",
+													"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
+													"pm.collectionVariables.set('trxRewardLimitValue', 3);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/reward",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"reward"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeEnrollWhitelist}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "STEP5-Update Initiative Refund Rule",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative creation - STEP5 - (Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"/*const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+													"timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"\r",
+													"const accumulatedType = [\"BUDGET_EXHAUSTED\",\"THRESHOLD_REACHED\"];\r",
+													"accumulatedTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"\r",
+													"pm.collectionVariables.set('timeType', timeType[timeTypeRandomIndex]);\r",
+													"pm.collectionVariables.set('accumulatedType', accumulatedType[accumulatedTypeRandomIndex]);\r",
+													"pm.collectionVariables.set('identificationCode', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
+													"*/\r",
+													"\r",
+													"\r",
+													"let refundType = [\"timeParameter\", \"accumulatedAmount\"];\r",
+													"refundTypeRandomIndex = _.random(0, refundType.length - 1);\r",
+													"\r",
+													"const refundTypeSelected = refundType[refundTypeRandomIndex];\r",
+													"let body = {};\r",
+													"if (refundTypeSelected == \"timeParameter\") {\r",
+													"    const timeType = [\"CLOSED\",\"DAILY\",\"WEEKLY\",\"MONTHLY\",\"QUARTERLY\"];\r",
+													"    timeTypeRandomIndex = _.random(0, timeType.length-1);\r",
+													"    body = {\r",
+													"        timeParameter: {\r",
+													"            timeType: timeType[timeTypeRandomIndex]\r",
+													"        }\r",
+													"    };\r",
+													"} else {\r",
+													"    const accumulatedType = [\"BUDGET_EXHAUSTED\", \"THRESHOLD_REACHED\"];\r",
+													"    accumulatedTypeRandomIndex = _.random(0, accumulatedType.length - 1);\r",
+													"    const accumulatedTypeSelected = accumulatedType[accumulatedTypeRandomIndex];\r",
+													"    if (accumulatedTypeSelected == \"BUDGET_EXHAUSTED\") {\r",
+													"        body = {\r",
+													"            accumulatedAmount: {\r",
+													"                accumulatedType: \"BUDGET_EXHAUSTED\"\r",
+													"            }\r",
+													"        };\r",
+													"    } else {\r",
+													"        body = {\r",
+													"            accumulatedAmount: {\r",
+													"                accumulatedType: \"THRESHOLD_REACHED\",\r",
+													"                refundThreshold: 10\r",
+													"            }\r",
+													"        };\r",
+													"    }\r",
+													"}\r",
+													"\r",
+													"pm.collectionVariables.set('body', JSON.stringify(body));"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{{body}}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlInitiative}}/:initiativeId/refund",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												":initiativeId",
+												"refund"
+											],
+											"variable": [
+												{
+													"key": "initiativeId",
+													"value": "{{initiativeEnrollWhitelist}}",
+													"description": "(Required) The initiative ID"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "PAGOPA - Initiative update status APPROVED",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Initiative with whitelist - Happy case - Initiative updating - Generate Portal Token (PagoPA Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalTokenPagopa\", textResponse);\r",
+													"});\r",
+													"\r",
+													"//response time is less than 1s\r",
+													"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Pagopa}}\",\r\n  \"name\": \"{{name_Pagopa}}\",\r\n  \"familyName\": \"{{familyName_Pagopa}}\",\r\n  \"email\": \"{{email_Pagopa}}\",\r\n  \"orgId\": \"{{orgId_Pagopa}}\",\r\n  \"orgVAT\": \"{{orgVAT_Pagopa}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Pagopa}}\",\r\n  \"orgRole\": \"{{orgRole_Pagopa}}\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update initiative into APPROVED status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative updating - PagoPA Admin updates initiative status into APPROVED -(Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//setTimeout(function(){}, 20000); //milliseconds"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalTokenPagopa}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeEnrollWhitelist}}/approved",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeEnrollWhitelist}}",
+												"approved"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "ENTE - Initiative PUBLISHED",
+							"item": [
+								{
+									"name": "Generate Portal Token",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let textResponse = pm.response.text()\r",
+													"\r",
+													"pm.test('Initiative with whitelist - Happy case - Initiative updating - Generate Portal Token (Ente Admin)', () => {\r",
+													"    //verify response HTTP status \r",
+													"    pm.response.to.have.status(200);\r",
+													"    pm.collectionVariables.set(\"identityPortalToken\", textResponse);\r",
+													"});\r",
+													"\r",
+													"//response time is less than 1s\r",
+													"tests[\"Response time is less than 1s\"] = responseTime < 1000;"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"aud\": \"idpay.welfare.pagopa.it\",\r\n  \"uid\": \"{{uid_Ente}}\",\r\n  \"name\": \"{{name_Ente}}\",\r\n  \"familyName\": \"{{familyName_Ente}}\",\r\n  \"email\": \"{{email_Ente}}\",\r\n  \"orgId\": \"{{orgId_Ente}}\",\r\n  \"orgVAT\": \"{{orgVAT_Ente}}\",\r\n  \"orgName\": \"Ente di test IdPay\",\r\n  \"orgPartyRole\": \"{{orgPartyRole_Ente}}\",\r\n  \"orgRole\": \"{{orgRole_Ente}}\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrlToken}}/welfare/token/test",
+											"host": [
+												"{{baseUrlToken}}"
+											],
+											"path": [
+												"welfare",
+												"token",
+												"test"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Initiative PUBLISHED",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Initiative with whitelist - Happy case - Initiative updating - Ente Admin updates initiative status into PUBLISHED -(Responses with 204)\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(()=> {}, 30000)",
+													"/*let body;\r",
+													"baseUrlInitiative = pm.variables.get('baseUrlInitiative')\r",
+													"if(baseUrlInitiative.includes('localhost')){\r",
+													"    body = {\r",
+													"        mode: 'raw',\r",
+													"        raw: JSON.stringify({\r",
+													"            organizationName: 'Comune di Milano',\r",
+													"            organizationFiscalCode: '11122233344',\r",
+													"            organizationUserId: 'b8986bf2-1f93-4827-ab16-b21eb8aeae2b',\r",
+													"            organizationUserRole: 'admin'\r",
+													"        })\r",
+													"    }\r",
+													"    pm.request.headers.add({\r",
+													"        key: \"Content-Type\",\r",
+													"        value: \"application/json\"\r",
+													"    });\r",
+													"    pm.variables.set('body', JSON.stringify(body));\r",
+													"    pm.request.body.update(body);\r",
+													"}\r",
+													"*/"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disabledSystemHeaders": {}
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{identityPortalToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrlInitiative}}/{{initiativeEnrollWhitelist}}/published",
+											"host": [
+												"{{baseUrlInitiative}}"
+											],
+											"path": [
+												"{{initiativeEnrollWhitelist}}",
+												"published"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
 							"name": "ISSUER Onboarding User with Whitelist",
 							"item": [
 								{
@@ -3570,13 +5820,13 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_2}}",
+												"value": "{{CF_ISSUER_1}}",
 												"type": "text"
 											}
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId-issuer}}\"\r\n}",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeEnrollWhitelist}}\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -3645,13 +5895,13 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_2}}",
+												"value": "{{CF_ISSUER_1}}",
 												"type": "text"
 											}
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId-issuer}}\"\r\n}",
+											"raw": "{\r\n    \"initiativeId\" : \"{{initiativeEnrollWhitelist}}\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -3691,6 +5941,15 @@
 												],
 												"type": "text/javascript"
 											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(()=> {}, 10000)"
+												],
+												"type": "text/javascript"
+											}
 										}
 									],
 									"request": {
@@ -3701,7 +5960,7 @@
 										"header": [
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_2}}",
+												"value": "{{CF_ISSUER_1}}",
 												"type": "text"
 											},
 											{
@@ -3721,7 +5980,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/idpay/hb/onboarding/{{initiativeId-issuer}}/status",
+											"raw": "{{baseUrl}}/idpay/hb/onboarding/{{initiativeEnrollWhitelist}}/status",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3729,7 +5988,7 @@
 												"idpay",
 												"hb",
 												"onboarding",
-												"{{initiativeId-issuer}}",
+												"{{initiativeEnrollWhitelist}}",
 												"status"
 											]
 										}
@@ -3748,6 +6007,15 @@
 											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Enroll instrument - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(()=> {}, 10000)"
 										],
 										"type": "text/javascript"
 									}
@@ -3776,13 +6044,13 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "{{CF_2}}",
+										"value": "{{CF_ISSUER_1}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"brand\": \"VISA\",\r\n    \"type\": \"DEB\",\r\n    \"pgpPan\": \"-----BEGIN PGP MESSAGE-----\\n\\nwYwDxJQrySYbEVIBBADDylA+3Tt5l/9qTaadODb+b6TgUsnm2uCY9CzNVQHmnZBR\\ncGJkAkUnHRSTWl0P3LJAriRCGGMnZIGMFUa20YO6TeajhpDrYVxxm8unXwpizo80\\nSdQ2WngLX8w1laF/C7UYq0r02W6sidVMAQGyyptXBsUJnSrdC4EFyB3gk4sUUdJF\\nAcuorn410ApOyamiHPrZfoYV5iSVG/TMDI5FkVg8wW9SKzvmDGpREKIaYTkTOUzV\\nEuBG4gdAZjRB1gxsJwi5Dp5MMXXW\\n=nAa2\\n-----END PGP MESSAGE-----\\n\",\r\n    \"expireMonth\": \"08\",\r\n    \"expireYear\": \"2023\",\r\n    \"issuerAbiCode\": \"03069\",\r\n    \"holder\": \"TEST\"\r\n}",
+									"raw": "{\r\n    \"brand\": \"VISA\",\r\n    \"type\": \"DEB\",\r\n    \"pgpPan\": \"-----BEGIN PGP MESSAGE-----\\n\\nwYwDxJQrySYbEVIBA/9KY5u6uO6iBrNwQCwpw5ZmDlvZ0A/1GVfFPl+nRouUdyrY\\nO42c9mIko5ytY4jsphTKQWJl2dWm+3T/orDkImBaOnxuKCtJwEA5itXmbXqK8JnT\\nYy9o1Tk6FsWbCXusVm0KNOFeAgjv4/gib4sIjt+zjSnxSBYj6LT0KknEdcs7GNJF\\nAbGNMy+oiENHerrELX4vK4y63H0QBs4Ptn1zmRnG5Jp4K+Edrlb/TOtG6eldAXt/\\nS1DpAzBFhL0g0EtKNBHqE2iPle30\\n=0OL5\\n-----END PGP MESSAGE-----\\n\",\r\n    \"expireMonth\": \"08\",\r\n    \"expireYear\": \"2023\",\r\n    \"issuerAbiCode\": \"03069\",\r\n    \"holder\": \"TEST\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3790,7 +6058,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/instruments",
+									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/instruments",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -3798,7 +6066,7 @@
 										"idpay",
 										"hb",
 										"wallet",
-										"{{initiativeId-issuer}}",
+										"{{initiativeEnrollWhitelist}}",
 										"instruments"
 									]
 								}
@@ -3815,6 +6083,15 @@
 											"pm.test(\"Wallet - Happy case - ISSUER Enroll instrument - Get wallet detail - Response status is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(()=> {}, 20000)"
 										],
 										"type": "text/javascript"
 									}
@@ -3843,12 +6120,12 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "{{CF_2}}",
+										"value": "{{CF_ISSUER_1}}",
 										"type": "text"
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/",
+									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -3856,7 +6133,7 @@
 										"idpay",
 										"hb",
 										"wallet",
-										"{{initiativeId-issuer}}",
+										"{{initiativeEnrollWhitelist}}",
 										""
 									]
 								}
@@ -3906,12 +6183,12 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "{{CF_2}}",
+										"value": "{{CF_ISSUER_1}}",
 										"type": "text"
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/status",
+									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/status",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -3919,7 +6196,7 @@
 										"idpay",
 										"hb",
 										"wallet",
-										"{{initiativeId-issuer}}",
+										"{{initiativeEnrollWhitelist}}",
 										"status"
 									]
 								}
@@ -3964,12 +6241,12 @@
 									},
 									{
 										"key": "Fiscal-Code",
-										"value": "{{CF_2}}",
+										"value": "{{CF_ISSUER_1}}",
 										"type": "text"
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/instruments",
+									"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/instruments",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -3977,7 +6254,7 @@
 										"idpay",
 										"hb",
 										"wallet",
-										"{{initiativeId-issuer}}",
+										"{{initiativeEnrollWhitelist}}",
 										"instruments"
 									]
 								}
@@ -4098,7 +6375,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -4108,15 +6385,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -4359,7 +6634,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -4369,15 +6644,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -4623,7 +6896,7 @@
 												"header": [
 													{
 														"key": "Ocp-Apim-Subscription-Key",
-														"value": "",
+														"value": "{{genericSubscriptionKey}}",
 														"type": "default"
 													},
 													{
@@ -4633,15 +6906,13 @@
 													}
 												],
 												"url": {
-													"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
+													"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
 													"host": [
 														"{{baseUrl}}"
 													],
 													"path": [
-														"bpd",
-														"pagopa",
-														"api",
-														"v1",
+														"rtd",
+														"mock-io",
 														"login"
 													],
 													"query": [
@@ -6043,7 +8314,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -6053,15 +8324,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -6456,7 +8725,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -6466,15 +8735,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -6795,13 +9062,13 @@
 													},
 													{
 														"key": "Fiscal-Code",
-														"value": "{{CF_2}}",
+														"value": "{{CF_ISSUER_2}}",
 														"type": "text"
 													}
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId-issuer}}\"\r\n}",
+													"raw": "{\r\n    \"initiativeId\" : \"{{initiativeEnrollWhitelist}}\"\r\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -6870,13 +9137,13 @@
 													},
 													{
 														"key": "Fiscal-Code",
-														"value": "{{CF_2}}",
+														"value": "{{CF_ISSUER_2}}",
 														"type": "text"
 													}
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n    \"initiativeId\" : \"{{initiativeId-issuer}}\"\r\n}",
+													"raw": "{\r\n    \"initiativeId\" : \"{{initiativeEnrollWhitelist}}\"\r\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -6916,6 +9183,15 @@
 														],
 														"type": "text/javascript"
 													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"setTimeout(()=> {}, 10000)"
+														],
+														"type": "text/javascript"
+													}
 												}
 											],
 											"request": {
@@ -6926,7 +9202,7 @@
 												"header": [
 													{
 														"key": "Fiscal-Code",
-														"value": "{{CF_2}}",
+														"value": "{{CF_ISSUER_2}}",
 														"type": "text"
 													},
 													{
@@ -6946,7 +9222,7 @@
 													}
 												],
 												"url": {
-													"raw": "{{baseUrl}}/idpay/hb/onboarding/{{initiativeId-issuer}}/status",
+													"raw": "{{baseUrl}}/idpay/hb/onboarding/{{initiativeEnrollWhitelist}}/status",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -6954,7 +9230,7 @@
 														"idpay",
 														"hb",
 														"onboarding",
-														"{{initiativeId-issuer}}",
+														"{{initiativeEnrollWhitelist}}",
 														"status"
 													]
 												}
@@ -6978,6 +9254,15 @@
 													"    const responseJson = pm.response.json();\r",
 													"    pm.expect(responseJson.message).to.eql('Payment instrument already associated to another citizen');\r",
 													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(()=> {}, 10000)"
 												],
 												"type": "text/javascript"
 											}
@@ -7006,13 +9291,13 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_1}}",
+												"value": "{{CF_ISSUER_2}}",
 												"type": "text"
 											}
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"brand\": \"VISA\",\r\n    \"type\": \"DEB\",\r\n    \"pgpPan\": \"-----BEGIN PGP MESSAGE-----\\n\\nwYwDxJQrySYbEVIBBADDylA+3Tt5l/9qTaadODb+b6TgUsnm2uCY9CzNVQHmnZBR\\ncGJkAkUnHRSTWl0P3LJAriRCGGMnZIGMFUa20YO6TeajhpDrYVxxm8unXwpizo80\\nSdQ2WngLX8w1laF/C7UYq0r02W6sidVMAQGyyptXBsUJnSrdC4EFyB3gk4sUUdJF\\nAcuorn410ApOyamiHPrZfoYV5iSVG/TMDI5FkVg8wW9SKzvmDGpREKIaYTkTOUzV\\nEuBG4gdAZjRB1gxsJwi5Dp5MMXXW\\n=nAa2\\n-----END PGP MESSAGE-----\\n\",\r\n    \"expireMonth\": \"08\",\r\n    \"expireYear\": \"2023\",\r\n    \"issuerAbiCode\": \"03069\",\r\n    \"holder\": \"TEST\"\r\n}",
+											"raw": "{\r\n    \"brand\": \"VISA\",\r\n    \"type\": \"DEB\",\r\n    \"pgpPan\": \"-----BEGIN PGP MESSAGE-----\\n\\nwYwDxJQrySYbEVIBA/9KY5u6uO6iBrNwQCwpw5ZmDlvZ0A/1GVfFPl+nRouUdyrY\\nO42c9mIko5ytY4jsphTKQWJl2dWm+3T/orDkImBaOnxuKCtJwEA5itXmbXqK8JnT\\nYy9o1Tk6FsWbCXusVm0KNOFeAgjv4/gib4sIjt+zjSnxSBYj6LT0KknEdcs7GNJF\\nAbGNMy+oiENHerrELX4vK4y63H0QBs4Ptn1zmRnG5Jp4K+Edrlb/TOtG6eldAXt/\\nS1DpAzBFhL0g0EtKNBHqE2iPle30\\n=0OL5\\n-----END PGP MESSAGE-----\\n\",\r\n    \"expireMonth\": \"08\",\r\n    \"expireYear\": \"2023\",\r\n    \"issuerAbiCode\": \"03069\",\r\n    \"holder\": \"TEST\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -7020,7 +9305,7 @@
 											}
 										},
 										"url": {
-											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/instruments",
+											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/instruments",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7028,7 +9313,7 @@
 												"idpay",
 												"hb",
 												"wallet",
-												"{{initiativeId-issuer}}",
+												"{{initiativeEnrollWhitelist}}",
 												"instruments"
 											]
 										}
@@ -7045,6 +9330,15 @@
 													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Get wallet detail - Response status is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"setTimeout(()=> {}, 10000)"
 												],
 												"type": "text/javascript"
 											}
@@ -7073,12 +9367,12 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_1}}",
+												"value": "{{CF_ISSUER_2}}",
 												"type": "text"
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/",
+											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7086,7 +9380,7 @@
 												"idpay",
 												"hb",
 												"wallet",
-												"{{initiativeId-issuer}}",
+												"{{initiativeEnrollWhitelist}}",
 												""
 											]
 										}
@@ -7136,12 +9430,12 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_1}}",
+												"value": "{{CF_ISSUER_2}}",
 												"type": "text"
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/status",
+											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/status",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7149,7 +9443,7 @@
 												"idpay",
 												"hb",
 												"wallet",
-												"{{initiativeId-issuer}}",
+												"{{initiativeEnrollWhitelist}}",
 												"status"
 											]
 										}
@@ -7198,12 +9492,12 @@
 											},
 											{
 												"key": "Fiscal-Code",
-												"value": "{{CF_1}}",
+												"value": "{{CF_ISSUER_2}}",
 												"type": "text"
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeId-issuer}}/instruments",
+											"raw": "{{baseUrl}}/idpay/hb/wallet/{{initiativeEnrollWhitelist}}/instruments",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7211,7 +9505,7 @@
 												"idpay",
 												"hb",
 												"wallet",
-												"{{initiativeId-issuer}}",
+												"{{initiativeEnrollWhitelist}}",
 												"instruments"
 											]
 										}
@@ -7267,7 +9561,7 @@
 								"header": [
 									{
 										"key": "Ocp-Apim-Subscription-Key",
-										"value": "",
+										"value": "{{genericSubscriptionKey}}",
 										"type": "default"
 									},
 									{
@@ -7277,15 +9571,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+									"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
-										"bpd",
-										"pagopa",
-										"api",
-										"v1",
+										"rtd",
+										"mock-io",
 										"login"
 									],
 									"query": [
@@ -8178,7 +10470,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -8188,15 +10480,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -9199,7 +11489,7 @@
 													"listen": "prerequest",
 													"script": {
 														"exec": [
-															""
+															"setTimeout(() => {}, 5000);"
 														],
 														"type": "text/javascript"
 													}
@@ -9213,7 +11503,7 @@
 												"header": [
 													{
 														"key": "Ocp-Apim-Subscription-Key",
-														"value": "",
+														"value": "{{genericSubscriptionKey}}",
 														"type": "default"
 													},
 													{
@@ -9223,15 +11513,13 @@
 													}
 												],
 												"url": {
-													"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+													"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 													"host": [
 														"{{baseUrl}}"
 													],
 													"path": [
-														"bpd",
-														"pagopa",
-														"api",
-														"v1",
+														"rtd",
+														"mock-io",
 														"login"
 													],
 													"query": [
@@ -9254,6 +11542,15 @@
 															"pm.test(\"Wallet - Unhappy case - Iban - Enroll Iban without upper case letters - Onboarding -  Accept T&C - Status 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"setTimeout(() => {}, 15000);"
 														],
 														"type": "text/javascript"
 													}
@@ -10125,7 +12422,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -10135,15 +12432,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -10386,7 +12681,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -10396,15 +12691,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -10525,7 +12818,7 @@
 										"header": [
 											{
 												"key": "Ocp-Apim-Subscription-Key",
-												"value": "",
+												"value": "{{genericSubscriptionKey}}",
 												"type": "default"
 											},
 											{
@@ -10535,15 +12828,13 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/bpd/pagopa/api/v1/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
-												"bpd",
-												"pagopa",
-												"api",
-												"v1",
+												"rtd",
+												"mock-io",
 												"login"
 											],
 											"query": [
@@ -10823,7 +13114,7 @@
 		},
 		{
 			"key": "initiativeId",
-			"value": ""
+			"value": "64a57c68f604477a2463f8f0"
 		},
 		{
 			"key": "familyUnitComposition",
@@ -10832,6 +13123,28 @@
 		{
 			"key": "familyId",
 			"value": ""
+		},
+		{
+			"key": "initiativeId_exhausted",
+			"value": ""
+		},
+		{
+			"key": "merchantId",
+			"value": ""
+		},
+		{
+			"key": "CF_fake",
+			"value": "RNZPMP80A44X000M",
+			"type": "string"
+		},
+		{
+			"key": "initiativeIdWithWhitelist",
+			"value": ""
+		},
+		{
+			"key": "initiativeEnrollWhitelist",
+			"value": "",
+			"type": "string"
 		}
 	]
 }
