@@ -665,7 +665,7 @@ public class WalletServiceImpl implements WalletService {
                       .subtract(counters.getTotalReward())
                       .setScale(2, RoundingMode.HALF_DOWN),
               userWallet.getAccrued()
-                      .subtract(rewardTransactionDTO
+                      .add(rewardTransactionDTO
                               .getRewards()
                               .get(initiativeId)
                               .getAccruedReward()
