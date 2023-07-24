@@ -650,25 +650,26 @@ public class WalletServiceImpl implements WalletService {
     if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
             && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-      Wallet userWallet;
-      if ((userWallet =
-              walletUpdatesRepository.rewardTransaction(
-                      initiativeId,
-                      rewardTransactionDTO.getUserId(),
-                      rewardTransactionDTO.getElaborationDateTime(),
-                      counters
-                              .getInitiativeBudget()
-                              .subtract(counters.getTotalReward())
-                              .setScale(2, RoundingMode.HALF_DOWN),
-                      rewardTransactionDTO
+      Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, rewardTransactionDTO.getUserId()).orElse(null);
+
+      if (userWallet == null) {
+        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}", rewardTransactionDTO.getUserId(), initiativeId);
+        return;
+      }
+
+      userWallet = walletUpdatesRepository.rewardTransaction(initiativeId,
+              rewardTransactionDTO.getUserId(),
+              rewardTransactionDTO.getElaborationDateTime(),
+              counters
+                      .getInitiativeBudget()
+                      .subtract(counters.getTotalReward())
+                      .setScale(2, RoundingMode.HALF_DOWN),
+              userWallet.getAccrued()
+                      .subtract(rewardTransactionDTO
                               .getRewards()
                               .get(initiativeId)
                               .getAccruedReward()
-                              .setScale(2, RoundingMode.HALF_DOWN)))
-              == null) {
-        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
-        return;
-      }
+                              .setScale(2, RoundingMode.HALF_DOWN)));
 
       if (userWallet.getFamilyId() != null) {
         BigDecimal familyTotalReward =
