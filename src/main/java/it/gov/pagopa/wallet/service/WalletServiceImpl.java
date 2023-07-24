@@ -672,12 +672,11 @@ public class WalletServiceImpl implements WalletService {
                               .setScale(2, RoundingMode.HALF_DOWN)));
 
       if (userWallet.getFamilyId() != null) {
-        BigDecimal familyTotalReward =
-                walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
+
         log.info(
                 "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
                 userWallet.getFamilyId(),
-                familyTotalReward);
+                counters.getTotalReward());
 
         boolean updateResult =
                 walletUpdatesRepository.rewardFamilyTransaction(
@@ -686,7 +685,7 @@ public class WalletServiceImpl implements WalletService {
                         rewardTransactionDTO.getElaborationDateTime(),
                         counters
                                 .getInitiativeBudget()
-                                .subtract(familyTotalReward)
+                                .subtract(counters.getTotalReward())
                                 .setScale(2, RoundingMode.HALF_DOWN));
 
         if (!updateResult) {

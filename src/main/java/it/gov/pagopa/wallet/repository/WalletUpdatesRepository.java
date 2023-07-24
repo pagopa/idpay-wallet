@@ -12,7 +12,6 @@ public interface WalletUpdatesRepository {
   void suspendWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime);
   void readmitWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime);
   Wallet rewardTransaction(String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued);
-  BigDecimal getFamilyTotalReward(String initiativeId, String familyId);
   boolean rewardFamilyTransaction(String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount);
   void processRefund(String initiativeId, String userId, BigDecimal refunded, Map<String, RefundHistory> history);
   void updateInstrumentNumber(String initiativeId, String userId, int nInstr, String status);

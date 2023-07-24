@@ -111,18 +111,6 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 Wallet.class);
     }
 
-    @Override
-    public BigDecimal getFamilyTotalReward(String initiativeId, String familyId) {
-        return mongoTemplate.find(
-                        Query.query(
-                                Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)
-                                        .and(FIELD_FAMILY_ID).is(familyId)
-                        ),
-                        Wallet.class
-                ).stream()
-                .map(w -> w.getAccrued().add(w.getRefunded()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 
     @Override
     public boolean rewardFamilyTransaction(
