@@ -103,7 +103,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         )
                 ),
                 new Update().set(FIELD_AMOUNT, amount)
-                        .inc(FIELD_ACCRUED, accrued)
+                        .inc(FIELD_ACCRUED, accrued.doubleValue())
                         .inc(FIELD_NTRX, 1)
                         .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
                         .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
