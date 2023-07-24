@@ -660,7 +660,11 @@ public class WalletServiceImpl implements WalletService {
                               .getInitiativeBudget()
                               .subtract(counters.getTotalReward())
                               .setScale(2, RoundingMode.HALF_DOWN),
-                      rewardTransactionDTO.getRewards().get(initiativeId).getAccruedReward()))
+                      rewardTransactionDTO
+                              .getRewards()
+                              .get(initiativeId)
+                              .getAccruedReward()
+                              .setScale(2, RoundingMode.HALF_DOWN)))
               == null) {
         log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
         return;
