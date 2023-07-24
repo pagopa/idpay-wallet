@@ -1275,7 +1275,6 @@ class WalletServiceTest {
                                 Mockito.eq(USER_ID),
                                 Mockito.any(),
                                 Mockito.any(),
-                                Mockito.any(),
                                 Mockito.any()))
                 .thenReturn(TEST_WALLET);
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
@@ -1288,7 +1287,6 @@ class WalletServiceTest {
                 walletUpdatesRepositoryMock.rewardTransaction(
                     Mockito.eq(INITIATIVE_ID),
                     Mockito.eq(USER_ID),
-                    Mockito.any(),
                     Mockito.any(),
                     Mockito.any(),
                     Mockito.any()))
@@ -1305,7 +1303,6 @@ class WalletServiceTest {
                     Mockito.eq(USER_ID),
                     Mockito.any(),
                     Mockito.any(),
-                    Mockito.any(),
                     Mockito.any()))
             .thenReturn(TEST_WALLET);
         walletService.processTransaction(REWARD_TRX_DTO_SYNC_AUTHORIZED);
@@ -1317,7 +1314,6 @@ class WalletServiceTest {
         Mockito.when(walletUpdatesRepositoryMock.rewardTransaction(
                         Mockito.eq(INITIATIVE_ID),
                         Mockito.eq(USER_ID),
-                        Mockito.any(),
                         Mockito.any(),
                         Mockito.any(),
                         Mockito.any()))
@@ -1345,7 +1341,6 @@ class WalletServiceTest {
                         Mockito.eq(USER_ID),
                         Mockito.any(),
                         Mockito.any(),
-                        Mockito.any(),
                         Mockito.any()))
                 .thenReturn(TEST_WALLET_FAMILY);
         Mockito.when(walletUpdatesRepositoryMock.getFamilyTotalReward(
@@ -1371,7 +1366,6 @@ class WalletServiceTest {
                         walletUpdatesRepositoryMock.rewardTransaction(
                                 Mockito.eq(INITIATIVE_ID),
                                 Mockito.eq(USER_ID),
-                                Mockito.any(),
                                 Mockito.any(),
                                 Mockito.any(),
                                 Mockito.any()))
