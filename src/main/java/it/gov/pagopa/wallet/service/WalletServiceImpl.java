@@ -51,6 +51,7 @@ public class WalletServiceImpl implements WalletService {
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
+  public static final String SERVICE_HANDLE_INITIATIVE_NOTIFICATION = "HANDLE_INITIATIVE_NOTIFICATION";
 
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
@@ -640,6 +641,38 @@ public class WalletServiceImpl implements WalletService {
       throw new WalletException(e.status(), utilities.exceptionConverter(e));
     }
   }
+
+  @Override
+  public void processCommand(CommandDTO commandDTO){
+    long startTime = System.currentTimeMillis();
+
+    log.info("[HANDLE_INITIATIVE_NOTIFICATION] Consumer initiative notification");
+    if (commandDTO.getOperationType().equals("DELETE_INITIATIVE")) {
+      log.info("[HANDLE_INITIATIVE_NOTIFICATION] Deleting related wallets");
+
+      List<Wallet> deletedOnboardings = walletRepository.deleteByInitiativeId(commandDTO.getOperationId());
+      if(deletedOnboardings.isEmpty()){
+        log.info("Did not find any matches in the DB for InitiativeId: {}", commandDTO.getOperationId());
+      }
+
+      /*
+      Pageable pageable = PageRequest.of(0, 100);
+      Criteria criteria = onboardingRepository.getCriteria(initiativeNotificationDTO.getInitiativeId(), null, null, null, null);
+
+      boolean fetchNext = true;
+      while(fetchNext){
+        List<Onboarding> onboardings = onboardingRepository.findByFilter(criteria, pageable);
+        onboardings.forEach(onboaring -> onboardingRepository.delete(onboaring));
+        if(onboardings.size() < pageable.getPageSize()){
+          fetchNext = false;
+        }
+      }
+      */
+
+    }
+    performanceLog(startTime, SERVICE_HANDLE_INITIATIVE_NOTIFICATION);
+  }
+
 
   private void updateWalletFromTransaction(
       String initiativeId,

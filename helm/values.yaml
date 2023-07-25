@@ -74,6 +74,8 @@ microservice-chart:
       KAFKA_TOPIC_NOTIFICATION: idpay_notification_request_topic
       KAFKA_CHECKIBAN_OUTCOME_GROUP_IN: idpay-checkiban-outcome-consumer-group
       KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
+      KAFKA_TOPIC_COMMAND: idpay-commands
+      KAFKA_COMMAND_GROUP_IN: idpay-commands-wallet-consumer-group
     idpay-eventhub-01:
       KAFKA_BINDER_BROKER_ENDPOINT_RULE_ENGINE: kafka_broker
       KAFKA_BINDER_BROKER_ENDPOINT_REWARD: kafka_broker
@@ -94,6 +96,7 @@ microservice-chart:
     KAFKA_REWARD_SASL_JAAS_CONFIG: evh-idpay-reward-notification-response-idpay-reward-notification-response-consumer-jaas-config-idpay-01
     KAFKA_NOTIFICATION_SASL_JAAS_CONFIG: evh-idpay-notification-request-idpay-notification-request-producer-jaas-config-idpay-00
     KAFKA_ERRORS_SASL_JAAS_CONFIG: evh-idpay-errors-idpay-errors-producer-jaas-config-idpay-01
+    KAFKA_COMMAND_SASL_JAAS_CONFIG: evh-idpay-command-idpay-command-consumer-jaas-config-idpay-00
 
   # nodeSelector: {}
 
