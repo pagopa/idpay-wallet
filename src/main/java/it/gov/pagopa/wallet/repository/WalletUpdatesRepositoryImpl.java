@@ -89,13 +89,12 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public Wallet rewardTransaction(
-            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued, Long nTrx) {
+            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued) {
 
         log.trace(
-                "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [amount: {}, accrued: {}, nTrx: {}]",
+                "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [amount: {}, accrued: {}]",
                 amount,
-                accrued,
-                nTrx);
+                accrued);
 
         return mongoTemplate.findAndModify(
                 Query.query(
@@ -103,24 +102,15 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                                 Criteria.where(FIELD_USER_ID).is(userId)
                         )
                 ),
-                new Update().set(FIELD_AMOUNT, amount).set(FIELD_ACCRUED, accrued).set(FIELD_NTRX, nTrx)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now()).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_AMOUNT, amount)
+                        .set(FIELD_ACCRUED, accrued)
+                        .inc(FIELD_NTRX, 1)
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
     }
 
-    @Override
-    public BigDecimal getFamilyTotalReward(String initiativeId, String familyId) {
-        return mongoTemplate.find(
-                        Query.query(
-                                Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)
-                                        .and(FIELD_FAMILY_ID).is(familyId)
-                        ),
-                        Wallet.class
-                ).stream()
-                .map(w -> w.getAccrued().add(w.getRefunded()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 
     @Override
     public boolean rewardFamilyTransaction(
