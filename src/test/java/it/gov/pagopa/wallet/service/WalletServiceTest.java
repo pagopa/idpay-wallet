@@ -2252,10 +2252,11 @@ class WalletServiceTest {
     }
 
     @Test
-    void handleInitiativeNotification() {
-        final CommandDTO commandDTO = CommandDTO.builder()
+    void processCommand() {
+        final QueueCommandOperationDTO queueCommandOperationDTO = QueueCommandOperationDTO.builder()
                 .operationId(INITIATIVE_ID)
                 .operationType(DELETE_OPERATION_TYPE)
+                .operationTime(LocalDateTime.now().minusMinutes(5))
                 .build();
         Wallet wallet = Wallet.builder()
                 .id(ID_WALLET)
@@ -2263,38 +2264,25 @@ class WalletServiceTest {
                 .build();
         final List<Wallet> deletedOnboardings = List.of(wallet);
 
-        when(walletRepositoryMock.deleteByInitiativeId(commandDTO.getOperationId()))
+        when(walletRepositoryMock.deleteByInitiativeId(queueCommandOperationDTO.getOperationId()))
                 .thenReturn(deletedOnboardings);
 
-        walletService.processCommand(commandDTO);
+        walletService.processCommand(queueCommandOperationDTO);
 
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).deleteByInitiativeId(commandDTO.getOperationId());
+        Mockito.verify(walletRepositoryMock, Mockito.times(1)).deleteByInitiativeId(queueCommandOperationDTO.getOperationId());
     }
 
     @Test
-    void handleInitiativeNotification_operationTypeNotDelete() {
-        final CommandDTO commandDTO = CommandDTO.builder()
+    void processCommand_operationTypeNotDeleteInitiative() {
+        final QueueCommandOperationDTO queueCommandOperationDTO = QueueCommandOperationDTO.builder()
                 .operationId(INITIATIVE_ID)
                 .operationType("TEST_OPERATION_TYPE")
+                .operationTime(LocalDateTime.now().minusMinutes(5))
                 .build();
 
-        walletService.processCommand(commandDTO);
+        walletService.processCommand(queueCommandOperationDTO);
 
-        Mockito.verify(walletRepositoryMock, Mockito.times(0)).deleteByInitiativeId(commandDTO.getOperationId());
+        Mockito.verify(walletRepositoryMock, Mockito.times(0)).deleteByInitiativeId(queueCommandOperationDTO.getOperationId());
     }
 
-    @Test
-    void handleInitiativeNotification_emptyDeletedList() {
-        final CommandDTO commandDTO = CommandDTO.builder()
-                .operationId(INITIATIVE_ID)
-                .operationType(DELETE_OPERATION_TYPE)
-                .build();
-
-        when(walletRepositoryMock.deleteByInitiativeId(commandDTO.getOperationId()))
-                .thenReturn(new ArrayList<>());
-
-        walletService.processCommand(commandDTO);
-
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).deleteByInitiativeId(commandDTO.getOperationId());
-    }
 }

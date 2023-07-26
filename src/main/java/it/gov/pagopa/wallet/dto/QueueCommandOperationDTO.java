@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class CommandDTO {
+public class QueueCommandOperationDTO {
 
-    String operationId;
     String operationType;
+    String operationId;
     LocalDateTime operationTime;
 
 }
