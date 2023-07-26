@@ -646,9 +646,9 @@ public class WalletServiceImpl implements WalletService {
   public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO){
     long startTime = System.currentTimeMillis();
 
-    if (queueCommandOperationDTO.getOperationType().equals("DELETE_INITIATIVE")) {
+    if (("DELETE_INITIATIVE").equals(queueCommandOperationDTO.getOperationType())) {
       List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getOperationId());
-      log.info("[DELETE OPERATION] Deleted {} wallets for initiavideId {}", deletedWallets.size(), queueCommandOperationDTO.getOperationId());
+      log.info("[DELETE OPERATION] Deleted {} wallets for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getOperationId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
     }
 

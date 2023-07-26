@@ -84,8 +84,6 @@ microservice-chart:
       KAFKA_TOPIC_ERRORS: idpay_error_topic
       KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
       KAFKA_REWARD_GROUP_IN: idpay_reward_notification_response_consumer_group
-      #KAFKA_TOPIC_COMMANDS: idpay-commands
-      #KAFKA_COMMANDS_GROUP_IN: idpay-commands-wallet-consumer-group
 
   envSecret:
     MONGODB_URI: mongodb-connection-string
