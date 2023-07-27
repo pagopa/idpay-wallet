@@ -16,7 +16,7 @@ public class Utilities {
     @Value("${app.initiative.logo.url}")
     private String logoUrl;
 
-    public static final String LOGO_PATH_TEMPLATE = "logos/%s/%s/%s";
+    public static final String LOGO_PATH_TEMPLATE = "assets/logo/%s/%s/%s";
     public static final String LOGO_NAME = "logo.png";
 
     public String exceptionConverter(FeignException e) {
