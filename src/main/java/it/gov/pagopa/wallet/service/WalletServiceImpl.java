@@ -51,6 +51,7 @@ public class WalletServiceImpl implements WalletService {
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
+  public static final String SERVICE_PROCESS_COMMAND = "PROCESS_COMMAND";
 
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
@@ -641,6 +642,20 @@ public class WalletServiceImpl implements WalletService {
     }
   }
 
+  @Override
+  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO){
+    long startTime = System.currentTimeMillis();
+
+    if (("DELETE_INITIATIVE").equals(queueCommandOperationDTO.getOperationType())) {
+      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getOperationId());
+      log.info("[DELETE OPERATION] Deleted {} wallets for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getOperationId());
+      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+    }
+
+    performanceLog(startTime, SERVICE_PROCESS_COMMAND);
+  }
+
+
   private void updateWalletFromTransaction(
       String initiativeId,
       RewardTransactionDTO rewardTransactionDTO,
@@ -650,30 +665,33 @@ public class WalletServiceImpl implements WalletService {
     if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
             && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-      Wallet userWallet;
-      if ((userWallet =
-              walletUpdatesRepository.rewardTransaction(
-                      initiativeId,
-                      rewardTransactionDTO.getUserId(),
-                      rewardTransactionDTO.getElaborationDateTime(),
-                      counters
-                              .getInitiativeBudget()
-                              .subtract(counters.getTotalReward())
-                              .setScale(2, RoundingMode.HALF_DOWN),
-                      counters.getTotalReward(),
-                      counters.getTrxNumber()))
-              == null) {
-        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for this initiativeId");
+      Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, rewardTransactionDTO.getUserId()).orElse(null);
+
+      if (userWallet == null) {
+        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}", rewardTransactionDTO.getUserId(), initiativeId);
         return;
       }
 
+      userWallet = walletUpdatesRepository.rewardTransaction(initiativeId,
+              rewardTransactionDTO.getUserId(),
+              rewardTransactionDTO.getElaborationDateTime(),
+              counters
+                      .getInitiativeBudget()
+                      .subtract(counters.getTotalReward())
+                      .setScale(2, RoundingMode.HALF_DOWN),
+              userWallet.getAccrued()
+                      .add(rewardTransactionDTO
+                              .getRewards()
+                              .get(initiativeId)
+                              .getAccruedReward()
+                              .setScale(2, RoundingMode.HALF_DOWN)));
+
       if (userWallet.getFamilyId() != null) {
-        BigDecimal familyTotalReward =
-                walletUpdatesRepository.getFamilyTotalReward(initiativeId, userWallet.getFamilyId());
+
         log.info(
                 "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
                 userWallet.getFamilyId(),
-                familyTotalReward);
+                counters.getTotalReward());
 
         boolean updateResult =
                 walletUpdatesRepository.rewardFamilyTransaction(
@@ -682,7 +700,7 @@ public class WalletServiceImpl implements WalletService {
                         rewardTransactionDTO.getElaborationDateTime(),
                         counters
                                 .getInitiativeBudget()
-                                .subtract(familyTotalReward)
+                                .subtract(counters.getTotalReward())
                                 .setScale(2, RoundingMode.HALF_DOWN));
 
         if (!updateResult) {

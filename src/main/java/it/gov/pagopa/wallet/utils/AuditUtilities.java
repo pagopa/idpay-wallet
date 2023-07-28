@@ -144,4 +144,12 @@ public class AuditUtilities {
             "Wallet readmission failed", userId, initiativeId
     );
   }
+
+  public void logDeletedWallet(String userId, String initiativeId){
+    logAuditString(
+            CEF_PATTERN,
+            "Wallet deleted", userId,initiativeId
+    );
+  }
+
 }
