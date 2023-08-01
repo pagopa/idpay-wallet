@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
-import it.gov.pagopa.wallet.dto.ErrorDTO;
+import it.gov.pagopa.common.web.dto.ErrorDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +49,7 @@ class UtilitiesTest {
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
 
-        ErrorDTO errorDTO = new ErrorDTO(400, MESSAGE);
+        ErrorDTO errorDTO = new ErrorDTO(400, MESSAGE,"");
         Mockito.when(objectMapper.readValue(anyString(), (Class<ErrorDTO>) any())).thenReturn(errorDTO);
 
         String error = utilities.exceptionConverter(e);
@@ -64,7 +64,7 @@ class UtilitiesTest {
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
 
-        ErrorDTO errorDTO = new ErrorDTO(400, null);
+        ErrorDTO errorDTO = new ErrorDTO(400, null,"");
         Mockito.when(objectMapper.readValue(anyString(), (Class<ErrorDTO>) any())).thenReturn(errorDTO);
 
         String error = utilities.exceptionConverter(e);
