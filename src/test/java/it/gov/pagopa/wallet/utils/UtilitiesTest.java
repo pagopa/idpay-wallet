@@ -49,7 +49,7 @@ class UtilitiesTest {
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
 
-        ErrorDTO errorDTO = new ErrorDTO(400, MESSAGE,"");
+        ErrorDTO errorDTO = new ErrorDTO(400, MESSAGE);
         Mockito.when(objectMapper.readValue(anyString(), (Class<ErrorDTO>) any())).thenReturn(errorDTO);
 
         String error = utilities.exceptionConverter(e);
@@ -64,7 +64,7 @@ class UtilitiesTest {
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
 
-        ErrorDTO errorDTO = new ErrorDTO(400, null,"");
+        ErrorDTO errorDTO = new ErrorDTO(400, null);
         Mockito.when(objectMapper.readValue(anyString(), (Class<ErrorDTO>) any())).thenReturn(errorDTO);
 
         String error = utilities.exceptionConverter(e);

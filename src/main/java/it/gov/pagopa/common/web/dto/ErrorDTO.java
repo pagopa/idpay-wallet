@@ -19,5 +19,4 @@ public class ErrorDTO {
   @NotBlank
   private String message;
 
-  private String details;
 }

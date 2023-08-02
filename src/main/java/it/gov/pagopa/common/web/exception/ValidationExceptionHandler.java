@@ -36,7 +36,7 @@ public class ValidationExceptionHandler {
         ErrorManager.getRequestDetails(request), message);
     log.debug("Something went wrong while validating http request", ex);
 
-    return new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message, "");
+    return new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message);
   }
 
   @ExceptionHandler(MissingRequestHeaderException.class)
@@ -50,6 +50,6 @@ public class ValidationExceptionHandler {
         ErrorManager.getRequestDetails(request), message);
     log.debug("Something went wrong handling request", ex);
 
-    return new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message, "");
+    return new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message);
   }
 }
