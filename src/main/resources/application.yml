@@ -188,7 +188,7 @@ spring:
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
-        consumerCommand-in-0:
+        consumerCommands-in-0:
           binder: kafka-commands
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_COMMANDS:idpay-commands}
