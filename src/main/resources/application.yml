@@ -32,7 +32,7 @@ spring:
   jmx.enabled: true
   cloud:
     function:
-      definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund;consumerCommand
+      definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund;consumerCommands
     stream:
       binders:
         kafka-checkiban-outcome:
@@ -138,7 +138,7 @@ spring:
                         sasl:
                           jaas:
                             config: ${KAFKA_NOTIFICATION_SASL_JAAS_CONFIG:}
-        kafka-command:
+        kafka-commands:
           type: kafka
           environment:
             spring:
@@ -189,7 +189,7 @@ spring:
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
         consumerCommand-in-0:
-          binder: kafka-command
+          binder: kafka-commands
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_COMMANDS:idpay-commands}
           group: ${KAFKA_COMMANDS_GROUP_IN:idpay-commands-wallet-consumer-group}
@@ -265,7 +265,7 @@ spring:
                 socket.connection.setup.timeout:
                   max.ms: ${KAFKA_TRANSACTION_REQUEST_CONNECTION_TIMEOUT_MAX_MS:${KAFKA_CONSUMER_CONFIG_CONNECTION_TIMEOUT_MAX_MS:200000}}
                   ms: ${KAFKA_TRANSACTION_REQUEST_CONNECTION_TIMEOUT_MS:${KAFKA_CONSUMER_CONFIG_CONNECTION_TIMEOUT_MS:100000}}
-          consumerCommand-in-0:
+          consumerCommands-in-0:
             consumer:
               startOffset: ${KAFKA_COMMANDS_REQUEST_START_OFFSET:${KAFKA_CONSUMER_CONFIG_START_OFFSET:earliest}}
               autoCommitOffset: ${KAFKA_COMMANDS_AUTO_COMMIT:${KAFKA_CONSUMER_CONFIG_AUTO_COMMIT:true}}
