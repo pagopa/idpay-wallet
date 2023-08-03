@@ -2,7 +2,7 @@ package it.gov.pagopa.wallet.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
-import it.gov.pagopa.wallet.dto.ErrorDTO;
+import it.gov.pagopa.common.web.dto.ErrorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
