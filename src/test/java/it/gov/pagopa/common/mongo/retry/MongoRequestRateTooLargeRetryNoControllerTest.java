@@ -25,22 +25,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-        MongoRequestRateTooLargeRetryWhenNotControllerAspect.class,
+        MongoRequestRateTooLargeAutomaticRetryAspect.class,
         ErrorManager.class,
         MongoExceptionHandler.class,
 
-        MongoRequestRateTooLargeRetryWhenNoControllerTest.TestController.class,
-        MongoRequestRateTooLargeRetryWhenNoControllerTest.TestRepository.class
+        MongoRequestRateTooLargeRetryNoControllerTest.TestController.class,
+        MongoRequestRateTooLargeRetryNoControllerTest.TestRepository.class
 })
 @WebMvcTest(value = {
-    MongoRequestRateTooLargeRetryWhenNoControllerTest.TestController.class,
-    MongoRequestRateTooLargeRetryWhenNoControllerTest.TestRepository.class},
-    excludeAutoConfiguration = SecurityAutoConfiguration.class)
-class MongoRequestRateTooLargeRetryWhenNoControllerTest {
+        MongoRequestRateTooLargeRetryNoControllerTest.TestController.class,
+        MongoRequestRateTooLargeRetryNoControllerTest.TestRepository.class},
+        excludeAutoConfiguration = SecurityAutoConfiguration.class)
+class MongoRequestRateTooLargeRetryNoControllerTest {
 
-    @Value("${mongo.request-rate-too-large.max-retry:3}")
+    @Value("${mongo.request-rate-too-large.batch.max-retry:3}")
     private int maxRetry;
-    @Value("${mongo.request-rate-too-large.max-millis-elapsed:0}")
+    @Value("${mongo.request-rate-too-large.batch.max-millis-elapsed:0}")
     private int maxMillisElapsed;
 
     @SpyBean
@@ -73,8 +73,8 @@ class MongoRequestRateTooLargeRetryWhenNoControllerTest {
     @Service
     static class TestRepository {
         public String test() {
-                counter[0]++;
-                throw MongoRequestRateTooLargeRetryerTest.buildRequestRateTooLargeMongodbException();
+            counter[0]++;
+            throw MongoRequestRateTooLargeRetryerTest.buildRequestRateTooLargeMongodbException();
 
         }
     }
@@ -85,9 +85,9 @@ class MongoRequestRateTooLargeRetryWhenNoControllerTest {
     @Test
     void testController_Method() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/test")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":429,\"message\":\"TOO_MANY_REQUESTS\"}"));
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+                .andExpect(MockMvcResultMatchers.content().json("{\"code\":429,\"message\":\"TOO_MANY_REQUESTS\"}"));
 
         Assertions.assertEquals(1, counter[0]);
     }
