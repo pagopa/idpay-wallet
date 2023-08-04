@@ -29,14 +29,14 @@ import org.springframework.web.bind.annotation.RestController;
         ErrorManager.class,
         MongoExceptionHandler.class,
 
-        MongoRequestRateTooLargeRetryNoControllerTest.TestController.class,
-        MongoRequestRateTooLargeRetryNoControllerTest.TestRepository.class
+        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestController.class,
+        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestRepository.class
 })
 @WebMvcTest(value = {
-        MongoRequestRateTooLargeRetryNoControllerTest.TestController.class,
-        MongoRequestRateTooLargeRetryNoControllerTest.TestRepository.class},
+        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestController.class,
+        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestRepository.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class)
-class MongoRequestRateTooLargeRetryNoControllerTest {
+class MongoRequestRateTooLargeRetryNoControllerIntegrationTest {
 
     @Value("${mongo.request-rate-too-large.batch.max-retry:3}")
     private int maxRetry;
@@ -85,9 +85,9 @@ class MongoRequestRateTooLargeRetryNoControllerTest {
     @Test
     void testController_Method() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/test")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-                .andExpect(MockMvcResultMatchers.content().json("{\"code\":429,\"message\":\"TOO_MANY_REQUESTS\"}"));
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":429,\"message\":\"TOO_MANY_REQUESTS\"}"));
 
         Assertions.assertEquals(1, counter[0]);
     }
