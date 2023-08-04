@@ -1,3 +1,14 @@
+mongo:
+  request-rate-too-large:
+    api:
+      enabled: ${MONGO_REQUEST_RATE_TOO_LARGE_API_ENABLED:false}
+      max-retry: ${MONGO_REQUEST_RATE_TOO_LARGE_API_MAX_RETRY:0}
+      max-millis-elapsed: ${MONGO_REQUEST_RATE_TOO_LARGE_API_MAX_MILLIS_ELAPSED:200}
+    batch:
+      enabled: ${MONGO_REQUEST_RATE_TOO_LARGE_BATCH_ENABLED:true}
+      max-retry: ${MONGO_REQUEST_RATE_TOO_LARGE_BATCH_MAX_RETRY:5}
+      max-millis-elapsed: ${MONGO_REQUEST_RATE_TOO_LARGE_BATCH_MAX_MILLIS_ELAPSED:0}
+
 logging:
   level:
     it:
@@ -32,7 +43,7 @@ spring:
   jmx.enabled: true
   cloud:
     function:
-      definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund;consumerCommand
+      definition: consumerIban;trxConsumer;consumerOutcome;consumerRefund;consumerCommands
     stream:
       binders:
         kafka-checkiban-outcome:
@@ -138,7 +149,7 @@ spring:
                         sasl:
                           jaas:
                             config: ${KAFKA_NOTIFICATION_SASL_JAAS_CONFIG:}
-        kafka-command:
+        kafka-commands:
           type: kafka
           environment:
             spring:
@@ -188,8 +199,8 @@ spring:
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_RULE_ENGINE:}
           group: ${KAFKA_RULE_ENGINE_GROUP_IN:}
-        consumerCommand-in-0:
-          binder: kafka-command
+        consumerCommands-in-0:
+          binder: kafka-commands
           content-type: ${KAFKA_CONTENT_TYPE:application/json}
           destination: ${KAFKA_TOPIC_COMMANDS:idpay-commands}
           group: ${KAFKA_COMMANDS_GROUP_IN:idpay-commands-wallet-consumer-group}
@@ -265,7 +276,7 @@ spring:
                 socket.connection.setup.timeout:
                   max.ms: ${KAFKA_TRANSACTION_REQUEST_CONNECTION_TIMEOUT_MAX_MS:${KAFKA_CONSUMER_CONFIG_CONNECTION_TIMEOUT_MAX_MS:200000}}
                   ms: ${KAFKA_TRANSACTION_REQUEST_CONNECTION_TIMEOUT_MS:${KAFKA_CONSUMER_CONFIG_CONNECTION_TIMEOUT_MS:100000}}
-          consumerCommand-in-0:
+          consumerCommands-in-0:
             consumer:
               startOffset: ${KAFKA_COMMANDS_REQUEST_START_OFFSET:${KAFKA_CONSUMER_CONFIG_START_OFFSET:earliest}}
               autoCommitOffset: ${KAFKA_COMMANDS_AUTO_COMMIT:${KAFKA_CONSUMER_CONFIG_AUTO_COMMIT:true}}
