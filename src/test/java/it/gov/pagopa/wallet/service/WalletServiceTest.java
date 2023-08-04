@@ -125,6 +125,7 @@ class WalletServiceTest {
     private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
     private static final String DELETE_OPERATION_TYPE = "DELETE_INITIATIVE";
+    private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
 
     private static final Wallet TEST_WALLET =
             Wallet.builder()
@@ -138,6 +139,7 @@ class WalletServiceTest {
                     .accrued(TEST_ACCRUED)
                     .refunded(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
+                    .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                     .build();
 
     private static final Wallet TEST_WALLET_FAMILY =
@@ -180,6 +182,7 @@ class WalletServiceTest {
                     .accrued(TEST_ACCRUED)
                     .refunded(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
+                    .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                     .build();
     private static final Wallet TEST_WALLET_UNSUBSCRIBED =
             Wallet.builder()
@@ -208,6 +211,7 @@ class WalletServiceTest {
                     .lastCounterUpdate(TEST_DATE)
                     .updateDate(TEST_DATE)
                     .suspensionDate(TEST_SUSPENSION_DATE)
+                    .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                     .build();
 
     private static final Wallet TEST_WALLET_ISSUER =
@@ -2254,6 +2258,37 @@ class WalletServiceTest {
         Mockito.verify(onboardingRestConnector, Mockito.times(1))
                 .readmitOnboarding(INITIATIVE_ID, USER_ID);
         assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET_REFUNDABLE.getStatus());
+    }
+
+    @Test
+    void readmit_initiativeTypeDiscount() {
+        // Given
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET_SUSPENDED));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET_SUSPENDED.setStatus("SUSPENDED");
+                            TEST_WALLET_SUSPENDED.setInitiativeRewardType("DISCOUNT");
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+
+        Mockito.doNothing()
+                .when(notificationProducer)
+                .sendNotification(Mockito.any(NotificationQueueDTO.class));
+
+        // When
+        walletService.readmitWallet(INITIATIVE_ID, USER_ID);
+
+        // Then
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(1))
+                .readmitWallet(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.anyString(), Mockito.any());
+        Mockito.verify(onboardingRestConnector, Mockito.times(1))
+                .readmitOnboarding(INITIATIVE_ID, USER_ID);
+        Mockito.verify(notificationProducer, Mockito.times(1))
+                .sendNotification(Mockito.any());
     }
 
     @Test

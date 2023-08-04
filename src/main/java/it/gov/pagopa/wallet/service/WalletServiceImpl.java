@@ -298,7 +298,12 @@ public class WalletServiceImpl implements WalletService {
     LocalDateTime localDateTime = LocalDateTime.now();
     String backupStatus = wallet.getStatus();
     LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
-    String readmittedStatus = WalletStatus.getByBooleans(wallet.getIban() != null, wallet.getNInstr() > 0).name();
+    String readmittedStatus;
+    if(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())){
+      readmittedStatus = WalletStatus.getByBooleans(wallet.getIban() != null, wallet.getNInstr() > 0).name();
+    } else {
+      readmittedStatus = WalletStatus.REFUNDABLE.name();
+    }
     try {
       walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
       log.info("[READMIT_USER] Sending event to ONBOARDING");
