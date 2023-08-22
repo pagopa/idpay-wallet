@@ -33,14 +33,13 @@ class MongoRequestRateTooLargeAutomaticRetryAspectTest {
     }
 
     @AfterEach
-    void test(){
+    void cleanContext(){
         configureExecutionContext(true);
     }
 
-    //region test batch
+//region test batch
     @Test
     void testBatchEnabled() throws Throwable {
-        //given
         configureExecutionContext(true);
         MongoRequestRateTooLargeAutomaticRetryAspect aspect = new MongoRequestRateTooLargeAutomaticRetryAspect(false, maxRetry, 1000, true, maxRetry, 1000);
 
