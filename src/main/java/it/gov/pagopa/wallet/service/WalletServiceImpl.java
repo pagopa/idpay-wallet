@@ -51,7 +51,7 @@ public class WalletServiceImpl implements WalletService {
   private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
-  public static final String SERVICE_PROCESS_COMMAND = "PROCESS_COMMAND";
+  public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
 
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
@@ -649,15 +649,14 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO){
-    long startTime = System.currentTimeMillis();
+    if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
+      long startTime = System.currentTimeMillis();
 
-    if (("DELETE_INITIATIVE").equals(queueCommandOperationDTO.getOperationType())) {
       List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
-      log.info("[DELETE OPERATION] Deleted {} wallets for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getEntityId());
+      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+      performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
     }
-
-    performanceLog(startTime, SERVICE_PROCESS_COMMAND);
   }
 
 
