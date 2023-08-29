@@ -336,7 +336,9 @@ public class WalletServiceImpl implements WalletService {
     List<WalletDTO> walletDTOList = new ArrayList<>();
 
     for (Wallet wallet : walletList) {
-      walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
+      if(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())){
+        walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
+      }
     }
     initiativeListDTO.setInitiativeList(walletDTOList);
 
