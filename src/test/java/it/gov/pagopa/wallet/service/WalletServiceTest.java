@@ -1064,6 +1064,7 @@ class WalletServiceTest {
         TEST_WALLET.setIban(IBAN_OK);
         List<Wallet> walletList = new ArrayList<>();
         walletList.add(TEST_WALLET);
+        walletList.add(TEST_WALLET_DISCOUNT);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(Mockito.any(Wallet.class))).thenReturn(WALLET_DTO);
