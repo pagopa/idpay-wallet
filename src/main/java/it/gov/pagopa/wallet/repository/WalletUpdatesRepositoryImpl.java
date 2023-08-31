@@ -35,6 +35,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     private static final String FIELD_LAST_COUNTER_UPDATE = Fields.lastCounterUpdate;
     private static final String FIELD_SUSPENSION_DATE = Fields.suspensionDate;
     private static final String FIELD_UPDATE_DATE = Fields.updateDate;
+    private static final String FIELD_TIME_TO_LIVE = Fields.ttl;
     private final MongoTemplate mongoTemplate;
 
     public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
@@ -164,4 +165,33 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 Wallet.class);
     }
+
+    @Override
+    public Long updateTTL(String initiativeId, LocalDateTime ttlStartingDate){
+        log.trace("[UPDATING_TTL] Updating Wallet's TTL");
+
+        return mongoTemplate.updateMulti(
+                Query.query(
+                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)),
+                new Update().set(FIELD_TIME_TO_LIVE, ttlStartingDate).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                Wallet.class)
+                .getModifiedCount();
+    }
+
+    /*
+    @Override
+    public List<Wallet> updateTTL2(String initiativeId, LocalDateTime ttlStartingDate){
+        log.trace("[UPDATING_TTL_2] Updating Wallet's TTL");
+
+        //The findAndModify methods probably only updates the first element found
+        //To further this hypothesis is the fact that I can't seem to collectToList the elements returned, because it only returns one
+        return mongoTemplate.findAndModify(
+                Query.query(
+                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)),
+                new Update().set(FIELD_TIME_TO_LIVE, ttlStartingDate).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                FindAndModifyOptions.options().returnNew(true)
+                Wallet.class);
+    }
+
+     */
 }

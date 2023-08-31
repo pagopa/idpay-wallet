@@ -16,4 +16,6 @@ public interface WalletUpdatesRepository {
   void processRefund(String initiativeId, String userId, BigDecimal refunded, Map<String, RefundHistory> history);
   void updateInstrumentNumber(String initiativeId, String userId, int nInstr, String status);
   void decreaseInstrumentNumber(String initiativeId, String userId, String status);
+  Long updateTTL(String initiativeId, LocalDateTime ttlStartingDate);
+  //List<Wallet> updateTTL2(String initiativeId, LocalDateTime ttlstartingDate);
 }

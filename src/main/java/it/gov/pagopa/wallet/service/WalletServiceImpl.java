@@ -654,9 +654,13 @@ public class WalletServiceImpl implements WalletService {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
-      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
-      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+      LocalDateTime now = LocalDateTime.now();
+      Long modifiedCount = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), now);
+      log.info("[DELETE_INITIATIVE] Deleted wallets for initiativeId {} ", modifiedCount);
+
+      //List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
+      //log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
+      //deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
     }
   }

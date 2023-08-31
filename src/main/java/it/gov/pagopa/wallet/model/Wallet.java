@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -44,6 +45,8 @@ public class Wallet {
   private String initiativeRewardType;
   private Boolean isLogoPresent;
   private Long maxTrx;
+  @Indexed(expireAfterSeconds = 30)
+  private LocalDateTime ttl;
 
   @Data
   @NoArgsConstructor
