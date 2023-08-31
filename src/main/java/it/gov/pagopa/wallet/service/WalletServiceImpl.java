@@ -336,9 +336,7 @@ public class WalletServiceImpl implements WalletService {
     List<WalletDTO> walletDTOList = new ArrayList<>();
 
     for (Wallet wallet : walletList) {
-      if(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())){
         walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
-      }
     }
     initiativeListDTO.setInitiativeList(walletDTOList);
 
@@ -931,7 +929,8 @@ public class WalletServiceImpl implements WalletService {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
       for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
         if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)
-            && !wallet.getEndDate().isBefore(LocalDate.now())) {
+                && !wallet.getEndDate().isBefore(LocalDate.now())
+                && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
           initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));
         }
       }
