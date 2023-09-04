@@ -328,6 +328,7 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017}
       database: ${MONGODB_DBNAME:idpay}
+      auto-index-creation: true
       # custom configured properties
       config:
         connectionPool:
