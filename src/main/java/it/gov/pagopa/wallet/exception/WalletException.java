@@ -1,14 +1,14 @@
 package it.gov.pagopa.wallet.exception;
 
-import lombok.AllArgsConstructor;
+import it.gov.pagopa.common.web.exception.ClientExceptionWithBody;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-@AllArgsConstructor
 @Getter
-public class WalletException extends RuntimeException {
+@SuppressWarnings("squid:S110")
+public class WalletException extends ClientExceptionWithBody {
 
-  private final int code;
-
-  private final String message;
-
+  public WalletException(Integer code, String message) {
+    super(HttpStatus.valueOf(code), code, message);
+  }
 }

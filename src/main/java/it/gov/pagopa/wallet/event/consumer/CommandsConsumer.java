@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import java.util.function.Consumer;
 
 @Configuration
-public class CommandConsumer {
+public class CommandsConsumer {
 
     @Bean
-    public Consumer<QueueCommandOperationDTO> consumerCommand(WalletService walletService) {
+    public Consumer<QueueCommandOperationDTO> consumerCommands(WalletService walletService) {
         return walletService::processCommand;
     }
 

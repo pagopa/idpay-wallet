@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
-import it.gov.pagopa.wallet.dto.ErrorDTO;
+import it.gov.pagopa.common.web.dto.ErrorDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
