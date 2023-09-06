@@ -4,6 +4,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public interface WalletUpdatesRepository {
@@ -17,5 +18,6 @@ public interface WalletUpdatesRepository {
   void updateInstrumentNumber(String initiativeId, String userId, int nInstr, String status);
   void decreaseInstrumentNumber(String initiativeId, String userId, String status);
   Long updateTTL(String initiativeId, LocalDateTime ttlStartingDate);
+  List<Wallet> findByInitiativeIdPaged(String initiativeId, int pageNumber, int pageSize);
   //List<Wallet> updateTTL2(String initiativeId, LocalDateTime ttlstartingDate);
 }

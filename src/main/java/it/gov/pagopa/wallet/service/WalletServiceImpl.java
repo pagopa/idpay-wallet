@@ -652,9 +652,28 @@ public class WalletServiceImpl implements WalletService {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      LocalDateTime now = LocalDateTime.now();
-      Long modifiedCount = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), now);
-      log.info("[DELETE_INITIATIVE] Deleted wallets for initiativeId {} ", modifiedCount);
+      //LocalDateTime now = LocalDateTime.now();
+      //Long modifiedCount = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), now);
+      //log.info("[DELETE_INITIATIVE] Deleted wallets for initiativeId {} ", modifiedCount);
+
+      List<Wallet> retrievedWallets;
+      int pageNumber = 0;
+      int pageSize = 100;
+      Integer ttl = 600;
+
+      do {
+        retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
+        for(Wallet wallet: retrievedWallets){
+          wallet.setTtl(ttl);
+        }
+        walletRepository.saveAll(retrievedWallets);
+        pageNumber += 1;
+
+        retrievedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+
+      } while (retrievedWallets.size() == pageSize);
+
+      log.info("[DELETE_INITIATIVE] Delete initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
 
       //List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
       //log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());

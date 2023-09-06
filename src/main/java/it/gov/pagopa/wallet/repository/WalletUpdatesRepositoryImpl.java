@@ -7,9 +7,11 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -176,6 +178,16 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 new Update().set(FIELD_TIME_TO_LIVE, ttlStartingDate).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 Wallet.class)
                 .getModifiedCount();
+    }
+
+    @Override
+    public List<Wallet> findByInitiativeIdPaged(String initiativeId, int pageNumber, int pageSize){
+        log.trace("[FIND_WALLETS] Finding page {} with pageSize {} of wallets." );
+
+        return mongoTemplate.find(
+                Query.query(Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)).with(PageRequest.of(pageNumber, pageSize)),
+                Wallet.class
+        );
     }
 
     /*
