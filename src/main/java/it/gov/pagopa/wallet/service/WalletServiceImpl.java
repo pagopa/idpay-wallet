@@ -659,7 +659,7 @@ public class WalletServiceImpl implements WalletService {
       List<Wallet> retrievedWallets;
       int pageNumber = 0;
       int pageSize = 100;
-      Integer ttl = 600;
+      Integer ttl = 1200;
 
       do {
         retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
