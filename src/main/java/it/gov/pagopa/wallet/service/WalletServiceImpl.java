@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
+import com.mongodb.client.result.UpdateResult;
 import feign.FeignException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -658,27 +659,17 @@ public class WalletServiceImpl implements WalletService {
       int pageSize = 100;
       Integer ttl = 180;
 
-      log.info("[DELETE_INITIATIVE] Start deleting wallets for initiativeId {}", queueCommandOperationDTO.getEntityId());
-      do {
-        retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
-        //for(Wallet wallet: retrievedWallets){
-        //  wallet.setTtl(ttl);
-        //}
-        log.info("[RETRIEVE_WALLETS] Retrieved wallets with initiativeId: {} on pageNumber: {} ", queueCommandOperationDTO.getEntityId(), pageNumber);
-        //walletRepository.saveAll(retrievedWallets);
-        walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
-        pageNumber += 1;
+      log.info("[DELETE_WALLETS] Starting delete wallets for initiativeId {}", queueCommandOperationDTO.getEntityId());
 
-        deletedWallets.addAll(retrievedWallets);
-        log.info("[PROCESSED_WALLETS] Processed {} wallets for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getEntityId());
-      } while (retrievedWallets.size() == pageSize);
+      UpdateResult updateResult = walletUpdatesRepository.updateTTLNotPaged(queueCommandOperationDTO.getEntityId());
 
-      log.info("[DELETE_INITIATIVE] Delete initiative {} from collection: wallet {}", queueCommandOperationDTO.getEntityId(), deletedWallets.size());
-      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+      log.info("[DELETE_WALLETS] Total wallets found {}, modified {}", updateResult.getMatchedCount(), updateResult.getMatchedCount());
 
+      //Old method
       //List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
       //log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
       //deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
     }
   }

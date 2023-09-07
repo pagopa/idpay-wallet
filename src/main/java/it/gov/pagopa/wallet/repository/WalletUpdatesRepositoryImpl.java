@@ -189,4 +189,15 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 Wallet.class
         );
     }
+
+    @Override
+    public UpdateResult updateTTLNotPaged(String initiativeId){
+        log.info("[UPDATING_TTL] Updating wallets' TTL with initiativeId {}", initiativeId);
+
+        return mongoTemplate.updateMulti(
+                Query.query(Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)),
+                new Update().set(FIELD_TIME_TO_LIVE, 180),
+                Wallet.class
+        );
+    }
 }

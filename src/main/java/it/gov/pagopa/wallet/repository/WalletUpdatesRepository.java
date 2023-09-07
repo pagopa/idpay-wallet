@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.repository;
 
+import com.mongodb.client.result.UpdateResult;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import java.math.BigDecimal;
@@ -18,5 +19,6 @@ public interface WalletUpdatesRepository {
   void updateInstrumentNumber(String initiativeId, String userId, int nInstr, String status);
   void decreaseInstrumentNumber(String initiativeId, String userId, String status);
   Long updateTTL(String initiativeId, int pageNumber, int pageSize);
+  UpdateResult updateTTLNotPaged(String initiativeId);
   List<Wallet> findByInitiativeIdPaged(String initiativeId, int pageNumber, int pageSize);
 }
