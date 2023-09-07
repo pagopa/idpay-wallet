@@ -658,6 +658,7 @@ public class WalletServiceImpl implements WalletService {
       int pageSize = 100;
       Integer ttl = 180;
 
+      log.info("[DELETE_INITIATIVE] Start deleting wallets for initiativeId {}", queueCommandOperationDTO.getEntityId());
       do {
         retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
         //for(Wallet wallet: retrievedWallets){
@@ -669,6 +670,7 @@ public class WalletServiceImpl implements WalletService {
         pageNumber += 1;
 
         deletedWallets.addAll(retrievedWallets);
+        log.info("[PROCESSED_WALLETS] Processed {} wallets for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getEntityId());
       } while (retrievedWallets.size() == pageSize);
 
       log.info("[DELETE_INITIATIVE] Delete initiative {} from collection: wallet {}", queueCommandOperationDTO.getEntityId(), deletedWallets.size());

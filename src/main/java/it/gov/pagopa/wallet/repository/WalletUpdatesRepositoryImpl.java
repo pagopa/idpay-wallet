@@ -170,7 +170,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public Long updateTTL(String initiativeId, int pageNumber, int pageSize){
-        log.trace("[UPDATING_TTL] Updating Wallet's TTL");
+        log.info("[UPDATING_TTL] Updating Wallets TTL with pageNumber {} and initiativeId {}", pageNumber, initiativeId);
 
         return mongoTemplate.updateMulti(
                 Query.query(
@@ -182,7 +182,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public List<Wallet> findByInitiativeIdPaged(String initiativeId, int pageNumber, int pageSize){
-        log.trace("[FIND_WALLETS] Finding page {} with pageSize {} of wallets.", pageNumber, pageSize );
+        log.info("[FIND_WALLETS] Finding wallets page {} with initiativeId {}.", pageNumber, initiativeId );
 
         return mongoTemplate.find(
                 Query.query(Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)).with(PageRequest.of(pageNumber, pageSize)),
