@@ -169,41 +169,24 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     }
 
     @Override
-    public Long updateTTL(String initiativeId, LocalDateTime ttlStartingDate){
+    public Long updateTTL(String initiativeId, int pageNumber, int pageSize){
         log.trace("[UPDATING_TTL] Updating Wallet's TTL");
 
         return mongoTemplate.updateMulti(
                 Query.query(
-                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)),
-                new Update().set(FIELD_TIME_TO_LIVE, ttlStartingDate).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)).with(PageRequest.of(pageNumber, pageSize)),
+                new Update().set(FIELD_TIME_TO_LIVE, 180).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 Wallet.class)
                 .getModifiedCount();
     }
 
     @Override
     public List<Wallet> findByInitiativeIdPaged(String initiativeId, int pageNumber, int pageSize){
-        log.trace("[FIND_WALLETS] Finding page {} with pageSize {} of wallets." );
+        log.trace("[FIND_WALLETS] Finding page {} with pageSize {} of wallets.", pageNumber, pageSize );
 
         return mongoTemplate.find(
                 Query.query(Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)).with(PageRequest.of(pageNumber, pageSize)),
                 Wallet.class
         );
     }
-
-    /*
-    @Override
-    public List<Wallet> updateTTL2(String initiativeId, LocalDateTime ttlStartingDate){
-        log.trace("[UPDATING_TTL_2] Updating Wallet's TTL");
-
-        //The findAndModify methods probably only updates the first element found
-        //To further this hypothesis is the fact that I can't seem to collectToList the elements returned, because it only returns one
-        return mongoTemplate.findAndModify(
-                Query.query(
-                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)),
-                new Update().set(FIELD_TIME_TO_LIVE, ttlStartingDate).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
-                FindAndModifyOptions.options().returnNew(true)
-                Wallet.class);
-    }
-
-     */
 }

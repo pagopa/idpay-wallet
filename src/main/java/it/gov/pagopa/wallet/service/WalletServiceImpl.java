@@ -652,28 +652,27 @@ public class WalletServiceImpl implements WalletService {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      //LocalDateTime now = LocalDateTime.now();
-      //Long modifiedCount = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), now);
-      //log.info("[DELETE_INITIATIVE] Deleted wallets for initiativeId {} ", modifiedCount);
-
       List<Wallet> retrievedWallets;
+      List<Wallet> deletedWallets = new ArrayList<>();
       int pageNumber = 0;
       int pageSize = 100;
-      Integer ttl = 1200;
+      Integer ttl = 180;
 
       do {
         retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
-        for(Wallet wallet: retrievedWallets){
-          wallet.setTtl(ttl);
-        }
-        walletRepository.saveAll(retrievedWallets);
+        //for(Wallet wallet: retrievedWallets){
+        //  wallet.setTtl(ttl);
+        //}
+        log.info("[RETRIEVE_WALLETS] Retrieved wallets with initiativeId: {} on pageNumber: {} ", queueCommandOperationDTO.getEntityId(), pageNumber);
+        //walletRepository.saveAll(retrievedWallets);
+        walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
         pageNumber += 1;
 
-        retrievedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
-
+        deletedWallets.addAll(retrievedWallets);
       } while (retrievedWallets.size() == pageSize);
 
-      log.info("[DELETE_INITIATIVE] Delete initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
+      log.info("[DELETE_INITIATIVE] Delete initiative {} from collection: wallet {}", queueCommandOperationDTO.getEntityId(), deletedWallets.size());
+      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
 
       //List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
       //log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
