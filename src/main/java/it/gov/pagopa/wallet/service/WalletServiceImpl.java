@@ -664,8 +664,14 @@ public class WalletServiceImpl implements WalletService {
       log.info("[DELETE_WALLETS] Starting delete wallets for initiativeId {}", queueCommandOperationDTO.getEntityId());
 
       do{
-        modifiedDocuments = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
-        totalModifiedDocuments += modifiedDocuments;
+        retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
+        for(Wallet wallet: retrievedWallets){
+          wallet.setTtl(ttl);
+        }
+        walletRepository.saveAll(retrievedWallets);
+        deletedWallets.addAll(retrievedWallets);
+        //modifiedDocuments = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
+        //totalModifiedDocuments += modifiedDocuments;
 
         pageNumber += 1;
         try{
@@ -673,9 +679,11 @@ public class WalletServiceImpl implements WalletService {
         } catch (InterruptedException e){
           log.error("An error has occurred while waiting, {}", e.getMessage());
         }
-      } while (modifiedDocuments == 100);
+      } while (retrievedWallets.size() == 100);
 
-      log.info("[DELETE_WALLETS] Total wallets modified {} for initiativeId {}", totalModifiedDocuments, queueCommandOperationDTO.getEntityId());
+      log.info("[DELETE_WALLETS] Total wallets modified {} for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getEntityId());
+      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+      //log.info("[DELETE_WALLETS] Total wallets modified {} for initiativeId {}", totalModifiedDocuments, queueCommandOperationDTO.getEntityId());
       //log.info("[DELETE_WALLETS] Total wallets found {}, modified {}", updateResult.getMatchedCount(), updateResult.getMatchedCount());
 
       //Old method
