@@ -657,7 +657,7 @@ public class WalletServiceImpl implements WalletService {
       List<Wallet> deletedWallets = new ArrayList<>();
       int pageNumber = 0;
       int pageSize = 100;
-      Integer ttl = 180;
+      Integer ttl = 1;
       long modifiedDocuments = 0;
       long totalModifiedDocuments = 0;
 
@@ -673,9 +673,9 @@ public class WalletServiceImpl implements WalletService {
         //modifiedDocuments = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
         //totalModifiedDocuments += modifiedDocuments;
 
-        pageNumber += 1;
+        //pageNumber += 1;
         try{
-          Thread.sleep(1000);
+          Thread.sleep(1500);
         } catch (InterruptedException e){
           log.error("An error has occurred while waiting, {}", e.getMessage());
         }
