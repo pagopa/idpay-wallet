@@ -649,7 +649,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO){
+  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO) {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
@@ -658,12 +658,25 @@ public class WalletServiceImpl implements WalletService {
       int pageNumber = 0;
       int pageSize = 100;
       Integer ttl = 180;
+      long modifiedDocuments = 0;
+      long totalModifiedDocuments = 0;
 
       log.info("[DELETE_WALLETS] Starting delete wallets for initiativeId {}", queueCommandOperationDTO.getEntityId());
 
-      UpdateResult updateResult = walletUpdatesRepository.updateTTLNotPaged(queueCommandOperationDTO.getEntityId());
+      do{
+        modifiedDocuments = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
+        totalModifiedDocuments += modifiedDocuments;
 
-      log.info("[DELETE_WALLETS] Total wallets found {}, modified {}", updateResult.getMatchedCount(), updateResult.getMatchedCount());
+        pageNumber += 1;
+        try{
+          Thread.sleep(1000);
+        } catch (InterruptedException e){
+          log.error("An error has occurred while waiting, {}", e.getMessage());
+        }
+      } while (modifiedDocuments == 100);
+
+      log.info("[DELETE_WALLETS] Total wallets modified {} for initiativeId {}", totalModifiedDocuments, queueCommandOperationDTO.getEntityId());
+      //log.info("[DELETE_WALLETS] Total wallets found {}, modified {}", updateResult.getMatchedCount(), updateResult.getMatchedCount());
 
       //Old method
       //List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
