@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
+import com.mongodb.client.result.UpdateResult;
 import feign.FeignException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -648,13 +649,48 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO){
+  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO) {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
-      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
+      List<Wallet> retrievedWallets;
+      List<Wallet> deletedWallets = new ArrayList<>();
+      int pageNumber = 0;
+      int pageSize = 100;
+      Integer ttl = 180;
+      long modifiedDocuments = 0;
+      long totalModifiedDocuments = 0;
+
+      log.info("[DELETE_WALLETS] Starting delete wallets for initiativeId {}", queueCommandOperationDTO.getEntityId());
+
+      do{
+        retrievedWallets = walletUpdatesRepository.findByInitiativeIdPaged(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
+        for(Wallet wallet: retrievedWallets){
+          wallet.setTtl(ttl);
+        }
+        walletRepository.saveAll(retrievedWallets);
+        deletedWallets.addAll(retrievedWallets);
+        //modifiedDocuments = walletUpdatesRepository.updateTTL(queueCommandOperationDTO.getEntityId(), pageNumber, pageSize);
+        //totalModifiedDocuments += modifiedDocuments;
+
+        pageNumber += 1;
+        try{
+          Thread.sleep(1000);
+        } catch (InterruptedException e){
+          log.error("An error has occurred while waiting, {}", e.getMessage());
+        }
+      } while (retrievedWallets.size() == 100);
+
+      log.info("[DELETE_WALLETS] Total wallets modified {} for initiativeId {}", deletedWallets.size(), queueCommandOperationDTO.getEntityId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+      //log.info("[DELETE_WALLETS] Total wallets modified {} for initiativeId {}", totalModifiedDocuments, queueCommandOperationDTO.getEntityId());
+      //log.info("[DELETE_WALLETS] Total wallets found {}, modified {}", updateResult.getMatchedCount(), updateResult.getMatchedCount());
+
+      //Old method
+      //List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
+      //log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
+      //deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
     }
   }
