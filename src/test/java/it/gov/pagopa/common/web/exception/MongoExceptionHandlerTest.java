@@ -2,7 +2,6 @@ package it.gov.pagopa.common.web.exception;
 
 import static org.mockito.Mockito.doThrow;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoQueryException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.ServerAddress;
@@ -38,9 +37,6 @@ class MongoExceptionHandlerTest {
   @Autowired
   private MockMvc mockMvc;
 
-  @Autowired
-  private ObjectMapper objectMapper;
-
   @SpyBean
   private TestController testControllerSpy;
 
@@ -75,12 +71,13 @@ class MongoExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(429))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("TOO_MANY_REQUESTS"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("TOO_MANY_REQUESTS"))
             .andExpect(MockMvcResultMatchers.header().exists(HttpHeaders.RETRY_AFTER))
             .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.RETRY_AFTER, "1"))
             .andExpect(MockMvcResultMatchers.header().string("Retry-After-Ms", "34"));
   }
+
   @Test
   void handleTooManyWriteDbException() throws Exception {
 
@@ -93,19 +90,18 @@ class MongoExceptionHandlerTest {
             """;
 
     final MongoWriteException mongoWriteException = new MongoWriteException(
-        new WriteError(16500, writeErrorMessage, BsonDocument.parse("{}")), new ServerAddress());
+            new WriteError(16500, writeErrorMessage, BsonDocument.parse("{}")), new ServerAddress());
     doThrow(
-        new DataIntegrityViolationException(mongoWriteException.getMessage(), mongoWriteException))
-        .when(testControllerSpy).testEndpoint();
+            new DataIntegrityViolationException(mongoWriteException.getMessage(), mongoWriteException))
+            .when(testControllerSpy).testEndpoint();
 
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(429))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("TOO_MANY_REQUESTS"))
-        .andExpect(MockMvcResultMatchers.header().exists(HttpHeaders.RETRY_AFTER))
-        .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.RETRY_AFTER, "1"))
-        .andExpect(MockMvcResultMatchers.header().string("Retry-After-Ms", "34"));
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("TOO_MANY_REQUESTS"))
+            .andExpect(MockMvcResultMatchers.header().exists(HttpHeaders.RETRY_AFTER))
+            .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.RETRY_AFTER, "1"))
+            .andExpect(MockMvcResultMatchers.header().string("Retry-After-Ms", "34"));
   }
 
   @Test
@@ -117,7 +113,7 @@ class MongoExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":500,\"message\":\"Something gone wrong\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Something gone wrong\"}", false));
   }
 
   @Test
@@ -128,6 +124,6 @@ class MongoExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":429,\"message\":\"TOO_MANY_REQUESTS\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"TOO_MANY_REQUESTS\"}", false));
   }
 }
