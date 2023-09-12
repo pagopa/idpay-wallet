@@ -29,19 +29,21 @@ import org.springframework.web.bind.annotation.RestController;
         ErrorManager.class,
         MongoExceptionHandler.class,
 
-        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestController.class,
-        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestRepository.class
+        MongoRequestRateTooLargeRetryIntegrationTest.TestController.class,
+        MongoRequestRateTooLargeRetryIntegrationTest.TestRepository.class
 })
 @WebMvcTest(value = {
-        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestController.class,
-        MongoRequestRateTooLargeRetryNoControllerIntegrationTest.TestRepository.class},
+        MongoRequestRateTooLargeRetryIntegrationTest.TestController.class,
+        MongoRequestRateTooLargeRetryIntegrationTest.TestRepository.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class)
-class MongoRequestRateTooLargeRetryNoControllerIntegrationTest {
+class MongoRequestRateTooLargeRetryIntegrationTest {
 
     @Value("${mongo.request-rate-too-large.batch.max-retry:3}")
     private int maxRetry;
     @Value("${mongo.request-rate-too-large.batch.max-millis-elapsed:0}")
     private int maxMillisElapsed;
+
+    private static final int API_RETRYABLE_MAX_RETRY = 5;
 
     @SpyBean
     private TestRepository testRepositorySpy;
@@ -62,6 +64,12 @@ class MongoRequestRateTooLargeRetryNoControllerIntegrationTest {
 
         @GetMapping("/test")
         String testEndpoint() {
+            return buildNestedRepositoryMethodInvoke(repository);
+        }
+
+        @MongoRequestRateTooLargeApiRetryable(maxRetry = API_RETRYABLE_MAX_RETRY)
+        @GetMapping("/test-api-retryable")
+        String testEndpointRetryable() {
             return buildNestedRepositoryMethodInvoke(repository);
         }
 
@@ -87,9 +95,19 @@ class MongoRequestRateTooLargeRetryNoControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/test")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":429,\"message\":\"TOO_MANY_REQUESTS\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":\"429\",\"message\":\"TOO_MANY_REQUESTS\"}"));
 
         Assertions.assertEquals(1, counter[0]);
+    }
+
+    @Test
+    void testControllerRetryable_Method() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/test-api-retryable")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+                .andExpect(MockMvcResultMatchers.content().json("{\"code\":\"429\",\"message\":\"TOO_MANY_REQUESTS\"}"));
+
+        Assertions.assertEquals(counter[0], API_RETRYABLE_MAX_RETRY + 1);
     }
 
     @Test
