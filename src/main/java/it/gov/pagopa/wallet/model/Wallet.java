@@ -44,7 +44,6 @@ public class Wallet {
   private String initiativeRewardType;
   private Boolean isLogoPresent;
   private Long maxTrx;
-  private Integer ttl;
 
   @Data
   @NoArgsConstructor
