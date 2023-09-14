@@ -7,11 +7,9 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -37,7 +35,6 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     private static final String FIELD_LAST_COUNTER_UPDATE = Fields.lastCounterUpdate;
     private static final String FIELD_SUSPENSION_DATE = Fields.suspensionDate;
     private static final String FIELD_UPDATE_DATE = Fields.updateDate;
-    private static final String FIELD_TIME_TO_LIVE = Fields.ttl;
     private final MongoTemplate mongoTemplate;
 
     public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
@@ -166,38 +163,5 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
                 new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 Wallet.class);
-    }
-
-    @Override
-    public Long updateTTL(String initiativeId, int pageNumber, int pageSize){
-        log.info("[UPDATING_TTL] Updating Wallets TTL with pageNumber {} and initiativeId {}", pageNumber, initiativeId);
-
-        return mongoTemplate.updateMulti(
-                Query.query(
-                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)).with(PageRequest.of(pageNumber, pageSize)),
-                new Update().set(FIELD_TIME_TO_LIVE, 180).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
-                Wallet.class)
-                .getModifiedCount();
-    }
-
-    @Override
-    public List<Wallet> findByInitiativeIdPaged(String initiativeId, int pageNumber, int pageSize){
-        log.info("[FIND_WALLETS] Finding wallets page {} with initiativeId {}.", pageNumber, initiativeId );
-
-        return mongoTemplate.find(
-                Query.query(Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)).with(PageRequest.of(pageNumber, pageSize)),
-                Wallet.class
-        );
-    }
-
-    @Override
-    public UpdateResult updateTTLNotPaged(String initiativeId){
-        log.info("[UPDATING_TTL] Updating wallets' TTL with initiativeId {}", initiativeId);
-
-        return mongoTemplate.updateMulti(
-                Query.query(Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId)),
-                new Update().set(FIELD_TIME_TO_LIVE, 180),
-                Wallet.class
-        );
     }
 }
