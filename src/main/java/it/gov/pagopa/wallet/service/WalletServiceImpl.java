@@ -224,7 +224,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     iban = iban.toUpperCase();
-    formalControl(iban);
+    //formalControl(iban);
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
