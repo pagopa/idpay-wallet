@@ -48,4 +48,9 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   public void rollback(String initiativeId, String userId) {
     paymentInstrumentRestClient.rollback(initiativeId,userId);
   }
+
+  @Override
+  public void enrollInstrumentCitizenCode(InstrumentCallBodyDTO body) {
+    paymentInstrumentRestClient.enrollInstrumentCitizenCode(body);
+  }
 }

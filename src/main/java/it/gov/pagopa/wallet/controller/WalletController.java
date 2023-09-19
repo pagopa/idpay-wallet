@@ -79,4 +79,9 @@ public interface WalletController {
   @GetMapping("/instrument/{idWallet}/{userId}/initiatives")
   ResponseEntity<InitiativesWithInstrumentDTO> getInitiativesWithInstrument(@PathVariable("idWallet") String idWallet,
                                                                             @PathVariable("userId") String userId);
+//  @PutMapping("/{initiativeId}/{userId}/instruments/citizen/identify") //TODO 1798
+  @PutMapping("/{initiativeId}/{userId}/instruments/code")
+  ResponseEntity<Void> enrollInstrumentCitizenCode(
+          @PathVariable("initiativeId") String initiativeId,
+          @PathVariable("userId") String userId);
 }

@@ -45,6 +45,7 @@ class PaymentInstrumentRestClientTest {
   private static final String ID_WALLET = "TEST_ID_WALLET";
   private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String CHANNEL = "CHANNEL";
+  private static final String CARD = "CARD";
 
   @Autowired private PaymentInstrumentRestClient restClient;
 
@@ -54,7 +55,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_test() {
 
     final InstrumentCallBodyDTO instrument =
-        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL);
+        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL, CARD);
 
     try {
       restConnector.enrollInstrument(instrument);

@@ -134,9 +134,10 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
     auditUtilities.logEnrollmentInstrument(userId, initiativeId, idWallet);
 
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId); //TODO 1798 Ritrovamento wallet necessario per CIE? al massimo fare il check se è presente nella nuova collection
+    //TODO 1798 - wallet viene creato all'onboarding
 
-    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) { //TODO 1798 tipo discount CIE yes
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "the initiative is discount type");
       throw new WalletException(
@@ -152,11 +153,11 @@ public class WalletServiceImpl implements WalletService {
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
     InstrumentCallBodyDTO dto =
-        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO);
+        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO, WalletConstants.INSTRUMENT_TYPE_CARD);
 
     try {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
-      paymentInstrumentRestConnector.enrollInstrument(dto);
+      paymentInstrumentRestConnector.enrollInstrument(dto); ////TODO 1798 called paymentInstrument
       performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
@@ -656,6 +657,44 @@ public class WalletServiceImpl implements WalletService {
       log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
+    }
+  }
+
+  @Override
+  public void enrollInstrumentCode(String initiativeId, String userId) {
+    long startTime = System.currentTimeMillis();
+
+//    log.info("[ENROLL_INSTRUMENT_CITIZEN] Checking the status of initiative {}", initiativeId); //TODO 1798 fix audit log
+//    auditUtilities.logEnrollmentInstrument(userId, initiativeId);
+
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    checkEndDate(wallet.getEndDate());
+
+    if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+//      auditUtilities.logEnrollmentInstrumentKO( //TODO 1798 fix audit log
+//              userId, initiativeId, "wallet in status unsubscribed");
+      throw new WalletException(
+              HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+    }
+
+    InstrumentCallBodyDTO dto = InstrumentCallBodyDTO.builder()
+            .userId(userId)
+            .initiativeId(initiativeId)
+            .channel(WalletConstants.CHANNEL_APP_IO)
+            .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
+            .build();
+
+    try {
+      log.info("[ENROLL_INSTRUMENT_CITIZEN] Calling Payment Instrument");
+      paymentInstrumentRestConnector.enrollInstrumentCitizenCode(dto); ////TODO 1798 called paymentInstrument
+      performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
+    } catch (FeignException e) {
+      log.error("[ENROLL_INSTRUMENT_CITIZEN] Error in Payment Instrument Request");
+//      auditUtilities.logEnrollmentInstrumentKO( //TODO 1798 fix audit log
+//              userId, initiativeId, idWallet, "error in payment instrument request");
+      performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
+      throw new WalletException(e.status(), utilities.exceptionConverter(e));
     }
   }
 

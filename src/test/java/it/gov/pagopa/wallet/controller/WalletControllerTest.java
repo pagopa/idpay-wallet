@@ -866,4 +866,28 @@ class WalletControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andReturn();
     }
+
+    @Test
+    void enroll_instrument_code_ok() throws Exception {
+
+        Mockito.doNothing().when(walletServiceMock).enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+
+        mvc.perform(
+                        MockMvcRequestBuilders.put(
+                                        BASE_URL
+                                                + "/"
+                                                + INITIATIVE_ID
+                                                + "/"
+                                                + USER_ID
+                                                + ENROLL_INSTRUMENT_URL
+                                                + "/code")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        Mockito.verify(walletServiceMock, Mockito.never())
+                .enrollInstrument(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+
+    }
 }

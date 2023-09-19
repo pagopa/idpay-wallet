@@ -22,4 +22,5 @@ public interface WalletService {
   void enrollInstrumentIssuer(String initiativeId, String userId, InstrumentIssuerDTO body);
   InitiativesWithInstrumentDTO getInitiativesWithInstrument(String idWallet, String userId);
   void processCommand(QueueCommandOperationDTO queueCommandOperationDTO);
+  void enrollInstrumentCode (String initiativeId, String userId);
 }

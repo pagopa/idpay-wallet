@@ -44,5 +44,10 @@ public class WalletConstants {
   public static final String ERROR_INITIATIVE_DISCOUNT_PI = "It is not possible enroll a payment instrument for a discount type initiative";
   public static final String ERROR_INITIATIVE_DISCOUNT_IBAN = "It is not possible enroll an iban for a discount type initiative";
 
+  //region instrument type
+  public static final String INSTRUMENT_TYPE_CARD = "CARD";
+  public static final String INSTRUMENT_TYPE_QRCODE = "QRCODE";
+  public static final String INSTRUMENT_TYPE_IDPAYCODE = "IDPAYCODE";
+  //endregion
   private WalletConstants(){}
 }
