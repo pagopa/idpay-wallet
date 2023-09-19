@@ -2369,4 +2369,19 @@ class WalletServiceTest {
             assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
         }
     }
+
+    @Test
+    void enrollInstrumentCode_ko_unsubscribed() {
+        TEST_WALLET.setEndDate(LocalDate.MAX);
+        TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        try {
+            walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+            Assertions.fail();
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+        }
+    }
 }

@@ -52,6 +52,7 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
+  public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
 
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
@@ -147,7 +148,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logEnrollmentInstrumentKO(
-          userId, initiativeId, idWallet, "wallet in status unsubscribed");
+          userId, initiativeId, idWallet, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
@@ -210,7 +211,7 @@ public class WalletServiceImpl implements WalletService {
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanKO(
-          "wallet in status unsubscribed", userId, initiativeId, channel);
+          WALLET_STATUS_UNSUBSCRIBED_MESSAGE, userId, initiativeId, channel);
       throw new WalletException(
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
@@ -672,7 +673,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logEnrollmentInstrumentCodeKO(
-              userId, initiativeId, "wallet in status unsubscribed");
+              userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
       throw new WalletException(
               HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
