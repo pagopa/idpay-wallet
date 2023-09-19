@@ -157,14 +157,14 @@ public class AuditUtilities {
   public void logEnrollmentInstrumentCode(String userId, String initiativeId) {
     logAuditString(
             CEF_PATTERN_INSTRUMENT_TYPE,
-            "Request for association of an instrument to an initiative from APP IO.", userId, initiativeId, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
+            "Request for association of an instrument to an initiative from APP IO.", userId, initiativeId, WalletConstants.CHANNEL_APP_IO, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
     );
   }
 
   public void logEnrollmentInstrumentCodeKO(String userId, String initiativeId, String msg) {
     logAuditString(
             CEF_PATTERN_INSTRUMENT_TYPE,
-            "Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
+            "Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, WalletConstants.CHANNEL_APP_IO, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
     );
   }
 
