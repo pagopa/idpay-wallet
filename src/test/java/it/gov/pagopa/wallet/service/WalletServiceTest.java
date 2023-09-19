@@ -2326,4 +2326,47 @@ class WalletServiceTest {
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
     }
 
+    @Test
+    void enrollInstrumentCode_ok() {
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        TEST_WALLET.setIban(null);
+        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        TEST_WALLET.setNInstr(0);
+        TEST_WALLET.setEndDate(LocalDate.MAX);
+
+        Mockito.doNothing()
+                .when(paymentInstrumentRestConnector)
+                .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
+
+        try {
+            walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+        } catch (WalletException e) {
+            Assertions.fail();
+        }
+        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
+        assertEquals(0, TEST_WALLET.getNInstr());
+    }
+
+    @Test
+    void enrollInstrumentCode_ko_feignexception() {
+        TEST_WALLET.setEndDate(LocalDate.MAX);
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        Request request =
+                Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
+
+        Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
+                .when(paymentInstrumentRestConnector)
+                .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
+
+        try {
+            walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+            Assertions.fail();
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+        }
+    }
 }

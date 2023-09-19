@@ -134,10 +134,9 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
     auditUtilities.logEnrollmentInstrument(userId, initiativeId, idWallet);
 
-    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId); //TODO 1798 Ritrovamento wallet necessario per CIE? al massimo fare il check se è presente nella nuova collection
-    //TODO 1798 - wallet viene creato all'onboarding
+    Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) { //TODO 1798 tipo discount CIE yes
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "the initiative is discount type");
       throw new WalletException(
@@ -157,7 +156,7 @@ public class WalletServiceImpl implements WalletService {
 
     try {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
-      paymentInstrumentRestConnector.enrollInstrument(dto); ////TODO 1798 called paymentInstrument
+      paymentInstrumentRestConnector.enrollInstrument(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (FeignException e) {
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
@@ -664,16 +663,16 @@ public class WalletServiceImpl implements WalletService {
   public void enrollInstrumentCode(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
 
-//    log.info("[ENROLL_INSTRUMENT_CITIZEN] Checking the status of initiative {}", initiativeId); //TODO 1798 fix audit log
-//    auditUtilities.logEnrollmentInstrument(userId, initiativeId);
+    log.info("[ENROLL_INSTRUMENT_CODE] Checking the status of initiative {}", initiativeId);
+    auditUtilities.logEnrollmentInstrumentCode(userId, initiativeId);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     checkEndDate(wallet.getEndDate());
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-//      auditUtilities.logEnrollmentInstrumentKO( //TODO 1798 fix audit log
-//              userId, initiativeId, "wallet in status unsubscribed");
+      auditUtilities.logEnrollmentInstrumentCodeKO(
+              userId, initiativeId, "wallet in status unsubscribed");
       throw new WalletException(
               HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
@@ -686,14 +685,14 @@ public class WalletServiceImpl implements WalletService {
             .build();
 
     try {
-      log.info("[ENROLL_INSTRUMENT_CITIZEN] Calling Payment Instrument");
-      paymentInstrumentRestConnector.enrollInstrumentCitizenCode(dto); ////TODO 1798 called paymentInstrument
+      log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
+      paymentInstrumentRestConnector.enrollInstrumentCode(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
     } catch (FeignException e) {
-      log.error("[ENROLL_INSTRUMENT_CITIZEN] Error in Payment Instrument Request");
-//      auditUtilities.logEnrollmentInstrumentKO( //TODO 1798 fix audit log
-//              userId, initiativeId, idWallet, "error in payment instrument request");
-      performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
+      log.error("[ENROLL_INSTRUMENT_CODE] Error in Payment Instrument Request");
+      auditUtilities.logEnrollmentInstrumentCodeKO(
+              userId, initiativeId, "error in payment instrument request");
+      performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
       throw new WalletException(e.status(), utilities.exceptionConverter(e));
     }
   }

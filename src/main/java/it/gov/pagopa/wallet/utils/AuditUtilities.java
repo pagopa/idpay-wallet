@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.utils;
 
+import it.gov.pagopa.wallet.constants.WalletConstants;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ public class AuditUtilities {
   private static final String CEF_PATTERN = CEF_BASE_PATTERN + " suser={} cs1Label=initiativeId cs1={}";
   private static final String CEF_PATTERN_CHANNEL = CEF_PATTERN + " cs2Label=channel cs2={}";
   private static final String CEF_PATTERN_ID_WALLET = CEF_PATTERN + " cs3Label=idWallet cs3={}";
+  private static final String CEF_PATTERN_INSTRUMENT_TYPE = CEF_PATTERN_CHANNEL + " cs3Label=instrumentType cs3={}";
 
   private void logAuditString(String pattern, String... parameters) {
     log.info(pattern, (Object[]) parameters);
@@ -149,6 +151,20 @@ public class AuditUtilities {
     logAuditString(
             CEF_PATTERN,
             "Wallet deleted", userId,initiativeId
+    );
+  }
+
+  public void logEnrollmentInstrumentCode(String userId, String initiativeId) {
+    logAuditString(
+            CEF_PATTERN_INSTRUMENT_TYPE,
+            "Request for association of an instrument to an initiative from APP IO.", userId, initiativeId, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
+    );
+  }
+
+  public void logEnrollmentInstrumentCodeKO(String userId, String initiativeId, String msg) {
+    logAuditString(
+            CEF_PATTERN_INSTRUMENT_TYPE,
+            "Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
     );
   }
 

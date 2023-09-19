@@ -100,8 +100,8 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
-  public ResponseEntity<Void> enrollInstrumentCitizenCode(String initiativeId, String userId) {
-    walletService.enrollInstrumentCode(initiativeId, userId); //TODO 1798
+  public ResponseEntity<Void> enrollInstrumentCode(String initiativeId, String userId) {
+    walletService.enrollInstrumentCode(initiativeId, userId);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 }

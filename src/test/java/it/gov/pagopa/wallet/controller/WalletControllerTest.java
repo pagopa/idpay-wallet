@@ -879,15 +879,40 @@ class WalletControllerTest {
                                                 + INITIATIVE_ID
                                                 + "/"
                                                 + USER_ID
-                                                + ENROLL_INSTRUMENT_URL
-                                                + "/code")
+                                                + "/code"
+                                                + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
+    }
 
-        Mockito.verify(walletServiceMock, Mockito.never())
-                .enrollInstrument(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    @Test
+    void enroll_instrument_code_ko() throws Exception {
+
+        Mockito.doThrow(
+                        new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+                .when(walletServiceMock)
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+
+        MvcResult res = mvc.perform(
+                        MockMvcRequestBuilders.put(
+                                        BASE_URL
+                                                + "/"
+                                                + INITIATIVE_ID
+                                                + "/"
+                                                + USER_ID
+                                                + "/code"
+                                                + ENROLL_INSTRUMENT_URL)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isForbidden())
+                .andReturn();
+
+        ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+
+        assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
+        assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
 
     }
 }
