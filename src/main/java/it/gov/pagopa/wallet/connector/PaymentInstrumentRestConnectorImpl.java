@@ -51,6 +51,6 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
 
   @Override
   public void enrollInstrumentCode(InstrumentCallBodyDTO body) {
-    paymentInstrumentRestClient.enrollInstrumentCitizenCode(body);
+    paymentInstrumentRestClient.enrollInstrumentCode(body);
   }
 }

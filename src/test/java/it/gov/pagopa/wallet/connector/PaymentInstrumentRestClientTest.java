@@ -133,6 +133,23 @@ class PaymentInstrumentRestClientTest {
     }
   }
 
+  @Test
+  void enroll_instrument_code_test() {
+
+    final InstrumentCallBodyDTO instrument = InstrumentCallBodyDTO.builder()
+            .userId(USER_ID)
+            .initiativeId(INITIATIVE_ID)
+            .channel(CHANNEL)
+            .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
+            .build();
+
+    try {
+      restConnector.enrollInstrumentCode(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
+
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
