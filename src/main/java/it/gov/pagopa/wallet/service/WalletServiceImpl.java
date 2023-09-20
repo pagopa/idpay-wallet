@@ -668,6 +668,7 @@ public class WalletServiceImpl implements WalletService {
           Thread.sleep(Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)));
         } catch (InterruptedException e){
           log.error("An error has occured while waiting ", e.getMessage());
+          Thread.currentThread().interrupt();
         }
       } while (fetchedWallets.size() == (Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))));
 
