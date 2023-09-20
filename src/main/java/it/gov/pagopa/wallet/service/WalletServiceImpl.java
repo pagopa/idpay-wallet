@@ -37,6 +37,9 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,6 +55,8 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
+  private static final String PAGINATION_KEY = "pagination";
+  private static final String DELAY_KEY = "delay";
 
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
@@ -652,7 +657,18 @@ public class WalletServiceImpl implements WalletService {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
+      List<Wallet> deletedWallets = new ArrayList<>();
+      List<Wallet> fetchedWallets;
+      ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+
+      do {
+        fetchedWallets = walletUpdatesRepository.deletePaged(queueCommandOperationDTO.getEntityId(),
+                Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY)));
+        deletedWallets.addAll(fetchedWallets);
+        executorService.schedule(() -> {}, Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)), TimeUnit.MILLISECONDS);
+      } while (fetchedWallets.size() == (Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))));
+
+      executorService.shutdown();
       log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);

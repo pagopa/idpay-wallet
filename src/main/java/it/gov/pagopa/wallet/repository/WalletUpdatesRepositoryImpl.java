@@ -7,9 +7,12 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -163,5 +166,15 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
                 new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 Wallet.class);
+    }
+
+    @Override
+    public List<Wallet> deletePaged(String initiativeId, int pageSize) {
+        log.trace("[DELETE_PAGED] Deleting wallet in pages");
+        Pageable pageable = PageRequest.of(0, pageSize);
+        return mongoTemplate.findAllAndRemove(
+                Query.query(Criteria.where(Fields.initiativeId).is(initiativeId)).with(pageable),
+                Wallet.class
+        );
     }
 }

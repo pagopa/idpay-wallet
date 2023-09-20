@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,6 +46,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
 import static org.junit.jupiter.api.Assertions.*;
@@ -124,8 +127,12 @@ class WalletServiceTest {
     private static final String REFUND_TYPE = "refund_type";
     private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
-    private static final String DELETE_OPERATION_TYPE = "DELETE_INITIATIVE";
     private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
+    public static final String OPERATION_TYPE_DELETE_INITIATIVE = "DELETE_INITIATIVE";
+    private static final String PAGINATION_KEY = "pagination";
+    private static final String PAGINATION_VALUE = "100";
+    private static final String DELAY_KEY = "delay";
+    private static final String DELAY_VALUE = "1500";
 
     private static final Wallet TEST_WALLET =
             Wallet.builder()
@@ -2292,38 +2299,62 @@ class WalletServiceTest {
                 .sendNotification(Mockito.any());
     }
 
-    @Test
-    void processCommand() {
+    @ParameterizedTest
+    @MethodSource("operationTypeAndInvocationTimes")
+    void processCommand(String operationType, int times) {
+        // Given
+        Map<String, String> additionalParams = new HashMap<>();
+        additionalParams.put(PAGINATION_KEY, PAGINATION_VALUE);
+        additionalParams.put(DELAY_KEY, DELAY_VALUE);
         final QueueCommandOperationDTO queueCommandOperationDTO = QueueCommandOperationDTO.builder()
                 .entityId(INITIATIVE_ID)
-                .operationType(DELETE_OPERATION_TYPE)
+                .operationType(operationType)
                 .operationTime(LocalDateTime.now().minusMinutes(5))
+                .additionalParams(additionalParams)
                 .build();
         Wallet wallet = Wallet.builder()
                 .id(ID_WALLET)
                 .initiativeId(INITIATIVE_ID)
                 .build();
-        final List<Wallet> deletedOnboardings = List.of(wallet);
+        final List<Wallet> deletedPage = List.of(wallet);
 
-        when(walletRepositoryMock.deleteByInitiativeId(queueCommandOperationDTO.getEntityId()))
-                .thenReturn(deletedOnboardings);
+        if(times == 2){
+            final List<Wallet> walletPage = createWalletPage(Integer.parseInt(PAGINATION_VALUE));
+            when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))))
+                    .thenReturn(walletPage)
+                    .thenReturn(deletedPage);
+        } else {
+            when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))))
+                    .thenReturn(deletedPage);
+        }
 
+        // When
         walletService.processCommand(queueCommandOperationDTO);
 
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
+
+        // Then
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(times)).deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY)));
     }
 
-    @Test
-    void processCommand_operationTypeNotDeleteInitiative() {
-        final QueueCommandOperationDTO queueCommandOperationDTO = QueueCommandOperationDTO.builder()
-                .entityId(INITIATIVE_ID)
-                .operationType("TEST_OPERATION_TYPE")
-                .operationTime(LocalDateTime.now().minusMinutes(5))
-                .build();
+    private static Stream<Arguments> operationTypeAndInvocationTimes() {
+        return Stream.of(
+                Arguments.of(OPERATION_TYPE_DELETE_INITIATIVE, 1),
+                Arguments.of(OPERATION_TYPE_DELETE_INITIATIVE, 2),
+                Arguments.of("OPERATION_TYPE_TEST", 0)
+        );
+    }
 
-        walletService.processCommand(queueCommandOperationDTO);
+    private List<Wallet> createWalletPage(int pageSize){
+        List<Wallet> walletPage = new ArrayList<>();
 
-        Mockito.verify(walletRepositoryMock, Mockito.times(0)).deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
+        for(int i=0;i<pageSize; i++){
+            walletPage.add(Wallet.builder()
+                    .id(ID_WALLET+i)
+                    .initiativeId(INITIATIVE_ID)
+                    .build());
+        }
+
+        return walletPage;
     }
 
 }
