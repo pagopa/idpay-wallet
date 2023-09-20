@@ -627,15 +627,16 @@ public class WalletServiceImpl implements WalletService {
     }
 
     InstrumentIssuerCallDTO instrumentIssuerCallDTO =
-        InstrumentIssuerCallDTO.builder()
-            .initiativeId(initiativeId)
-            .userId(userId)
-            .hpan(body.getHpan())
-            .channel(body.getChannel())
-            .brandLogo(body.getBrandLogo())
-            .brand(body.getBrand())
-            .maskedPan(body.getMaskedPan())
-            .build();
+            InstrumentIssuerCallDTO.builder()
+                    .initiativeId(initiativeId)
+                    .userId(userId)
+                    .hpan(body.getHpan())
+                    .channel(body.getChannel())
+                    .instrumentType(WalletConstants.INSTRUMENT_TYPE_CARD)
+                    .brandLogo(body.getBrandLogo())
+                    .brand(body.getBrand())
+                    .maskedPan(body.getMaskedPan())
+                    .build();
 
     try {
       log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
