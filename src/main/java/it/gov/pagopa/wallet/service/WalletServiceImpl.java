@@ -659,16 +659,21 @@ public class WalletServiceImpl implements WalletService {
 
       List<Wallet> deletedWallets = new ArrayList<>();
       List<Wallet> fetchedWallets;
-      ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+      //ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
       do {
         fetchedWallets = walletUpdatesRepository.deletePaged(queueCommandOperationDTO.getEntityId(),
                 Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY)));
         deletedWallets.addAll(fetchedWallets);
-        executorService.schedule(() -> {}, Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)), TimeUnit.MILLISECONDS);
+        //executorService.schedule(() -> {}, Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)), TimeUnit.MILLISECONDS);
+        try{
+          Thread.sleep(Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)));
+        } catch (InterruptedException e){
+          log.error("An error has occured while waiting ", e.getMessage());
+        }
       } while (fetchedWallets.size() == (Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))));
 
-      executorService.shutdown();
+      //executorService.shutdown();
       log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
