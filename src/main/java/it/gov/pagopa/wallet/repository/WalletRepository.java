@@ -17,6 +17,4 @@ public interface WalletRepository extends MongoRepository<Wallet, String> {
 
   List<Wallet> findByInitiativeIdAndFamilyId(String initiativeId, String familyId);
 
-  List<Wallet> deleteByInitiativeId(String initiativeId);
-
 }
