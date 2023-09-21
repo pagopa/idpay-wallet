@@ -26,6 +26,8 @@ public class InstrumentAckDTO {
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String channel;
 
+  String instrumentType; //TODO 1802 mandatory field?
+
   String brandLogo;
 
   String brand;

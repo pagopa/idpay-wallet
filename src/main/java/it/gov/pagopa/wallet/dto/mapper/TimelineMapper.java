@@ -99,6 +99,7 @@ public class TimelineMapper {
                 .initiativeId(dto.getInitiativeId())
                 .userId(dto.getUserId())
                 .channel(dto.getChannel())
+                .instrumentType(dto.getInstrumentType())
                 .maskedPan(dto.getMaskedPan())
                 .brandLogo(dto.getBrandLogo())
                 .brand(dto.getBrand())
