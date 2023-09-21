@@ -130,7 +130,7 @@ class WalletServiceTest {
     private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
     private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
-    public static final String OPERATION_TYPE_DELETE_INITIATIVE = "DELETE_INITIATIVE";
+    private static final String OPERATION_TYPE_DELETE_INITIATIVE = "DELETE_INITIATIVE";
     private static final String PAGINATION_KEY = "pagination";
     private static final String PAGINATION_VALUE = "100";
     private static final String DELAY_KEY = "delay";
