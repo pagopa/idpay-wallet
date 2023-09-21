@@ -94,6 +94,9 @@ public class WalletServiceImpl implements WalletService {
   @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}")
   String transactionTopic;
 
+  @Value("${app.iban.formalControl}")
+  boolean isFormalControlIban;
+
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
@@ -224,7 +227,9 @@ public class WalletServiceImpl implements WalletService {
     }
 
     iban = iban.toUpperCase();
-    formalControl(iban);
+    if (isFormalControlIban) {
+      formalControl(iban);
+    }
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
