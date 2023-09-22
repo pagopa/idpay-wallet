@@ -76,7 +76,7 @@ class TimelineMapperTest {
           INITIATIVE_ID,
           USER_ID,
           WalletConstants.CHANNEL_APP_IO,
-          WalletConstants.CARD,
+          WalletConstants.INSTRUMENT_TYPE_CARD,
           BRAND_LOGO,
           BRAND_LOGO,
           MASKED_PAN,
@@ -280,7 +280,7 @@ class TimelineMapperTest {
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("ADD_INSTRUMENT", actual.getOperationType());
     assertEquals(WalletConstants.CHANNEL_APP_IO, actual.getChannel());
-    assertEquals(WalletConstants.CARD, actual.getInstrumentType());
+    assertEquals(WalletConstants.INSTRUMENT_TYPE_CARD, actual.getInstrumentType());
     assertEquals(MASKED_PAN, actual.getMaskedPan());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
   }
@@ -288,12 +288,12 @@ class TimelineMapperTest {
   @Test
   void rejectedInstrumentToTimeline() {
     QueueOperationDTO actual = timelineMapper.rejectedInstrumentToTimeline(
-        WalletConstants.REJECTED_ADD_INSTRUMENT, WalletConstants.CARD,
+        WalletConstants.REJECTED_ADD_INSTRUMENT, WalletConstants.INSTRUMENT_TYPE_CARD,
         WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
 
     assertEquals("REJECTED_ADD_INSTRUMENT", actual.getOperationType());
     assertEquals(WalletConstants.CHANNEL_APP_IO, actual.getChannel());
-    assertEquals(WalletConstants.CARD, actual.getInstrumentType());
+    assertEquals(WalletConstants.INSTRUMENT_TYPE_CARD, actual.getInstrumentType());
     assertNotNull(actual);
   }
 
