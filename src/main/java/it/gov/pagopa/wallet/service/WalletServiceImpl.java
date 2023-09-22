@@ -53,18 +53,30 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
 
-  @Autowired WalletRepository walletRepository;
-  @Autowired WalletUpdatesRepository walletUpdatesRepository;
-  @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-  @Autowired OnboardingRestConnector onboardingRestConnector;
-  @Autowired IbanProducer ibanProducer;
-  @Autowired TimelineProducer timelineProducer;
-  @Autowired WalletMapper walletMapper;
-  @Autowired TimelineMapper timelineMapper;
-  @Autowired ErrorProducer errorProducer;
-  @Autowired NotificationProducer notificationProducer;
-  @Autowired AuditUtilities auditUtilities;
-  @Autowired Utilities utilities;
+  @Autowired
+  WalletRepository walletRepository;
+  @Autowired
+  WalletUpdatesRepository walletUpdatesRepository;
+  @Autowired
+  PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  @Autowired
+  OnboardingRestConnector onboardingRestConnector;
+  @Autowired
+  IbanProducer ibanProducer;
+  @Autowired
+  TimelineProducer timelineProducer;
+  @Autowired
+  WalletMapper walletMapper;
+  @Autowired
+  TimelineMapper timelineMapper;
+  @Autowired
+  ErrorProducer errorProducer;
+  @Autowired
+  NotificationProducer notificationProducer;
+  @Autowired
+  AuditUtilities auditUtilities;
+  @Autowired
+  Utilities utilities;
 
   @Value(
       "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
@@ -159,6 +171,9 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.enrollInstrument(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (FeignException e) {
+      sendToTimeline(
+          timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_ADD_INSTRUMENT,
+              WalletConstants.CARD, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now()));
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "error in payment instrument request");
@@ -184,6 +199,9 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.deleteInstrument(dto);
       performanceLog(startTime, "DELETE_INSTRUMENT");
     } catch (FeignException e) {
+      sendToTimeline(
+          timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_DELETE_INSTRUMENT,
+              WalletConstants.CARD, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now()));
       performanceLog(startTime, "DELETE_INSTRUMENT");
       throw new WalletException(e.status(), e.getMessage());
     }
@@ -299,8 +317,9 @@ public class WalletServiceImpl implements WalletService {
     String backupStatus = wallet.getStatus();
     LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
     String readmittedStatus;
-    if(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())){
-      readmittedStatus = WalletStatus.getByBooleans(wallet.getIban() != null, wallet.getNInstr() > 0).name();
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
+      readmittedStatus = WalletStatus.getByBooleans(wallet.getIban() != null,
+          wallet.getNInstr() > 0).name();
     } else {
       readmittedStatus = WalletStatus.REFUNDABLE.name();
     }
@@ -336,7 +355,7 @@ public class WalletServiceImpl implements WalletService {
     List<WalletDTO> walletDTOList = new ArrayList<>();
 
     for (Wallet wallet : walletList) {
-        walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
+      walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
     }
     initiativeListDTO.setInitiativeList(walletDTOList);
 
@@ -384,37 +403,43 @@ public class WalletServiceImpl implements WalletService {
     performanceLog(startTime, "CREATE_WALLET");
     auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
+
   @Override
   public void unsubscribe(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
 
-    log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}",userId,initiativeId);
+    log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     LocalDateTime now = LocalDateTime.now();
     String statusTemp = wallet.getStatus();
     wallet.setRequestUnsubscribeDate(now);
     UnsubscribeCallDTO unsubscribeCallDTO =
-            new UnsubscribeCallDTO(
-                    initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
+        new UnsubscribeCallDTO(
+            initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
     try {
       paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-      log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",initiativeId,userId);
+      log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",
+          initiativeId, userId);
     } catch (FeignException e) {
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
-              userId, initiativeId, "request of disabling all payment instruments failed");
-      log.info("[UNSUBSCRIBE] Request of disabling all payment instruments on initiative {} for user {} failed",initiativeId,userId);
+          userId, initiativeId, "request of disabling all payment instruments failed");
+      log.info(
+          "[UNSUBSCRIBE] Request of disabling all payment instruments on initiative {} for user {} failed",
+          initiativeId, userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
     try {
       onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
-      log.info("[UNSUBSCRIBE] Onboarding disabled on initiative {} for user {}",initiativeId,userId);
+      log.info("[UNSUBSCRIBE] Onboarding disabled on initiative {} for user {}", initiativeId,
+          userId);
     } catch (FeignException e) {
       paymentInstrumentRestConnector.rollback(initiativeId, userId);
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
-              userId, initiativeId, "request of disabling onboarding failed");
-      log.info("[UNSUBSCRIBE] Request of disabling onboarding on initiative {} for user {} failed",initiativeId,userId);
+          userId, initiativeId, "request of disabling onboarding failed");
+      log.info("[UNSUBSCRIBE] Request of disabling onboarding on initiative {} for user {} failed",
+          initiativeId, userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
     try {
@@ -424,7 +449,8 @@ public class WalletServiceImpl implements WalletService {
         wallet.setUpdateDate(now);
         walletRepository.save(wallet);
         auditUtilities.logUnsubscribe(userId, initiativeId);
-        log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}",initiativeId,userId);
+        log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}", initiativeId,
+            userId);
         //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, now));
       }
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
@@ -434,8 +460,9 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.rollback(initiativeId, userId);
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
-              userId, initiativeId, "request of disabling wallet failed");
-      log.info("[UNSUBSCRIBE] Request of disabling wallet on initiative {} for user {} failed",initiativeId,userId);
+          userId, initiativeId, "request of disabling wallet failed");
+      log.info("[UNSUBSCRIBE] Request of disabling wallet on initiative {} for user {} failed",
+          initiativeId, userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
   }
@@ -446,8 +473,8 @@ public class WalletServiceImpl implements WalletService {
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(rewardTransactionDTO.getChannel().equals("QRCODE")
-            && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
-            || rewardTransactionDTO.getStatus().equals("CANCELLED")))) {
+        && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
+        || rewardTransactionDTO.getStatus().equals("CANCELLED")))) {
       log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
       performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
       return;
@@ -576,7 +603,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (history.containsKey(refundDTO.getRewardNotificationId())
         && history.get(refundDTO.getRewardNotificationId()).getFeedbackProgressive()
-            >= refundDTO.getFeedbackProgressive()) {
+        >= refundDTO.getFeedbackProgressive()) {
       log.info("[PROCESS_REFUND] Feedback already processed, skipping message");
       performanceLog(startTime, SERVICE_PROCESS_REFUND);
       return;
@@ -648,13 +675,17 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO){
+  public void processCommand(QueueCommandOperationDTO queueCommandOperationDTO) {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(queueCommandOperationDTO.getEntityId());
-      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
-      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
+      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(
+          queueCommandOperationDTO.getEntityId());
+      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet",
+          queueCommandOperationDTO.getEntityId());
+      deletedWallets.forEach(
+          deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(),
+              deletedWallet.getInitiativeId()));
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
     }
   }
@@ -667,50 +698,52 @@ public class WalletServiceImpl implements WalletService {
       BigDecimal accruedReward) {
 
     if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
-            && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
+        && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-      Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId, rewardTransactionDTO.getUserId()).orElse(null);
+      Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,
+          rewardTransactionDTO.getUserId()).orElse(null);
 
       if (userWallet == null) {
-        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}", rewardTransactionDTO.getUserId(), initiativeId);
+        log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}",
+            rewardTransactionDTO.getUserId(), initiativeId);
         return;
       }
 
       userWallet = walletUpdatesRepository.rewardTransaction(initiativeId,
-              rewardTransactionDTO.getUserId(),
-              rewardTransactionDTO.getElaborationDateTime(),
-              counters
-                      .getInitiativeBudget()
-                      .subtract(counters.getTotalReward())
-                      .setScale(2, RoundingMode.HALF_DOWN),
-              userWallet.getAccrued()
-                      .add(rewardTransactionDTO
-                              .getRewards()
-                              .get(initiativeId)
-                              .getAccruedReward()
-                              .setScale(2, RoundingMode.HALF_DOWN)));
+          rewardTransactionDTO.getUserId(),
+          rewardTransactionDTO.getElaborationDateTime(),
+          counters
+              .getInitiativeBudget()
+              .subtract(counters.getTotalReward())
+              .setScale(2, RoundingMode.HALF_DOWN),
+          userWallet.getAccrued()
+              .add(rewardTransactionDTO
+                  .getRewards()
+                  .get(initiativeId)
+                  .getAccruedReward()
+                  .setScale(2, RoundingMode.HALF_DOWN)));
 
       if (userWallet.getFamilyId() != null) {
 
         log.info(
-                "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
-                userWallet.getFamilyId(),
-                counters.getTotalReward());
+            "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
+            userWallet.getFamilyId(),
+            counters.getTotalReward());
 
         boolean updateResult =
-                walletUpdatesRepository.rewardFamilyTransaction(
-                        initiativeId,
-                        userWallet.getFamilyId(),
-                        rewardTransactionDTO.getElaborationDateTime(),
-                        counters
-                                .getInitiativeBudget()
-                                .subtract(counters.getTotalReward())
-                                .setScale(2, RoundingMode.HALF_DOWN));
+            walletUpdatesRepository.rewardFamilyTransaction(
+                initiativeId,
+                userWallet.getFamilyId(),
+                rewardTransactionDTO.getElaborationDateTime(),
+                counters
+                    .getInitiativeBudget()
+                    .subtract(counters.getTotalReward())
+                    .setScale(2, RoundingMode.HALF_DOWN));
 
         if (!updateResult) {
           throw new WalletUpdateException(
-                  "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
-                          .formatted(userWallet.getFamilyId()));
+              "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
+                  .formatted(userWallet.getFamilyId()));
         }
       }
     }
@@ -730,7 +763,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private String setStatus(Wallet wallet) {
-    if(!wallet.getStatus().equals(WalletStatus.SUSPENDED)){
+    if (!wallet.getStatus().equals(WalletStatus.SUSPENDED)) {
       boolean hasIban = wallet.getIban() != null;
       boolean hasInstrument = wallet.getNInstr() > 0;
       return WalletStatus.getByBooleans(hasIban, hasInstrument).name();
@@ -929,8 +962,9 @@ public class WalletServiceImpl implements WalletService {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
       for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
         if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)
-                && !wallet.getEndDate().isBefore(LocalDate.now())
-                && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
+            && !wallet.getEndDate().isBefore(LocalDate.now())
+            && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(
+            wallet.getInitiativeRewardType())) {
           initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));
         }
       }
@@ -954,13 +988,13 @@ public class WalletServiceImpl implements WalletService {
                             i.getInitiativeName(),
                             (instrumentStatusOnInitiativeMap.get(i.getInitiativeId()) != null
                                 ? instrumentStatusOnInitiativeMap
-                                    .get(i.getInitiativeId())
-                                    .getIdInstrument()
+                                .get(i.getInitiativeId())
+                                .getIdInstrument()
                                 : null),
                             (instrumentStatusOnInitiativeMap.get(i.getInitiativeId()) != null
                                 ? instrumentStatusOnInitiativeMap
-                                    .get(i.getInitiativeId())
-                                    .getStatus()
+                                .get(i.getInitiativeId())
+                                .getStatus()
                                 : WalletConstants.INSTRUMENT_STATUS_DEFAULT)))
                 .toList();
       }
