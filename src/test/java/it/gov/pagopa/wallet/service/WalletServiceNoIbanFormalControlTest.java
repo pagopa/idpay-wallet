@@ -32,6 +32,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
 @TestPropertySource(
@@ -74,7 +76,7 @@ class WalletServiceNoIbanFormalControlTest {
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
     private static final String CHANNEL = "CHANNEL";
-    private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
+    private static final String IBAN_OK = "IT09P3608105138205493205495";
     private static final String DESCRIPTION_OK = "conto cointestato";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
@@ -100,19 +102,31 @@ class WalletServiceNoIbanFormalControlTest {
                     .build();
 
     @Test
-    void enrollIban_ok_iban_not_italian() {
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+    void enrollIban_ok_only_iban() {
+        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        TEST_WALLET.setNInstr(0);
         TEST_WALLET.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));
 
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            TEST_WALLET.setIban(IBAN_OK);
+                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
+                            return null;
+                        })
+                .when(walletUpdatesRepositoryMock)
+                .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK), Mockito.anyString());
+
         try {
-            walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK);
+            walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
         } catch (WalletException e) {
             Assertions.fail();
         }
+
+        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
     }
 
 }

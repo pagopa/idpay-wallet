@@ -227,6 +227,11 @@ public class WalletServiceImpl implements WalletService {
     }
 
     iban = iban.toUpperCase();
+    Iban ibanValidator = Iban.valueOf(iban);
+    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
+      auditUtilities.logEnrollmentIbanValidationKO(iban);
+      throw new UnsupportedCountryException(iban + " Iban is not italian");
+    }
     if (isFormalControlIban) {
       formalControl(iban);
     }
@@ -844,12 +849,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void formalControl(String iban) {
-    Iban ibanValidator = Iban.valueOf(iban);
     IbanUtil.validate(iban);
-    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
-      auditUtilities.logEnrollmentIbanValidationKO(iban);
-      throw new UnsupportedCountryException(iban + " Iban is not italian");
-    }
   }
 
   private void rollbackWallet(String statusToRollback, Wallet wallet) {
