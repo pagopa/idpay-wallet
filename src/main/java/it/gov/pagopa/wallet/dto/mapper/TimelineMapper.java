@@ -99,12 +99,22 @@ public class TimelineMapper {
                 .initiativeId(dto.getInitiativeId())
                 .userId(dto.getUserId())
                 .channel(dto.getChannel())
+                .instrumentType(dto.getInstrumentType())
                 .maskedPan(dto.getMaskedPan())
                 .brandLogo(dto.getBrandLogo())
                 .brand(dto.getBrand())
                 .operationType(dto.getOperationType())
                 .operationDate(dto.getOperationDate())
                 .build();
+    }
+
+    public QueueOperationDTO rejectedInstrumentToTimeline(String operationType, String instrumentType, String channel, LocalDateTime operationDate) {
+        return QueueOperationDTO.builder()
+            .channel(channel)
+            .instrumentType(instrumentType)
+            .operationType(operationType)
+            .operationDate(operationDate)
+            .build();
     }
 
     public QueueOperationDTO onboardingToTimeline(EvaluationDTO evaluationDTO) {
