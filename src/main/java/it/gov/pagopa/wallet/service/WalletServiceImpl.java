@@ -22,8 +22,6 @@ import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
-import org.iban4j.CountryCode;
-import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,6 +91,9 @@ public class WalletServiceImpl implements WalletService {
 
   @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}")
   String transactionTopic;
+
+  @Value("${app.iban.formalControl}")
+  boolean isFormalControlIban;
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -224,7 +225,13 @@ public class WalletServiceImpl implements WalletService {
     }
 
     iban = iban.toUpperCase();
-    formalControl(iban);
+    if (!iban.startsWith("IT")) {
+      auditUtilities.logEnrollmentIbanValidationKO(iban);
+      throw new UnsupportedCountryException(iban + " Iban is not italian");
+    }
+    if (isFormalControlIban) {
+      formalControl(iban);
+    }
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
@@ -839,12 +846,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void formalControl(String iban) {
-    Iban ibanValidator = Iban.valueOf(iban);
     IbanUtil.validate(iban);
-    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
-      auditUtilities.logEnrollmentIbanValidationKO(iban);
-      throw new UnsupportedCountryException(iban + " Iban is not italian");
-    }
   }
 
   private void rollbackWallet(String statusToRollback, Wallet wallet) {
