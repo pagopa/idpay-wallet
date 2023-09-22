@@ -165,7 +165,8 @@ public class WalletServiceImpl implements WalletService {
           HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
     InstrumentCallBodyDTO dto =
-        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO, WalletConstants.INSTRUMENT_TYPE_CARD);
+        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO,
+            WalletConstants.INSTRUMENT_TYPE_CARD);
 
     try {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
@@ -654,16 +655,16 @@ public class WalletServiceImpl implements WalletService {
     }
 
     InstrumentIssuerCallDTO instrumentIssuerCallDTO =
-            InstrumentIssuerCallDTO.builder()
-                    .initiativeId(initiativeId)
-                    .userId(userId)
-                    .hpan(body.getHpan())
-                    .channel(body.getChannel())
-                    .instrumentType(WalletConstants.INSTRUMENT_TYPE_CARD)
-                    .brandLogo(body.getBrandLogo())
-                    .brand(body.getBrand())
-                    .maskedPan(body.getMaskedPan())
-                    .build();
+        InstrumentIssuerCallDTO.builder()
+            .initiativeId(initiativeId)
+            .userId(userId)
+            .hpan(body.getHpan())
+            .channel(body.getChannel())
+            .instrumentType(WalletConstants.INSTRUMENT_TYPE_CARD)
+            .brandLogo(body.getBrandLogo())
+            .brand(body.getBrand())
+            .maskedPan(body.getMaskedPan())
+            .build();
 
     try {
       log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
@@ -693,7 +694,9 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void enrollInstrumentCode(String initiativeId, String userId) {
+  public void
+
+  enrollInstrumentCode(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT_CODE] Checking the status of initiative {}", initiativeId);
@@ -705,26 +708,29 @@ public class WalletServiceImpl implements WalletService {
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logEnrollmentInstrumentCodeKO(
-              userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
+          userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
       throw new WalletException(
-              HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
     }
 
     InstrumentCallBodyDTO dto = InstrumentCallBodyDTO.builder()
-            .userId(userId)
-            .initiativeId(initiativeId)
-            .channel(WalletConstants.CHANNEL_APP_IO)
-            .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
-            .build();
+        .userId(userId)
+        .initiativeId(initiativeId)
+        .channel(WalletConstants.CHANNEL_APP_IO)
+        .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
+        .build();
 
     try {
       log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentCode(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
     } catch (FeignException e) {
+      sendToTimeline(timelineMapper.rejectedInstrumentToTimeline(
+          WalletConstants.REJECTED_ADD_INSTRUMENT, dto.getInstrumentType(), dto.getChannel(),
+          LocalDateTime.now()));
       log.error("[ENROLL_INSTRUMENT_CODE] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentCodeKO(
-              userId, initiativeId, "error in payment instrument request");
+          userId, initiativeId, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
       throw new WalletException(e.status(), utilities.exceptionConverter(e));
     }
