@@ -16,6 +16,7 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
+import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -76,7 +78,8 @@ class WalletServiceNoIbanFormalControlTest {
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
     private static final String CHANNEL = "CHANNEL";
-    private static final String IBAN_OK = "IT09P3608105138205493205495";
+    private static final String IBAN_OK = "IT09P0000005138205493205499";
+    private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
     private static final String DESCRIPTION_OK = "conto cointestato";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
@@ -127,6 +130,23 @@ class WalletServiceNoIbanFormalControlTest {
         }
 
         assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
+    }
+
+    @Test
+    void enrollIban_ko_iban_not_italian() {
+        TEST_WALLET.setIban(null);
+        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        TEST_WALLET.setEndDate(LocalDate.MAX);
+
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+                .thenReturn(Optional.of(TEST_WALLET));
+
+        try {
+            walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK);
+            Assertions.fail();
+        } catch (UnsupportedCountryException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
 }

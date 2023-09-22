@@ -22,8 +22,6 @@ import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
-import org.iban4j.CountryCode;
-import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -227,8 +225,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     iban = iban.toUpperCase();
-    Iban ibanValidator = Iban.valueOf(iban);
-    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
+    if (!iban.startsWith("IT")) {
       auditUtilities.logEnrollmentIbanValidationKO(iban);
       throw new UnsupportedCountryException(iban + " Iban is not italian");
     }
