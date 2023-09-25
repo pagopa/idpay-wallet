@@ -727,7 +727,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentCode(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
-    } catch (FeignException e) {
+    } catch (Exception e) {
       sendToTimeline(timelineMapper.rejectedInstrumentToTimeline(
           WalletConstants.REJECTED_ADD_INSTRUMENT, dto.getInstrumentType(), dto.getChannel(),
           LocalDateTime.now()));
@@ -735,7 +735,7 @@ public class WalletServiceImpl implements WalletService {
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
-      throw new WalletException(e.status(), utilities.exceptionConverter(e));
+      throw new WalletException(500, e.getMessage());
     }
   }
 
