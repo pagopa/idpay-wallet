@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
+import it.gov.pagopa.wallet.dto.CheckEnrollmentDTO;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentFromDiscountDTO;
@@ -59,6 +60,17 @@ class PaymentInstrumentRestClientTest {
 
     try {
       restConnector.enrollInstrument(instrument);
+    } catch (Exception e) {
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void enroll_instrument_code() {
+
+    try {
+      CheckEnrollmentDTO checkEnrollmentDTO = restConnector.codeStatus(USER_ID);
+      Assertions.assertNotNull(checkEnrollmentDTO);
     } catch (Exception e) {
       Assertions.fail();
     }

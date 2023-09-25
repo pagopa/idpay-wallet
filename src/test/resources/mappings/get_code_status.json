@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/idpay/instrument/code/status/.*"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "isIdPayCodeEnabled": true
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

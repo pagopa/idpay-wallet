@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.connector;
 
+import it.gov.pagopa.wallet.dto.CheckEnrollmentDTO;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
 import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
@@ -61,4 +62,7 @@ public interface PaymentInstrumentRestClient {
   @PutMapping(value = "/idpay/instrument/code/enroll", produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   void enrollInstrumentCode(@RequestBody InstrumentCallBodyDTO body);
+
+  @GetMapping("/idpay/instrument/code/status/{userId}")
+  CheckEnrollmentDTO codeStatus(@PathVariable("userId") String userId);
 }

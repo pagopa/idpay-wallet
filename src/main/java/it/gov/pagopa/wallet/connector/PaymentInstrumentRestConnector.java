@@ -23,4 +23,6 @@ public interface PaymentInstrumentRestConnector {
   void enrollDiscountInitiative(@RequestBody InstrumentFromDiscountDTO body);
   void rollback(@PathVariable String initiativeId,@PathVariable String userId);
   void enrollInstrumentCode(@RequestBody InstrumentCallBodyDTO body);
+
+  CheckEnrollmentDTO codeStatus(@PathVariable("userId") String userId);
 }

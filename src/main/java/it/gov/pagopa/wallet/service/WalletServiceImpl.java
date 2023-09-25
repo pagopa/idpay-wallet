@@ -697,9 +697,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void
-
-  enrollInstrumentCode(String initiativeId, String userId) {
+  public void enrollInstrumentCode(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT_CODE] Checking the status of initiative {}", initiativeId);
@@ -724,9 +722,14 @@ public class WalletServiceImpl implements WalletService {
         .build();
 
     try {
-      log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
-      paymentInstrumentRestConnector.enrollInstrumentCode(dto);
-      performanceLog(startTime, "ENROLL_INSTRUMENT_CITIZEN");
+      CheckEnrollmentDTO checkEnrollmentDTO = paymentInstrumentRestConnector.codeStatus(userId);
+      if(checkEnrollmentDTO.isIdPayCodeEnabled()){
+        log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
+        paymentInstrumentRestConnector.enrollInstrumentCode(dto);
+        performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
+      }else {
+        throw new WalletException(403, "IdpayCode must be generated");
+      }
     } catch (Exception e) {
       sendToTimeline(timelineMapper.rejectedInstrumentToTimeline(
           WalletConstants.REJECTED_ADD_INSTRUMENT, dto.getInstrumentType(), dto.getChannel(),
@@ -735,6 +738,9 @@ public class WalletServiceImpl implements WalletService {
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
+      if (e instanceof WalletException){
+        throw e;
+      }
       throw new WalletException(500, e.getMessage());
     }
   }
