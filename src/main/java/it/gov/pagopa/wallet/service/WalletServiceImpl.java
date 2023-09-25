@@ -172,7 +172,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrument(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT");
-    } catch (FeignException e) {
+    } catch (Exception e) {
       sendToTimeline(
           timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_ADD_INSTRUMENT,
               WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now()));
@@ -180,7 +180,7 @@ public class WalletServiceImpl implements WalletService {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT");
-      throw new WalletException(e.status(), utilities.exceptionConverter(e));
+      throw new WalletException(500, e.getMessage());
     }
   }
 
@@ -200,12 +200,12 @@ public class WalletServiceImpl implements WalletService {
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
       performanceLog(startTime, "DELETE_INSTRUMENT");
-    } catch (FeignException e) {
+    } catch (Exception e) {
       sendToTimeline(
           timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_DELETE_INSTRUMENT,
               WalletConstants.CHANNEL_APP_IO, LocalDateTime.now()));
       performanceLog(startTime, "DELETE_INSTRUMENT");
-      throw new WalletException(e.status(), e.getMessage());
+      throw new WalletException(500, e.getMessage());
     }
   }
 
@@ -670,13 +670,13 @@ public class WalletServiceImpl implements WalletService {
       log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentIssuer(instrumentIssuerCallDTO);
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
-    } catch (FeignException e) {
+    } catch (Exception e) {
       sendToTimeline(
           timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_ADD_INSTRUMENT,
               WalletConstants.INSTRUMENT_TYPE_CARD, body.getChannel(), LocalDateTime.now()));
       log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
-      throw new WalletException(e.status(), utilities.exceptionConverter(e));
+      throw new WalletException(500, e.getMessage());
     }
   }
 
