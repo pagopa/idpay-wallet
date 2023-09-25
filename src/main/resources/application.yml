@@ -342,3 +342,5 @@ app:
   initiative:
     logo:
       url: ${INITIATIVE_LOGO_URL}
+  iban:
+    formalControl: ${IS_IBAN_FORMAL_CONTROL_ACTIVE:false}
