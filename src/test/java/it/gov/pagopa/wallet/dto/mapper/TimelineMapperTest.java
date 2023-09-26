@@ -1,7 +1,6 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
@@ -9,16 +8,14 @@ import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
 import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-
+import it.gov.pagopa.wallet.enums.BeneficiaryType;
+import it.gov.pagopa.wallet.enums.WalletStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
-
-import it.gov.pagopa.wallet.enums.BeneficiaryType;
-import it.gov.pagopa.wallet.enums.WalletStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -283,18 +280,6 @@ class TimelineMapperTest {
     assertEquals(WalletConstants.INSTRUMENT_TYPE_CARD, actual.getInstrumentType());
     assertEquals(MASKED_PAN, actual.getMaskedPan());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
-  }
-
-  @Test
-  void rejectedInstrumentToTimeline() {
-    QueueOperationDTO actual = timelineMapper.rejectedInstrumentToTimeline(
-        WalletConstants.REJECTED_ADD_INSTRUMENT, WalletConstants.INSTRUMENT_TYPE_CARD,
-        WalletConstants.CHANNEL_APP_IO, LocalDateTime.now());
-
-    assertEquals("REJECTED_ADD_INSTRUMENT", actual.getOperationType());
-    assertEquals(WalletConstants.CHANNEL_APP_IO, actual.getChannel());
-    assertEquals(WalletConstants.INSTRUMENT_TYPE_CARD, actual.getInstrumentType());
-    assertNotNull(actual);
   }
 
   @Test

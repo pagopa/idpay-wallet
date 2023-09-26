@@ -4,7 +4,31 @@ import feign.FeignException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.dto.Counters;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
+import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueDTO;
+import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.InitiativesStatusDTO;
+import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
+import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
+import it.gov.pagopa.wallet.dto.InstrumentFromDiscountDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
+import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
+import it.gov.pagopa.wallet.dto.QueueCommandOperationDTO;
+import it.gov.pagopa.wallet.dto.QueueOperationDTO;
+import it.gov.pagopa.wallet.dto.RefundDTO;
+import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
+import it.gov.pagopa.wallet.dto.StatusOnInitiativeDTO;
+import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.WalletPIDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
@@ -21,6 +45,17 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
@@ -31,14 +66,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -173,13 +200,16 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.enrollInstrument(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (Exception e) {
-      sendToTimeline(
-          timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_ADD_INSTRUMENT,
-              WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.CHANNEL_APP_IO, LocalDateTime.now()));
+      sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
+          WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.REJECTED_ADD_INSTRUMENT);
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT");
+
+      if (e instanceof FeignException feignException){
+        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
+      }
       throw new WalletException(500, e.getMessage());
     }
   }
@@ -201,10 +231,12 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.deleteInstrument(dto);
       performanceLog(startTime, "DELETE_INSTRUMENT");
     } catch (Exception e) {
-      sendToTimeline(
-          timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_DELETE_INSTRUMENT,
-              WalletConstants.CHANNEL_APP_IO, LocalDateTime.now()));
+      sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
+          null, WalletConstants.REJECTED_DELETE_INSTRUMENT);
       performanceLog(startTime, "DELETE_INSTRUMENT");
+      if (e instanceof FeignException feignException){
+        throw new WalletException(feignException.status(), feignException.getMessage());
+      }
       throw new WalletException(500, e.getMessage());
     }
   }
@@ -453,7 +485,6 @@ public class WalletServiceImpl implements WalletService {
         auditUtilities.logUnsubscribe(userId, initiativeId);
         log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}", initiativeId,
             userId);
-        //sendToTimeline(timelineMapper.unsubscribeToTimeline(initiativeId, userId, now));
       }
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
     } catch (FeignException e) {
@@ -671,11 +702,14 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.enrollInstrumentIssuer(instrumentIssuerCallDTO);
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
     } catch (Exception e) {
-      sendToTimeline(
-          timelineMapper.rejectedInstrumentToTimeline(WalletConstants.REJECTED_ADD_INSTRUMENT,
-              WalletConstants.INSTRUMENT_TYPE_CARD, body.getChannel(), LocalDateTime.now()));
+      sendRejectedInstrumentToTimeline(initiativeId, userId, body.getChannel(),
+          WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.REJECTED_ADD_INSTRUMENT);
       log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
+
+      if (e instanceof FeignException feignException){
+        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
+      }
       throw new WalletException(500, e.getMessage());
     }
   }
@@ -726,15 +760,18 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.enrollInstrumentCode(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
     } catch (Exception e) {
-      sendToTimeline(timelineMapper.rejectedInstrumentToTimeline(
-          WalletConstants.REJECTED_ADD_INSTRUMENT, dto.getInstrumentType(), dto.getChannel(),
-          LocalDateTime.now()));
+      sendRejectedInstrumentToTimeline(initiativeId, userId, dto.getChannel(),
+          dto.getInstrumentType(), WalletConstants.REJECTED_ADD_INSTRUMENT);
 
       log.error("[ENROLL_INSTRUMENT_CODE] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "error in payment instrument request");
 
       performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
+
+      if (e instanceof FeignException feignException){
+        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
+      }
       throw new WalletException(500, e.getMessage());
     }
   }
@@ -862,6 +899,19 @@ public class WalletServiceImpl implements WalletService {
     auditUtilities.logIbanDeleted(iban.getUserId(), iban.getInitiativeId(), iban.getIban());
 
     performanceLog(startTime, SERVICE_CHECK_IBAN_OUTCOME);
+  }
+
+  private void sendRejectedInstrumentToTimeline(String initiativeId, String userId, String channel,
+      String instrumentType, String operationType) {
+    InstrumentAckDTO instrumentAckDTO = InstrumentAckDTO.builder()
+        .userId(userId)
+        .initiativeId(initiativeId)
+        .instrumentType(instrumentType)
+        .operationType(operationType)
+        .channel(channel)
+        .operationDate(LocalDateTime.now())
+        .build();
+    sendToTimeline(timelineMapper.ackToTimeline(instrumentAckDTO));
   }
 
   private void sendCheckIban(IbanQueueWalletDTO iban) {

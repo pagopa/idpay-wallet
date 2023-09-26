@@ -79,8 +79,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpServerErrorException;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -491,7 +493,7 @@ class WalletServiceTest {
             walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
             Assertions.fail();
         } catch (WalletException e) {
-            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
         }
     }
 
@@ -731,6 +733,24 @@ class WalletServiceTest {
         Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
                 .when(paymentInstrumentRestConnector)
                 .deleteInstrument(Mockito.any(DeactivationBodyDTO.class));
+
+        try {
+            walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
+            Assertions.fail();
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+        }
+    }
+
+    @Test
+    void deleteInstrument_ko_exception() {
+        TEST_WALLET.setEndDate(LocalDate.MAX);
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+            .thenReturn(Optional.of(TEST_WALLET));
+
+        Mockito.doThrow(new HttpServerErrorException(HttpStatusCode.valueOf(400)))
+            .when(paymentInstrumentRestConnector)
+            .deleteInstrument(Mockito.any(DeactivationBodyDTO.class));
 
         try {
             walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
@@ -2005,7 +2025,7 @@ class WalletServiceTest {
             walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
             Assertions.fail();
         } catch (WalletException e) {
-            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
         }
     }
 
@@ -2398,6 +2418,24 @@ class WalletServiceTest {
         Mockito.doThrow(new FeignException.BadRequest("", request, new byte[0], null))
                 .when(paymentInstrumentRestConnector)
                 .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
+
+        try {
+            walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+            Assertions.fail();
+        } catch (WalletException e) {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getCode());
+        }
+    }
+
+    @Test
+    void enrollInstrumentCode_ko_exception() {
+        TEST_WALLET.setEndDate(LocalDate.MAX);
+        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+            .thenReturn(Optional.of(TEST_WALLET));
+
+        Mockito.doThrow(new HttpServerErrorException(HttpStatusCode.valueOf(400)))
+            .when(paymentInstrumentRestConnector)
+            .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
 
         try {
             walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);

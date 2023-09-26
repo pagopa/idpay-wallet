@@ -108,23 +108,6 @@ public class TimelineMapper {
                 .build();
     }
 
-    public QueueOperationDTO rejectedInstrumentToTimeline(String operationType, String instrumentType, String channel, LocalDateTime operationDate) {
-        return QueueOperationDTO.builder()
-            .channel(channel)
-            .instrumentType(instrumentType)
-            .operationType(operationType)
-            .operationDate(operationDate)
-            .build();
-    }
-
-    public QueueOperationDTO rejectedInstrumentToTimeline(String operationType, String channel, LocalDateTime operationDate) {
-        return QueueOperationDTO.builder()
-            .channel(channel)
-            .operationType(operationType)
-            .operationDate(operationDate)
-            .build();
-    }
-
     public QueueOperationDTO onboardingToTimeline(EvaluationDTO evaluationDTO) {
         return QueueOperationDTO.builder()
                 .initiativeId(evaluationDTO.getInitiativeId())
