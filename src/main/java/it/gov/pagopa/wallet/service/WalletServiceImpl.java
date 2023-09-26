@@ -723,6 +723,8 @@ public class WalletServiceImpl implements WalletService {
 
     try {
       CheckEnrollmentDTO checkEnrollmentDTO = paymentInstrumentRestConnector.codeStatus(userId);
+      log.info("[IDPAY_CODE_STATUS] The userId {} has code with status {}", userId,
+          checkEnrollmentDTO.isIdPayCodeEnabled());
       if(!checkEnrollmentDTO.isIdPayCodeEnabled()){
         throw new WalletException(403, "IdpayCode must be generated");
       }
