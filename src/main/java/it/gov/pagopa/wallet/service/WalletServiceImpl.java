@@ -723,21 +723,23 @@ public class WalletServiceImpl implements WalletService {
 
     try {
       CheckEnrollmentDTO checkEnrollmentDTO = paymentInstrumentRestConnector.codeStatus(userId);
-      if(checkEnrollmentDTO.isIdPayCodeEnabled()){
-        log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
-        paymentInstrumentRestConnector.enrollInstrumentCode(dto);
-        performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
-      }else {
+      if(!checkEnrollmentDTO.isIdPayCodeEnabled()){
         throw new WalletException(403, "IdpayCode must be generated");
       }
+      log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
+      paymentInstrumentRestConnector.enrollInstrumentCode(dto);
+      performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
     } catch (Exception e) {
       sendToTimeline(timelineMapper.rejectedInstrumentToTimeline(
           WalletConstants.REJECTED_ADD_INSTRUMENT, dto.getInstrumentType(), dto.getChannel(),
           LocalDateTime.now()));
+
       log.error("[ENROLL_INSTRUMENT_CODE] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "error in payment instrument request");
+
       performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
+
       if (e instanceof WalletException){
         throw e;
       }
