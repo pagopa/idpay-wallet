@@ -17,7 +17,6 @@ import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.CheckEnrollmentDTO;
 import it.gov.pagopa.wallet.dto.Counters;
 import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
 import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
@@ -2373,7 +2372,6 @@ class WalletServiceTest {
         TEST_WALLET.setNInstr(0);
         TEST_WALLET.setEndDate(LocalDate.MAX);
 
-        Mockito.when(paymentInstrumentRestConnector.codeStatus(USER_ID)).thenReturn(new CheckEnrollmentDTO(true));
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -2389,33 +2387,10 @@ class WalletServiceTest {
     }
 
     @Test
-    void enrollInstrumentCode_ko_notGeneratedCode() {
-        TEST_WALLET.setEndDate(LocalDate.MAX);
-        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-            .thenReturn(Optional.of(TEST_WALLET));
-
-        Mockito.when(paymentInstrumentRestConnector.codeStatus(USER_ID))
-            .thenReturn(new CheckEnrollmentDTO(false));
-
-        Mockito.doNothing()
-            .when(paymentInstrumentRestConnector)
-            .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
-
-        try {
-            walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
-            Assertions.fail();
-        } catch (WalletException e) {
-            assertEquals(HttpStatus.FORBIDDEN.value(), e.getCode());
-        }
-    }
-
-    @Test
     void enrollInstrumentCode_ko_feignexception() {
         TEST_WALLET.setEndDate(LocalDate.MAX);
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET));
-
-        Mockito.when(paymentInstrumentRestConnector.codeStatus(USER_ID)).thenReturn(new CheckEnrollmentDTO(true));
 
         Request request =
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());

@@ -53,9 +53,4 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   public void enrollInstrumentCode(InstrumentCallBodyDTO body) {
     paymentInstrumentRestClient.enrollInstrumentCode(body);
   }
-
-  @Override
-  public CheckEnrollmentDTO codeStatus(String userId) {
-    return paymentInstrumentRestClient.codeStatus(userId);
-  }
 }
