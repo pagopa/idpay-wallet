@@ -79,6 +79,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -86,18 +87,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpServerErrorException;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 import java.util.stream.Stream;
 
-import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -105,6 +98,8 @@ import static org.mockito.Mockito.when;
         locations = "classpath:application.yml",
         properties = {
                 "app.iban.formalControl=true",
+                "app.delete.paginationSize=100",
+                "app.delete.delayTime=1000"
         })
 class WalletServiceTest {
 
@@ -476,6 +471,9 @@ class WalletServiceTest {
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
                     100L);
+
+    @Value("${app.delete.paginationSize}")
+    private String pagination;
 
     @Test
     void enrollInstrument_ok() {
@@ -2393,11 +2391,11 @@ class WalletServiceTest {
 
         if(times == 2){
             final List<Wallet> walletPage = createWalletPage(Integer.parseInt(PAGINATION_VALUE));
-            when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))))
+            when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(pagination)))
                     .thenReturn(walletPage)
                     .thenReturn(deletedPage);
         } else {
-            when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))))
+            when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(pagination)))
                     .thenReturn(deletedPage);
         }
 
@@ -2408,7 +2406,7 @@ class WalletServiceTest {
 
 
         // Then
-        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(times)).deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY)));
+        Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(times)).deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(pagination));
     }
 
     private static Stream<Arguments> operationTypeAndInvocationTimes() {

@@ -125,6 +125,12 @@ public class WalletServiceImpl implements WalletService {
   @Value("${app.iban.formalControl}")
   boolean isFormalControlIban;
 
+  @Value("${app.delete.paginationSize}")
+  private String pagination;
+
+  @Value("${app.delete.delayTime}")
+  private String delay;
+
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
     long startTime = System.currentTimeMillis();
@@ -721,15 +727,15 @@ public class WalletServiceImpl implements WalletService {
 
       do {
         fetchedWallets = walletUpdatesRepository.deletePaged(queueCommandOperationDTO.getEntityId(),
-                Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY)));
+                Integer.parseInt(pagination));
         deletedWallets.addAll(fetchedWallets);
         try{
-          Thread.sleep(Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)));
+          Thread.sleep(Long.parseLong(delay));
         } catch (InterruptedException e){
           log.error("An error has occurred while waiting {}", e.getMessage());
           Thread.currentThread().interrupt();
         }
-      } while (fetchedWallets.size() == (Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))));
+      } while (fetchedWallets.size() == (Integer.parseInt(pagination)));
 
       log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
       deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
