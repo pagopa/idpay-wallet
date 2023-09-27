@@ -175,10 +175,7 @@ class WalletServiceTest {
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
     private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
     private static final String OPERATION_TYPE_DELETE_INITIATIVE = "DELETE_INITIATIVE";
-    private static final String PAGINATION_KEY = "pagination";
     private static final String PAGINATION_VALUE = "100";
-    private static final String DELAY_KEY = "delay";
-    private static final String DELAY_VALUE = "1500";
 
     private static final Wallet TEST_WALLET =
             Wallet.builder()
@@ -2374,14 +2371,10 @@ class WalletServiceTest {
     @MethodSource("operationTypeAndInvocationTimes")
     void processCommand(String operationType, int times) {
         // Given
-        Map<String, String> additionalParams = new HashMap<>();
-        additionalParams.put(PAGINATION_KEY, PAGINATION_VALUE);
-        additionalParams.put(DELAY_KEY, DELAY_VALUE);
         final QueueCommandOperationDTO queueCommandOperationDTO = QueueCommandOperationDTO.builder()
                 .entityId(INITIATIVE_ID)
                 .operationType(operationType)
                 .operationTime(LocalDateTime.now().minusMinutes(5))
-                .additionalParams(additionalParams)
                 .build();
         Wallet wallet = Wallet.builder()
                 .id(ID_WALLET)
