@@ -78,9 +78,6 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
-  private static final String PAGINATION_KEY = "pagination";
-  private static final String DELAY_KEY = "delay";
-
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
   @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
