@@ -65,17 +65,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Service
 public class WalletServiceImpl implements WalletService {
@@ -88,6 +77,7 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
+  public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
   private static final String PAGINATION_KEY = "pagination";
   private static final String DELAY_KEY = "delay";
 
