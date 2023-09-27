@@ -167,6 +167,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
+
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "the initiative is discount type");
@@ -745,6 +746,13 @@ public class WalletServiceImpl implements WalletService {
     auditUtilities.logEnrollmentInstrumentCode(userId, initiativeId);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    if (WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
+      auditUtilities.logEnrollmentInstrumentCodeKO(
+          userId, initiativeId, "the initiative is refund type");
+      throw new WalletException(
+          HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_REFUND_PI);
+    }
 
     checkEndDate(wallet.getEndDate());
 
