@@ -57,4 +57,9 @@ public interface PaymentInstrumentRestClient {
   @ResponseBody
   void rollback(
           @PathVariable String initiativeId, @PathVariable String userId);
+
+  @PutMapping(value = "/idpay/instrument/code/enroll", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
+  void enrollInstrumentCode(@RequestBody InstrumentCallBodyDTO body);
+
 }

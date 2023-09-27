@@ -98,4 +98,10 @@ public class WalletControllerImpl implements WalletController {
     InitiativesWithInstrumentDTO initiativesWithInstrumentDTO = walletService.getInitiativesWithInstrument(idWallet, userId);
     return new ResponseEntity<>(initiativesWithInstrumentDTO, HttpStatus.OK);
   }
+
+  @Override
+  public ResponseEntity<Void> enrollInstrumentCode(String initiativeId, String userId) {
+    walletService.enrollInstrumentCode(initiativeId, userId);
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
 }
