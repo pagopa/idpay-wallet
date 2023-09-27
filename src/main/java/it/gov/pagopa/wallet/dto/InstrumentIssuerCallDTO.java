@@ -22,4 +22,6 @@ public class InstrumentIssuerCallDTO {
   String brand;
 
   String maskedPan;
+
+  String instrumentType;
 }

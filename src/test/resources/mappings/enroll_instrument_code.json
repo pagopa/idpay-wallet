@@ -1,0 +1,6 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/idpay/instrument/code/enroll"
+  }
+}

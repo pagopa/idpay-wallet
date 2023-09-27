@@ -1,25 +1,14 @@
 package it.gov.pagopa.wallet.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InstrumentCallBodyDTO {
+public class CheckEnrollmentDTO {
 
-  String userId;
-
-  String initiativeId;
-
-  String idWallet;
-
-  String channel;
-
-  String instrumentType;
+  private boolean isIdPayCodeEnabled;
 
 }
-
