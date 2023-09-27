@@ -57,8 +57,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.iban4j.CountryCode;
-import org.iban4j.Iban;
 import org.iban4j.IbanUtil;
 import org.iban4j.UnsupportedCountryException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +64,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -79,32 +88,21 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
-  public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
+  private static final String PAGINATION_KEY = "pagination";
+  private static final String DELAY_KEY = "delay";
 
-  @Autowired
-  WalletRepository walletRepository;
-  @Autowired
-  WalletUpdatesRepository walletUpdatesRepository;
-  @Autowired
-  PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-  @Autowired
-  OnboardingRestConnector onboardingRestConnector;
-  @Autowired
-  IbanProducer ibanProducer;
-  @Autowired
-  TimelineProducer timelineProducer;
-  @Autowired
-  WalletMapper walletMapper;
-  @Autowired
-  TimelineMapper timelineMapper;
-  @Autowired
-  ErrorProducer errorProducer;
-  @Autowired
-  NotificationProducer notificationProducer;
-  @Autowired
-  AuditUtilities auditUtilities;
-  @Autowired
-  Utilities utilities;
+  @Autowired WalletRepository walletRepository;
+  @Autowired WalletUpdatesRepository walletUpdatesRepository;
+  @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  @Autowired OnboardingRestConnector onboardingRestConnector;
+  @Autowired IbanProducer ibanProducer;
+  @Autowired TimelineProducer timelineProducer;
+  @Autowired WalletMapper walletMapper;
+  @Autowired TimelineMapper timelineMapper;
+  @Autowired ErrorProducer errorProducer;
+  @Autowired NotificationProducer notificationProducer;
+  @Autowired AuditUtilities auditUtilities;
+  @Autowired Utilities utilities;
 
   @Value(
       "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
@@ -133,6 +131,9 @@ public class WalletServiceImpl implements WalletService {
 
   @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}")
   String transactionTopic;
+
+  @Value("${app.iban.formalControl}")
+  boolean isFormalControlIban;
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -276,7 +277,13 @@ public class WalletServiceImpl implements WalletService {
     }
 
     iban = iban.toUpperCase();
-    formalControl(iban);
+    if (!iban.startsWith("IT")) {
+      auditUtilities.logEnrollmentIbanValidationKO(iban);
+      throw new UnsupportedCountryException(iban + " Iban is not italian");
+    }
+    if (isFormalControlIban) {
+      formalControl(iban);
+    }
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
         new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
@@ -719,13 +726,23 @@ public class WalletServiceImpl implements WalletService {
     if ((SERVICE_COMMAND_DELETE_INITIATIVE).equals(queueCommandOperationDTO.getOperationType())) {
       long startTime = System.currentTimeMillis();
 
-      List<Wallet> deletedWallets = walletRepository.deleteByInitiativeId(
-          queueCommandOperationDTO.getEntityId());
-      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet",
-          queueCommandOperationDTO.getEntityId());
-      deletedWallets.forEach(
-          deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(),
-              deletedWallet.getInitiativeId()));
+      List<Wallet> deletedWallets = new ArrayList<>();
+      List<Wallet> fetchedWallets;
+
+      do {
+        fetchedWallets = walletUpdatesRepository.deletePaged(queueCommandOperationDTO.getEntityId(),
+                Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY)));
+        deletedWallets.addAll(fetchedWallets);
+        try{
+          Thread.sleep(Long.parseLong(queueCommandOperationDTO.getAdditionalParams().get(DELAY_KEY)));
+        } catch (InterruptedException e){
+          log.error("An error has occurred while waiting {}", e.getMessage());
+          Thread.currentThread().interrupt();
+        }
+      } while (fetchedWallets.size() == (Integer.parseInt(queueCommandOperationDTO.getAdditionalParams().get(PAGINATION_KEY))));
+
+      log.info("[DELETE_INITIATIVE] Deleted initiative {} from collection: wallet", queueCommandOperationDTO.getEntityId());
+      deletedWallets.forEach(deletedWallet -> auditUtilities.logDeletedWallet(deletedWallet.getUserId(), deletedWallet.getInitiativeId()));
       performanceLog(startTime, SERVICE_COMMAND_DELETE_INITIATIVE);
     }
   }
@@ -971,12 +988,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private void formalControl(String iban) {
-    Iban ibanValidator = Iban.valueOf(iban);
     IbanUtil.validate(iban);
-    if (!ibanValidator.getCountryCode().equals(CountryCode.IT)) {
-      auditUtilities.logEnrollmentIbanValidationKO(iban);
-      throw new UnsupportedCountryException(iban + " Iban is not italian");
-    }
   }
 
   private void rollbackWallet(String statusToRollback, Wallet wallet) {

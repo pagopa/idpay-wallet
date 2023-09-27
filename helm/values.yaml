@@ -59,6 +59,7 @@ microservice-chart:
     APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED: "false"
     APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED: "false"
     INITIATIVE_LOGO_URL: "https://idpaydinitiativestorage.blob.core.windows.net/logo/"
+    IS_IBAN_FORMAL_CONTROL_ACTIVE: "false"
 
   envConfigMapExternals:
     idpay-common:
