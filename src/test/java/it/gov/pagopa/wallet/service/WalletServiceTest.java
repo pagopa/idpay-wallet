@@ -93,10 +93,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpServerErrorException;
-import java.util.stream.Stream;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -202,7 +198,7 @@ class WalletServiceTest {
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
     private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
     private static final String OPERATION_TYPE_DELETE_INITIATIVE = "DELETE_INITIATIVE";
-    private static final String PAGINATION_VALUE = "100";
+    private static final int PAGINATION_VALUE = 100;
 
     private static Wallet TEST_WALLET =
             Wallet.builder()
@@ -2402,7 +2398,7 @@ class WalletServiceTest {
         final List<Wallet> deletedPage = List.of(wallet);
 
         if(times == 2){
-            final List<Wallet> walletPage = createWalletPage(Integer.parseInt(PAGINATION_VALUE));
+            final List<Wallet> walletPage = createWalletPage(PAGINATION_VALUE);
             when(walletUpdatesRepositoryMock.deletePaged(queueCommandOperationDTO.getEntityId(), Integer.parseInt(pagination)))
                     .thenReturn(walletPage)
                     .thenReturn(deletedPage);
