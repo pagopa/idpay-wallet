@@ -42,6 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         locations = "classpath:application.yml",
         properties = {
                 "app.iban.formalControl=false",
+                "app.delete.paginationSize=100",
+                "app.delete.delayTime=1000"
         })
 class WalletServiceNoIbanFormalControlTest {
 
