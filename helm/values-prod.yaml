@@ -30,6 +30,7 @@ microservice-chart:
   envConfig:
     JAVA_TOOL_OPTIONS: "-Xms128m -Xmx4g -Djava.util.concurrent.ForkJoinPool.common.parallelism=7 -Dio.netty.eventLoopThreads=100 -javaagent:/app/applicationinsights-agent.jar"
     INITIATIVE_LOGO_URL: "https://idpaypinitiativestorage.blob.core.windows.net/logo/"
+    IS_IBAN_FORMAL_CONTROL_ACTIVE: "true"
 
   envSecret:
     aks-api-url: cstar-p-weu-prod01-aks-apiserver-url

@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.utils;
 
 import ch.qos.logback.classic.LoggerContext;
+import it.gov.pagopa.wallet.constants.WalletConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -314,6 +315,43 @@ class AuditUtilitiesTest {
                             AuditUtilities.SRCIP,
                             USER_ID,
                             INITIATIVE_ID
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
+  }
+
+  @Test
+  void logEnrollInstrumentCode(){
+    auditUtilities.logEnrollmentInstrumentCode(USER_ID,INITIATIVE_ID);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative from APP IO." +
+                    " suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s cs3Label=instrumentType cs3=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            WalletConstants.CHANNEL_APP_IO,
+                            WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
+                    ),
+            memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
+    );
+  }
+
+  @Test
+  void logEnrollInstrumentCodeKO(){
+    auditUtilities.logEnrollmentInstrumentCodeKO(USER_ID,INITIATIVE_ID, MSG);
+
+    Assertions.assertEquals(
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative failed: %s" +
+                    " suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s cs3Label=instrumentType cs3=%s")
+                    .formatted(
+                            AuditUtilities.SRCIP,
+                            MSG,
+                            USER_ID,
+                            INITIATIVE_ID,
+                            WalletConstants.CHANNEL_APP_IO,
+                            WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
                     ),
             memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
     );

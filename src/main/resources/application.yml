@@ -342,3 +342,8 @@ app:
   initiative:
     logo:
       url: ${INITIATIVE_LOGO_URL}
+  delete:
+    paginationSize: ${DELETE_PAGINATION_SIZE:100}
+    delayTime: ${DELETE_DELAY_TIME:1000}
+  iban:
+    formalControl: ${IS_IBAN_FORMAL_CONTROL_ACTIVE:false}

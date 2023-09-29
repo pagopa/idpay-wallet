@@ -45,6 +45,7 @@ class PaymentInstrumentRestClientTest {
   private static final String ID_WALLET = "TEST_ID_WALLET";
   private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
   private static final String CHANNEL = "CHANNEL";
+  private static final String INSTRUMENT_TYPE = "TEST_INSTRUMENT_TYPE";
 
   @Autowired private PaymentInstrumentRestClient restClient;
 
@@ -54,7 +55,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_test() {
 
     final InstrumentCallBodyDTO instrument =
-        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL);
+        new InstrumentCallBodyDTO(USER_ID, INITIATIVE_ID, ID_WALLET, CHANNEL, INSTRUMENT_TYPE);
 
     try {
       restConnector.enrollInstrument(instrument);
@@ -93,7 +94,7 @@ class PaymentInstrumentRestClientTest {
   void enroll_instrument_issuer_test() {
 
     final InstrumentIssuerCallDTO instrument =
-        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "VISA", "***");
+        new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID,"hpan", CHANNEL, "VISA", "VISA", "***", INSTRUMENT_TYPE);
 
     try {
       restConnector.enrollInstrumentIssuer(instrument);
@@ -128,6 +129,23 @@ class PaymentInstrumentRestClientTest {
     try{
       restConnector.rollback(INITIATIVE_ID, USER_ID);
     } catch (Exception e){
+      Assertions.fail();
+    }
+  }
+
+  @Test
+  void enroll_instrument_code_test() {
+
+    final InstrumentCallBodyDTO instrument = InstrumentCallBodyDTO.builder()
+            .userId(USER_ID)
+            .initiativeId(INITIATIVE_ID)
+            .channel(CHANNEL)
+            .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
+            .build();
+
+    try {
+      restConnector.enrollInstrumentCode(instrument);
+    } catch (Exception e) {
       Assertions.fail();
     }
   }
