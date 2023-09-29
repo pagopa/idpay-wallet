@@ -230,7 +230,7 @@ public class WalletServiceImpl implements WalletService {
           null, WalletConstants.REJECTED_DELETE_INSTRUMENT);
       performanceLog(startTime, "DELETE_INSTRUMENT");
       if (e instanceof FeignException feignException){
-        throw new WalletException(feignException.status(), feignException.getMessage());
+        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
       }
       throw new WalletException(500, e.getMessage());
     }
