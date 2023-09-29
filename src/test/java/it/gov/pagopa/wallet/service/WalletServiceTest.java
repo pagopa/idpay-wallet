@@ -748,15 +748,18 @@ class WalletServiceTest {
         Request request =
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
 
-        doThrow(new FeignException.BadRequest("ERROR idpayCode", request, new byte[0], null))
+        FeignException feignException = new FeignException.BadRequest("ERROR idpayCode", request, new byte[0], null);
+        doThrow(feignException)
                 .when(paymentInstrumentRestConnector)
                 .deleteInstrument(any(DeactivationBodyDTO.class));
+
+        when(utilities.exceptionConverter(feignException)).thenReturn("ERROR");
 
         try {
             walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
             Assertions.fail();
         } catch (WalletException e) {
-            assertException(HttpStatus.BAD_REQUEST, e, "ERROR idpayCode");
+            assertException(HttpStatus.BAD_REQUEST, e, "ERROR");
         }
     }
 
