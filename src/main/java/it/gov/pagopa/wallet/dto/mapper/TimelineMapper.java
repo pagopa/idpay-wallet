@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 
+import it.gov.pagopa.wallet.enums.ChannelTransaction;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,7 +51,7 @@ public class TimelineMapper {
         }
 
         if ("AUTHORIZED".equals(rewardTransaction.getStatus()) || "REWARDED".equals(rewardTransaction.getStatus())
-                && "QRCODE".equals(rewardTransaction.getChannel())) {
+                && ChannelTransaction.isChannelPresent(rewardTransaction.getChannel())) {
             return rewardTransaction.getTrxChargeDate()
                     .atZoneSameInstant(ZoneId.of("Europe/Rome"))
                     .toLocalDateTime();

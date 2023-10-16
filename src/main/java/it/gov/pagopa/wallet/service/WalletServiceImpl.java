@@ -32,6 +32,7 @@ import it.gov.pagopa.wallet.dto.WalletPIDTO;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
+import it.gov.pagopa.wallet.enums.ChannelTransaction;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -49,11 +50,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -506,7 +503,7 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
-        && !(rewardTransactionDTO.getChannel().equals("QRCODE")
+        && !(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
         || rewardTransactionDTO.getStatus().equals("CANCELLED")))) {
       log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
@@ -800,7 +797,7 @@ public class WalletServiceImpl implements WalletService {
       Counters counters,
       BigDecimal accruedReward) {
 
-    if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
+    if (!(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
       Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,
