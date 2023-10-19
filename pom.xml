@@ -11,7 +11,7 @@
   </parent>
   <groupId>it.gov.pagopa.wallet</groupId>
   <artifactId>idpay-wallet</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.1</version>
   <name>idpay-wallet</name>
   <description>Wallet Microservice</description>
   <properties>
