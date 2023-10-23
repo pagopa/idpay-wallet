@@ -421,6 +421,7 @@ public class WalletServiceImpl implements WalletService {
       if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(
           evaluationDTO.getInitiativeRewardType())) {
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
+        wallet.setNInstr(1);
         paymentInstrumentRestConnector.enrollDiscountInitiative(
             InstrumentFromDiscountDTO.builder()
                 .initiativeId(evaluationDTO.getInitiativeId())
@@ -590,11 +591,16 @@ public class WalletServiceImpl implements WalletService {
 
     if (!instrumentAckDTO.getOperationType().equals(WalletConstants.REJECTED_ADD_INSTRUMENT)) {
       wallet.setNInstr(instrumentAckDTO.getNinstr());
+
+      String status = WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType()) ?
+              wallet.getStatus() : setStatus(wallet);
+
       walletUpdatesRepository.updateInstrumentNumber(
-          instrumentAckDTO.getInitiativeId(),
-          instrumentAckDTO.getUserId(),
-          instrumentAckDTO.getNinstr(),
-          setStatus(wallet));
+              instrumentAckDTO.getInitiativeId(),
+              instrumentAckDTO.getUserId(),
+              instrumentAckDTO.getNinstr(),
+              status);
+
     }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
