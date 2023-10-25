@@ -3,8 +3,8 @@
 		"_postman_id": "9ddbb611-23e7-4aae-a078-6af62d717cd7",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036736",
-		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-9ddbb611-23e7-4aae-a078-6af62d717cd7?action=share&source=collection_link&creator=26036736"
+		"_exporter_id": "26036679",
+		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-9ddbb611-23e7-4aae-a078-6af62d717cd7?action=share&source=collection_link&creator=26036679"
 	},
 	"item": [
 		{
@@ -924,7 +924,7 @@
 														{
 															"key": "file",
 															"type": "file",
-															"src": "./postman/example_merchant_valid.csv"
+															"src": "./postman/Esercente di test IdPay.csv"
 														}
 													]
 												},
@@ -11319,73 +11319,6 @@
 										}
 									},
 									"response": []
-								},
-								{
-									"name": "DELETE initiative",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Initiative with whitelist - Unhappy case - Initiative deletion - Ente Admin delete(enabled:false) an initiative in status draft - Responses with 204\", function () {\r",
-													"    pm.response.to.have.status(204);\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript"
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{identityPortalToken}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "DELETE",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											},
-											{
-												"key": "Accept",
-												"value": "application/json"
-											}
-										],
-										"url": {
-											"raw": "{{baseUrlInitiative}}/:initiativeId/beneficiary/instruments",
-											"host": [
-												"{{baseUrlInitiative}}"
-											],
-											"path": [
-												":initiativeId",
-												"beneficiary",
-												"instruments"
-											],
-											"variable": [
-												{
-													"key": "initiativeId",
-													"value": "{{initiativeId-draft}}"
-												}
-											]
-										}
-									},
-									"response": []
 								}
 							]
 						},
@@ -15881,7 +15814,7 @@
 		},
 		{
 			"key": "initiativeId",
-			"value": ""
+			"value": "64a57c68f604477a2463f8f0"
 		},
 		{
 			"key": "familyUnitComposition",
@@ -15930,7 +15863,7 @@
 		},
 		{
 			"key": "initiativeId_idpaycode",
-			"value": ""
+			"value": "6512e6b7f494f74465e52f7f"
 		},
 		{
 			"key": "idpayCode",
