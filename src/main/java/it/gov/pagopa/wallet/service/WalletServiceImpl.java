@@ -499,7 +499,15 @@ public class WalletServiceImpl implements WalletService {
           initiativeId, userId);
       throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
+    QueueOperationDTO queueOperationDTO =
+            timelineMapper.unsubscribeToTimeline(
+                    wallet.getInitiativeId(),
+                    wallet.getUserId(),
+                    wallet.getRequestUnsubscribeDate()
+            );
+    sendToTimeline(queueOperationDTO);
   }
+
 
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
