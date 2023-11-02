@@ -39,6 +39,7 @@ class WalletMapperTest {
 
     private static final Wallet NEW_WALLET =
             Wallet.builder()
+                    .id(USER_ID + "_" + INITIATIVE_ID)
                     .initiativeId(INITIATIVE_ID)
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
@@ -59,6 +60,7 @@ class WalletMapperTest {
 
     private static final Wallet WALLET =
             Wallet.builder()
+                    .id(USER_ID + "_" + INITIATIVE_ID)
                     .initiativeId(INITIATIVE_ID)
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
@@ -79,6 +81,7 @@ class WalletMapperTest {
                     .build();
     private static final Wallet WALLET_NO_LOGO =
             Wallet.builder()
+                    .id(USER_ID + "_" + INITIATIVE_ID)
                     .initiativeId(INITIATIVE_ID)
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)

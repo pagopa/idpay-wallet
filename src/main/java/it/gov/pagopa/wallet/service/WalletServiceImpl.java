@@ -151,7 +151,7 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet getWallet(String initiativeId, String userId) {
     return walletRepository
-        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .findById(generateWalletId(userId, initiativeId))
         .orElseThrow(
             () ->
                 new WalletException(
@@ -544,7 +544,7 @@ public class WalletServiceImpl implements WalletService {
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
           walletRepository
-              .findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId())
+              .findById(generateWalletId(walletPI.getUserId(), walletPI.getInitiativeId()))
               .orElse(null);
       if (wallet == null) {
         log.info(
@@ -578,8 +578,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(
-                instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId())
+            .findById(generateWalletId(instrumentAckDTO.getUserId(), instrumentAckDTO.getInitiativeId()))
             .orElse(null);
 
     if (wallet == null) {
@@ -623,7 +622,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getBeneficiaryId())
+            .findById(generateWalletId(refundDTO.getBeneficiaryId(), refundDTO.getInitiativeId()))
             .orElse(null);
 
     if (wallet == null) {
@@ -806,8 +805,7 @@ public class WalletServiceImpl implements WalletService {
     if (!(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-      Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,
-          rewardTransactionDTO.getUserId()).orElse(null);
+      Wallet userWallet = walletRepository.findById(generateWalletId(rewardTransactionDTO.getUserId(), initiativeId)).orElse(null);
 
       if (userWallet == null) {
         log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}",
@@ -861,7 +859,7 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
     return walletRepository
-        .findByInitiativeIdAndUserId(initiativeId, userId)
+        .findById(generateWalletId(userId, initiativeId))
         .orElseThrow(
             () ->
                 new WalletException(
@@ -892,7 +890,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
+            .findById(generateWalletId(iban.getUserId(), iban.getInitiativeId()))
             .orElse(null);
 
     if (wallet == null) {
@@ -1051,6 +1049,10 @@ public class WalletServiceImpl implements WalletService {
         "[PERFORMANCE_LOG] [{}] Time occurred to perform business logic: {} ms",
         service,
         System.currentTimeMillis() - startTime);
+  }
+
+  private String generateWalletId(String userId, String initiativeId){
+    return userId.concat("_").concat(initiativeId);
   }
 
   @Override

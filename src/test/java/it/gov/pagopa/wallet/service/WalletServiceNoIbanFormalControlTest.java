@@ -83,6 +83,7 @@ class WalletServiceNoIbanFormalControlTest {
     private static final String IBAN_OK = "IT09P0000005138205493205499";
     private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
     private static final String DESCRIPTION_OK = "conto cointestato";
+    private static final String ID_WALLET = "TEST_USER_ID_TEST_INITIATIVE_ID";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
     private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
@@ -112,7 +113,7 @@ class WalletServiceNoIbanFormalControlTest {
         TEST_WALLET.setNInstr(0);
         TEST_WALLET.setEndDate(LocalDate.MAX);
 
-        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
 
 
@@ -140,7 +141,7 @@ class WalletServiceNoIbanFormalControlTest {
         TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         TEST_WALLET.setEndDate(LocalDate.MAX);
 
-        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
+        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
 
         try {
