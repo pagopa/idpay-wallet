@@ -924,7 +924,7 @@
 														{
 															"key": "file",
 															"type": "file",
-															"src": "/C:/Users/ranaldoda/Desktop/esempi_csv_merchant/Esercente di test IdPay.csv"
+															"src": "./postman/Esercente di test IdPay.csv"
 														}
 													]
 												},
