@@ -15322,9 +15322,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Generate IDPAYCODE with initiativeId - Check message is 'Resource not found while enrolling idpayCode on ms wallet'\" , function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Generate IDPAYCODE with initiativeId - Check message is 'The requested initiative is not active for the current user!'\" , function () {\r",
 													"    let message = pm.response.json().message;\r",
-													"    pm.expect(message).eq(\"Resource not found while enrolling idpayCode on ms wallet\");\r",
+													"    pm.expect(message).eq(\"The requested initiative is not active for the current user!\");\r",
 													"});"
 												],
 												"type": "text/javascript"
