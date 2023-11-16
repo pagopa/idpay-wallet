@@ -4,9 +4,7 @@ import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -74,7 +72,6 @@ import org.iban4j.InvalidCheckDigitException;
 import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1499,32 +1496,6 @@ class WalletServiceTest {
             Assertions.fail();
         } catch (WalletException e) {
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getCode());
-        }
-    }
-    @Disabled
-    void unsubscribe_wallet_ko() {
-
-        Mockito.when(walletRepositoryMock.findByInitiativeIdAndUserId(INITIATIVE_ID, USER_ID))
-                .thenReturn(Optional.of(TEST_WALLET_2));
-
-        Request request =
-                Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
-
-        Mockito.doNothing().when(onboardingRestConnector).disableOnboarding(any());
-        Mockito.doNothing().when(paymentInstrumentRestConnector).disableAllInstrument(any());
-
-        doThrow(new FeignException.BadRequest("", request, new byte[0], null))
-                .when(timelineMapper)
-                .unsubscribeToTimeline(anyString(),anyString(), any());
-
-        try {
-            walletService.unsubscribe(INITIATIVE_ID, USER_ID);
-            Assertions.fail();
-        } catch (WalletException e) {
-            assertNull(TEST_WALLET_2.getRequestUnsubscribeDate());
-            assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET_2.getStatus());
-            Mockito.verify(onboardingRestConnector, Mockito.times(1)).rollback(anyString(),anyString());
-            Mockito.verify(paymentInstrumentRestConnector, Mockito.times(1)).rollback(anyString(),anyString());
         }
     }
 
