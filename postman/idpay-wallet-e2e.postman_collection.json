@@ -3,8 +3,8 @@
 		"_postman_id": "9ddbb611-23e7-4aae-a078-6af62d717cd7",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036679",
-		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-9ddbb611-23e7-4aae-a078-6af62d717cd7?action=share&source=collection_link&creator=26036679"
+		"_exporter_id": "26036736",
+		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-9ddbb611-23e7-4aae-a078-6af62d717cd7?action=share&source=collection_link&creator=26036736"
 	},
 	"item": [
 		{
@@ -7584,7 +7584,7 @@
 													"\r",
 													"pm.test(\"Wallet - Happy case - Enroll IDPAYCODE - Check status IDPAYCODE  - Verify IDPAYCODE is enabled\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.idPayCodeEnabled).eq(true);\r",
+													"    pm.expect(jsonResponse.isIdPayCodeEnabled).eq(true);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -8344,7 +8344,7 @@
 													"\r",
 													"pm.test(\"Wallet - Happy case - Enroll IDPAYCODE - Check status IDPAYCODE  - Verify IDPAYCODE is enabled\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.idPayCodeEnabled).eq(true);\r",
+													"    pm.expect(jsonResponse.isIdPayCodeEnabled).eq(true);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15207,7 +15207,7 @@
 													"\r",
 													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Check status IDPAYCODE  - Verify IDPAYCODE is disabled\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.idPayCodeEnabled).eq(false);\r",
+													"    pm.expect(jsonResponse.isIdPayCodeEnabled).eq(false);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15322,9 +15322,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Generate IDPAYCODE with initiativeId - Check message is 'Resource not found while enrolling idpayCode on ms wallet'\" , function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Generate IDPAYCODE with initiativeId - Check message is 'The requested initiative is not active for the current user!'\" , function () {\r",
 													"    let message = pm.response.json().message;\r",
-													"    pm.expect(message).eq(\"Resource not found while enrolling idpayCode on ms wallet\");\r",
+													"    pm.expect(message).eq(\"The requested initiative is not active for the current user!\");\r",
 													"});"
 												],
 												"type": "text/javascript"
