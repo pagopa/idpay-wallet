@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9ddbb611-23e7-4aae-a078-6af62d717cd7",
+		"_postman_id": "63b018ca-193e-4cef-a59b-265edd5654bb",
 		"name": "Wallet - e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "26036736",
@@ -1071,7 +1071,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -1083,7 +1083,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -2306,7 +2306,7 @@
 							"name": "Onboarding User with NF",
 							"item": [
 								{
-									"name": "mock family Copy",
+									"name": "mock family",
 									"request": {
 										"method": "PUT",
 										"header": [
@@ -3716,7 +3716,7 @@
 							"name": "GET Initiative Detail (CIT)2",
 							"item": [
 								{
-									"name": "Generate Token IO Copy",
+									"name": "Generate Token IO",
 									"event": [
 										{
 											"listen": "test",
@@ -3780,7 +3780,7 @@
 									"response": []
 								},
 								{
-									"name": "Get Initiative Detail Copy",
+									"name": "Get Initiative Detail",
 									"event": [
 										{
 											"listen": "test",
@@ -3848,70 +3848,6 @@
 						{
 							"name": "Onboarding User with criteria",
 							"item": [
-								{
-									"name": "Generate Token IO",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test('Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Generate Token IO', () => {\r",
-													"    //verify response HTTP status \r",
-													"    pm.response.to.have.status(200);\r",
-													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript"
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"setTimeout(() => {}, 5000);"
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "POST",
-										"header": [
-											{
-												"key": "Ocp-Apim-Subscription-Key",
-												"value": "{{genericSubscriptionKey}}",
-												"type": "default"
-											},
-											{
-												"key": "Ocp-Apim-Trace",
-												"value": "true",
-												"type": "default"
-											}
-										],
-										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"rtd",
-												"mock-io",
-												"login"
-											],
-											"query": [
-												{
-													"key": "fiscalCode",
-													"value": "{{CF_2}}"
-												}
-											]
-										}
-									},
-									"response": []
-								},
 								{
 									"name": "Accept T&C",
 									"event": [
@@ -10672,7 +10608,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10684,7 +10620,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -11115,7 +11051,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -11127,7 +11063,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -11884,7 +11820,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
+									"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11896,7 +11832,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "{{CF_2}}"
+											"value": "{{CF_fake}}"
 										}
 									]
 								}
@@ -12793,7 +12729,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -12805,7 +12741,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -13858,7 +13794,7 @@
 													}
 												],
 												"url": {
-													"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
+													"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -13870,7 +13806,7 @@
 													"query": [
 														{
 															"key": "fiscalCode",
-															"value": "{{CF_2}}"
+															"value": "{{CF_fake}}"
 														}
 													]
 												}
@@ -14389,7 +14325,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -14401,7 +14337,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -14648,7 +14584,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -14660,7 +14596,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -14785,7 +14721,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -14797,7 +14733,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_2}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}

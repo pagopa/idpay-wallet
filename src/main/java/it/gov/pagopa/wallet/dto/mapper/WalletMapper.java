@@ -20,6 +20,7 @@ public class WalletMapper {
 
     public Wallet map(EvaluationDTO evaluationDTO) {
         return Wallet.builder()
+                .id(evaluationDTO.getUserId().concat("_").concat(evaluationDTO.getInitiativeId()))
                 .initiativeId(evaluationDTO.getInitiativeId())
                 .initiativeName(evaluationDTO.getInitiativeName())
                 .endDate(evaluationDTO.getInitiativeEndDate())
