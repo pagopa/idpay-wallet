@@ -11,25 +11,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.INVALID_REQUEST;
+
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ControllerExceptionHandler {
 
   @ExceptionHandler({InvalidCheckDigitException.class})
   public ResponseEntity<ErrorDTO> handleInvalidCheckDigitException(InvalidCheckDigitException ex) {
-    return new ResponseEntity<>(new ErrorDTO(400, ex.getMessage()),
+    return new ResponseEntity<>(new ErrorDTO(INVALID_REQUEST, ex.getMessage()),
         HttpStatus.valueOf(400));
   }
 
   @ExceptionHandler({IbanFormatException.class})
   public ResponseEntity<ErrorDTO> handleIbanFormatException(IbanFormatException ex) {
-    return new ResponseEntity<>(new ErrorDTO(400, ex.getMessage()),
+    return new ResponseEntity<>(new ErrorDTO(INVALID_REQUEST, ex.getMessage()),
         HttpStatus.valueOf(400));
   }
 
+  //TODO remove this handler since it won't be needed
   @ExceptionHandler({UnsupportedCountryException.class})
   public ResponseEntity<ErrorDTO> handleUnsupportedCountryException(UnsupportedCountryException ex) {
-    return new ResponseEntity<>(new ErrorDTO(400, ex.getMessage()),
+    return new ResponseEntity<>(new ErrorDTO(INVALID_REQUEST, ex.getMessage()),
         HttpStatus.valueOf(400));
   }
 

@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "PUT",
-    "urlPathPattern": "/idpay/onboarding/rollback/.*/.*"
+    "urlPathPattern": "/idpay/onboarding/INITIATIVE_ID/USER_ID/(suspend|readmit)"
   },
   "response": {
     "status": "204"

@@ -2,10 +2,13 @@ package it.gov.pagopa.wallet.connector;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.mongodb.assertions.Assertions;
 import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
 import java.time.LocalDateTime;
+
+import it.gov.pagopa.wallet.exception.custom.OnboardingInvocationException;
+import it.gov.pagopa.wallet.exception.custom.OperationNotAllowedException;
+import it.gov.pagopa.wallet.exception.custom.UserNotOnboardedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.TestPropertySourceUtils;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -36,6 +42,9 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
 class OnboardingRestClientTest {
 
   private static final String USER_ID = "USER_ID";
+  private static final String USER_ID_NOT_ONBOARDED = "USER_ID_NOT_ONBOARDED";
+  private static final String USER_ID_GENERIC_ERROR = "USER_ID_GENERIC_ERROR";
+  private static final String USER_ID_BAD_REQUEST = "USER_ID_BAD_REQUEST";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
 
   @Autowired private OnboardingRestClient restClient;
@@ -43,42 +52,135 @@ class OnboardingRestClientTest {
   @Autowired private OnboardingRestConnector restConnector;
 
   @Test
-  void disable_onboarding_test() {
+  void disable_Onboarding() {
+    // Given
+    final UnsubscribeCallDTO unsubscribeDTO =
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
 
-    final UnsubscribeCallDTO instrument =
-        new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
-
-    try{
-      restConnector.disableOnboarding(instrument);
-    } catch (Exception e){
-      Assertions.fail();
-    }
-
+    // When
+    assertDoesNotThrow(() -> restConnector.disableOnboarding(unsubscribeDTO));
   }
 
   @Test
-  void rollback_test() {
-    try{
-      restConnector.rollback(INITIATIVE_ID, USER_ID);
-    } catch (Exception e){
-      Assertions.fail();
-    }
+  void disable_Onboarding_NOT_FOUND() {
+    // Given
+    final UnsubscribeCallDTO unsubscribeDTO =
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_NOT_ONBOARDED, LocalDateTime.now().toString());
+
+    // When
+    UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
+            () -> restConnector.disableOnboarding(unsubscribeDTO));
+
+    // Then
+    assertEquals(USER_NOT_ONBOARDED, exception.getCode());
+    assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), exception.getMessage());
   }
+
   @Test
-  void suspend_test() {
-    try{
-      restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID);
-    } catch (Exception e){
-      Assertions.fail();
-    }
+  void disable_Onboarding_GENERIC_ERROR() {
+    // Given
+    final UnsubscribeCallDTO unsubscribeDTO =
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString());
+
+    // When
+    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.disableOnboarding(unsubscribeDTO));
+
+    // Then
+    assertEquals(GENERIC_ERROR, exception.getCode());
+    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
   }
+
   @Test
-  void readmit_test() {
-    try{
-      restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID);
-    } catch (Exception e){
-      Assertions.fail();
-    }
+  void suspend_onboarding() {
+    assertDoesNotThrow(() -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID));
+  }
+
+  @Test
+  void suspend_onboarding_BAD_REQUEST() {
+    // When
+    OperationNotAllowedException exception = assertThrows(OperationNotAllowedException.class,
+            () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_BAD_REQUEST));
+
+    // Then
+    assertEquals(SUSPENSION_NOT_ALLOWED, exception.getCode());
+    assertEquals(String.format(ERROR_SUSPENSION_STATUS_MSG,INITIATIVE_ID), exception.getMessage());
+  }
+
+  @Test
+  void suspend_onboarding_NOT_FOUND() {
+    // When
+    UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
+            () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_NOT_ONBOARDED));
+
+    // Then
+    assertEquals(USER_NOT_ONBOARDED, exception.getCode());
+    assertEquals(String.format(USER_NOT_ONBOARDED_MSG,INITIATIVE_ID), exception.getMessage());
+  }
+
+  @Test
+  void suspend_onboarding_GENERIC_ERROR() {
+    // When
+    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
+
+    // Then
+    assertEquals(GENERIC_ERROR, exception.getCode());
+    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
+  }
+
+  @Test
+  void readmit_onboarding() {
+    assertDoesNotThrow(() -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID));
+  }
+
+  @Test
+  void readmit_onboarding_BAD_REQUEST() {
+    // When
+    OperationNotAllowedException exception = assertThrows(OperationNotAllowedException.class,
+            () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_BAD_REQUEST));
+
+    // Then
+    assertEquals(READMISSION_NOT_ALLOWED, exception.getCode());
+    assertEquals(String.format(ERROR_READMIT_STATUS_MSG,INITIATIVE_ID), exception.getMessage());
+  }
+
+  @Test
+  void readmit_onboarding_NOT_FOUND() {
+    // When
+    UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
+            () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_NOT_ONBOARDED));
+
+    // Then
+    assertEquals(USER_NOT_ONBOARDED, exception.getCode());
+    assertEquals(String.format(USER_NOT_ONBOARDED_MSG,INITIATIVE_ID), exception.getMessage());
+  }
+
+  @Test
+  void readmit_onboarding_GENERIC_ERROR() {
+    // When
+    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
+
+    // Then
+    assertEquals(GENERIC_ERROR, exception.getCode());
+    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
+  }
+
+  @Test
+  void rollback_onboarding() {
+    assertDoesNotThrow(() -> restConnector.rollback(INITIATIVE_ID, USER_ID));
+  }
+
+  @Test
+  void rollback_onboarding_GENERIC_ERROR() {
+    // When
+    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.rollback(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
+
+    // Then
+    assertEquals(GENERIC_ERROR, exception.getCode());
+    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
   }
 
   public static class WireMockInitializer

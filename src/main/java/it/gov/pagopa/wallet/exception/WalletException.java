@@ -9,6 +9,6 @@ import org.springframework.http.HttpStatus;
 public class WalletException extends ClientExceptionWithBody {
 
   public WalletException(Integer code, String message) {
-    super(HttpStatus.valueOf(code), code, message);
+    super(HttpStatus.valueOf(code), "TEMP", message);
   }
 }

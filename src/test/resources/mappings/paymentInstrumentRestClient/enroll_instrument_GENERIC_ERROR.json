@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/idpay/instrument/enroll",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "userId": "USER_ID_GENERIC_ERROR",
+          "initiativeId": "INITIATIVE_ID",
+          "idWallet": "ID_WALLET",
+          "channel": "CHANNEL",
+          "instrumentType": "INSTRUMENT_TYPE"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": "500"
+  }
+}

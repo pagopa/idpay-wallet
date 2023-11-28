@@ -1,9 +1,0 @@
-{
-  "request": {
-    "method": "DELETE",
-    "urlPath": "/idpay/onboarding/disable"
-  },
-  "response": {
-    "status": "204"
-  }
-}

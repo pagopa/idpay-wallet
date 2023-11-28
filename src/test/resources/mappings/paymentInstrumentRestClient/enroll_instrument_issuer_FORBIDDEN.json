@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/idpay/instrument/hb/enroll",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "initiativeId": "INITIATIVE_ID",
+          "userId": "USER_ID_FORBIDDEN",
+          "hpan": "hpan",
+          "channel": "CHANNEL",
+          "brandLogo": "VISA",
+          "brand": "VISA",
+          "maskedPan": "***",
+          "instrumentType": "INSTRUMENT_TYPE"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": "403"
+  }
+}
