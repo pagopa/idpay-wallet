@@ -5,11 +5,6 @@ import java.util.List;
 public class WalletConstants {
 
   public static final String ERROR_MANDATORY_FIELD = "The field is mandatory";
-  public static final String ERROR_INITIATIVE_KO = "The requested initiative is not active!";
-
-  public static final String ERROR_INITIATIVE_UNSUBSCRIBED = "You are unsubscribed at this initiative!";
-
-  public static final String ERROR_WALLET_NOT_FOUND = "The requested initiative is not active for the current user!";
   public static final String STATUS_ONBOARDING_OK = "ONBOARDING_OK";
   public static final String STATUS_JOINED = "JOINED";
   public static final String STATUS_ONBOARDING_KO = "ONBOARDING_KO";
@@ -32,7 +27,6 @@ public class WalletConstants {
   public static final String ERROR_LESS_THAN_ZERO = "The field must be greater than zero!";
   public static final String REJECTED_ADD_INSTRUMENT = "REJECTED_ADD_INSTRUMENT";
   public static final String REJECTED_DELETE_INSTRUMENT = "REJECTED_DELETE_INSTRUMENT";
-  public static final String IDPAY_CODE = "IDPAYCODE";
   public static final String INSTRUMENT_STATUS_DEFAULT = "INACTIVE";
   public static final String CHECKIBAN_KO = "CHECKIBAN_KO";
   public static final String REFUND = "REFUND";
@@ -42,11 +36,6 @@ public class WalletConstants {
           "PENDING_ENROLL_RE", "PENDING_DEACTIVATION_REQUEST");
   public static final String INITIATIVE_REWARD_TYPE_DISCOUNT = "DISCOUNT";
   public static final String INITIATIVE_REWARD_TYPE_REFUND = "REFUND";
-  public static final String ERROR_INITIATIVE_DISCOUNT_PI = "It is not possible to enroll a payment instrument for a discount type initiative";
-
-  public static final String ERROR_INITIATIVE_REFUND_PI = "It is not possible to enroll a idpayCode for a refund type initiative";
-
-  public static final String ERROR_INITIATIVE_DISCOUNT_IBAN = "It is not possible enroll an iban for a discount type initiative";
 
   //region instrument type
   public static final String INSTRUMENT_TYPE_CARD = "CARD";
@@ -64,7 +53,6 @@ public class WalletConstants {
     public static final String PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG = "It is not possible to enroll a payment instrument for the discount type initiative [%s]";
     public static final String IBAN_ENROLL_NOT_ALLOWED_DISCOUNT_MSG = "It is not possible enroll an iban for the discount type initiative [%s]";
     public static final String PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_REFUND_MSG = "It is not possible to enroll an idpayCode for the refund type initiative [%s]";
-    //public static final String ERROR_INITIATIVE_NOT_ACTIVE_MSG = "The initiative [%s] has not been published";
     public static final String ERROR_UNSUBSCRIBED_INITIATIVE_MSG = "The user has unsubscribed from initiative [%s]";
     public static final String ERROR_IBAN_NOT_ITALIAN = "[%s] ban is not italian";
 

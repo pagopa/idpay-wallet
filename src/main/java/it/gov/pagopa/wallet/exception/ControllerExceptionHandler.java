@@ -3,7 +3,6 @@ package it.gov.pagopa.wallet.exception;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
-import org.iban4j.UnsupportedCountryException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -28,12 +27,4 @@ public class ControllerExceptionHandler {
     return new ResponseEntity<>(new ErrorDTO(INVALID_REQUEST, ex.getMessage()),
         HttpStatus.valueOf(400));
   }
-
-  //TODO remove this handler since it won't be needed
-  @ExceptionHandler({UnsupportedCountryException.class})
-  public ResponseEntity<ErrorDTO> handleUnsupportedCountryException(UnsupportedCountryException ex) {
-    return new ResponseEntity<>(new ErrorDTO(INVALID_REQUEST, ex.getMessage()),
-        HttpStatus.valueOf(400));
-  }
-
 }
