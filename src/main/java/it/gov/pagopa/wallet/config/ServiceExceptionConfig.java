@@ -26,11 +26,11 @@ public class ServiceExceptionConfig {
         exceptionMap.put(InvalidIbanException.class, HttpStatus.FORBIDDEN);
         exceptionMap.put(UserNotAllowedException.class, HttpStatus.FORBIDDEN);
         exceptionMap.put(InstrumentDeleteNotAllowedException.class, HttpStatus.FORBIDDEN);
-        exceptionMap.put(IdPayCodeNotEnabledException.class, HttpStatus.FORBIDDEN);
 
         // NotFound
         exceptionMap.put(PaymentInstrumentNotFoundException.class, HttpStatus.NOT_FOUND);
         exceptionMap.put(UserNotOnboardedException.class, HttpStatus.NOT_FOUND);
+        exceptionMap.put(IDPayCodeNotFoundException.class, HttpStatus.NOT_FOUND);
 
         // InternalServerError
         exceptionMap.put(OnboardingInvocationException.class, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -2605,17 +2605,17 @@ class WalletServiceTest {
 
         Mockito.when(timelineMapper.ackToTimeline(INSTRUMENT_ACK_DTO_ADD_INSTRUMENT)).thenReturn(TEST_OPERATION_DTO);
 
-        Mockito.doThrow(new IdPayCodeNotEnabledException(IDPAYCODE_NOT_GENERATED_MSG))
+        Mockito.doThrow(new IDPayCodeNotFoundException(IDPAYCODE_NOT_FOUND_MSG))
             .when(paymentInstrumentRestConnector)
             .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
 
         // When
-        IdPayCodeNotEnabledException exception = assertThrows(IdPayCodeNotEnabledException.class,
+        IDPayCodeNotFoundException exception = assertThrows(IDPayCodeNotFoundException.class,
                 () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
 
         // Then
-        assertEquals(IDPAYCODE_NOT_GENERATED, exception.getCode());
-        assertEquals(IDPAYCODE_NOT_GENERATED_MSG, exception.getMessage());
+        assertEquals(IDPAYCODE_NOT_FOUND, exception.getCode());
+        assertEquals(IDPAYCODE_NOT_FOUND_MSG, exception.getMessage());
 
         verify(walletRepositoryMock, times(1)).findById(any());
         verifyNoMoreInteractions(walletRepositoryMock);

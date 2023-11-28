@@ -320,10 +320,10 @@ class PaymentInstrumentRestClientTest {
   }
 
   @Test
-  void enroll_instrument_code_FORBIDDEN() {
+  void enroll_instrument_code_NOT_FOUND() {
     // Given
     final InstrumentCallBodyDTO instrument = InstrumentCallBodyDTO.builder()
-            .userId(USER_ID_FORBIDDEN)
+            .userId(USER_ID_NOT_FOUND)
             .initiativeId(INITIATIVE_ID)
             .channel(CHANNEL)
             .idWallet(ID_WALLET)
@@ -331,12 +331,12 @@ class PaymentInstrumentRestClientTest {
             .build();
 
     // When
-    IdPayCodeNotEnabledException exception = assertThrows(IdPayCodeNotEnabledException.class,
+    IDPayCodeNotFoundException exception = assertThrows(IDPayCodeNotFoundException.class,
             () -> restConnector.enrollInstrumentCode(instrument));
 
     // Then
-    assertEquals(IDPAYCODE_NOT_GENERATED, exception.getCode());
-    assertEquals(IDPAYCODE_NOT_GENERATED_MSG, exception.getMessage());
+    assertEquals(IDPAYCODE_NOT_FOUND, exception.getCode());
+    assertEquals(IDPAYCODE_NOT_FOUND_MSG, exception.getMessage());
   }
 
   @Test

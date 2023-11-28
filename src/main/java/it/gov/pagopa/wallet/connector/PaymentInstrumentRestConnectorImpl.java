@@ -109,8 +109,8 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
     try {
       paymentInstrumentRestClient.enrollInstrumentCode(body);
     } catch (FeignException e){
-      if (e.status() == 403){
-        throw new IdPayCodeNotEnabledException(IDPAYCODE_NOT_GENERATED_MSG);
+      if (e.status() == 404){
+        throw new IDPayCodeNotFoundException(IDPAYCODE_NOT_FOUND_MSG);
       }
 
       throw new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG);

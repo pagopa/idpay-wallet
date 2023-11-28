@@ -10,14 +10,12 @@ import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
-import it.gov.pagopa.wallet.exception.WalletException;
+import it.gov.pagopa.wallet.exception.custom.InvalidIbanException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
-import org.iban4j.UnsupportedCountryException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -33,8 +31,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.IBAN_NOT_ITALIAN;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.ERROR_IBAN_NOT_ITALIAN;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -116,7 +115,6 @@ class WalletServiceNoIbanFormalControlTest {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
 
-
         Mockito.doAnswer(
                         invocationOnMock -> {
                             TEST_WALLET.setIban(IBAN_OK);
@@ -126,17 +124,14 @@ class WalletServiceNoIbanFormalControlTest {
                 .when(walletUpdatesRepositoryMock)
                 .enrollIban(Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.eq(IBAN_OK), Mockito.anyString());
 
-        try {
-            walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
-        } catch (WalletException e) {
-            Assertions.fail();
-        }
+        walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
         assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
     }
 
     @Test
     void enrollIban_ko_iban_not_italian() {
+        // Given
         TEST_WALLET.setIban(null);
         TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         TEST_WALLET.setEndDate(LocalDate.MAX);
@@ -144,12 +139,12 @@ class WalletServiceNoIbanFormalControlTest {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
 
-        try {
-            walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK);
-            Assertions.fail();
-        } catch (UnsupportedCountryException e) {
-            assertNotNull(e.getMessage());
-        }
-    }
+        // When
+        InvalidIbanException exception = assertThrows(InvalidIbanException.class,
+                () -> walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK));
 
+        // Then
+        assertEquals(IBAN_NOT_ITALIAN, exception.getCode());
+        assertEquals(String.format(ERROR_IBAN_NOT_ITALIAN, IBAN_KO_NOT_IT), exception.getMessage());
+    }
 }
