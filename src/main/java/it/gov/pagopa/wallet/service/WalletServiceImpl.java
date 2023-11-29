@@ -215,7 +215,7 @@ public class WalletServiceImpl implements WalletService {
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
       performanceLog(startTime, "DELETE_INSTRUMENT");
-    } catch (Exception e) {
+    } catch (ServiceException e) {
       sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
           null, WalletConstants.REJECTED_DELETE_INSTRUMENT);
       performanceLog(startTime, "DELETE_INSTRUMENT");
