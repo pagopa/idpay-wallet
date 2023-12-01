@@ -54,7 +54,7 @@ public class WalletConstants {
     public static final String IBAN_ENROLL_NOT_ALLOWED_DISCOUNT_MSG = "It is not possible enroll an iban for the discount type initiative [%s]";
     public static final String PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_REFUND_MSG = "It is not possible to enroll an idpayCode for the refund type initiative [%s]";
     public static final String ERROR_UNSUBSCRIBED_INITIATIVE_MSG = "The user has unsubscribed from initiative [%s]";
-    public static final String ERROR_IBAN_NOT_ITALIAN = "[%s] ban is not italian";
+    public static final String ERROR_IBAN_NOT_ITALIAN = "[%s] Iban is not italian";
 
     public static final String PAYMENT_INSTRUMENT_NOT_FOUND_MSG = "The selected payment instrument has not been found for the current user";
     public static final String USER_NOT_ONBOARDED_MSG = "The current user is not onboarded on initiative [%s]";
