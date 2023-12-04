@@ -2,7 +2,6 @@ package it.gov.pagopa.wallet.controller;
 
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.service.WalletService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,7 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WalletControllerImpl implements WalletController {
 
-  @Autowired WalletService walletService;
+  private final WalletService walletService;
+
+  public WalletControllerImpl(WalletService walletService) {
+    this.walletService = walletService;
+  }
+
 
   @Override
   public ResponseEntity<Void> enrollInstrument(

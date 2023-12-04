@@ -1,7 +1,6 @@
 package it.gov.pagopa.wallet.event.producer;
 
 import it.gov.pagopa.wallet.dto.IbanQueueDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -11,10 +10,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class IbanProducer {
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-0.binder}")
-  private String binderIban;
-  @Autowired
-  StreamBridge streamBridge;
+  private final String binderIban;
+  private final StreamBridge streamBridge;
+
+  public IbanProducer(@Value("${spring.cloud.stream.bindings.walletQueue-out-0.binder}") String binderIban,
+                      StreamBridge streamBridge) {
+    this.binderIban = binderIban;
+    this.streamBridge = streamBridge;
+  }
 
   public void sendIban(IbanQueueDTO ibanQueueDTO){
     streamBridge.send("walletQueue-out-0", binderIban, buildMessage(ibanQueueDTO));
