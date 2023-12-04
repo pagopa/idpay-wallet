@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
+import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
@@ -932,5 +933,33 @@ class WalletControllerTest {
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
         assertEquals(INITIATIVE_ENDED, error.getCode());
         assertEquals(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID), error.getMessage());
+    }
+
+    @Test
+    void enroll_instrument_code_ko_genericServiceException() throws Exception {
+        // Given
+        doThrow(new ServiceException("DUMMY_EXCEPTION_CODE", "DUMMY_EXCEPTION_MESSAGE"))
+                .when(walletServiceMock)
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+
+        // When
+        MvcResult res = mvc.perform(
+                        MockMvcRequestBuilders.put(
+                                        BASE_URL
+                                                + "/"
+                                                + INITIATIVE_ID
+                                                + "/"
+                                                + USER_ID
+                                                + "/code"
+                                                + ENROLL_INSTRUMENT_URL)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andReturn();
+
+        // Then
+        ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+        assertEquals("DUMMY_EXCEPTION_CODE", error.getCode());
+        assertEquals("DUMMY_EXCEPTION_MESSAGE", error.getMessage());
     }
 }
