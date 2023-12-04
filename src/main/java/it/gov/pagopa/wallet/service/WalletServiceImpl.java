@@ -55,7 +55,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.IbanUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
@@ -77,55 +76,90 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
   public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
-  @Autowired WalletRepository walletRepository;
-  @Autowired WalletUpdatesRepository walletUpdatesRepository;
-  @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-  @Autowired OnboardingRestConnector onboardingRestConnector;
-  @Autowired IbanProducer ibanProducer;
-  @Autowired TimelineProducer timelineProducer;
-  @Autowired WalletMapper walletMapper;
-  @Autowired TimelineMapper timelineMapper;
-  @Autowired ErrorProducer errorProducer;
-  @Autowired NotificationProducer notificationProducer;
-  @Autowired AuditUtilities auditUtilities;
-  @Autowired Utilities utilities;
+  private final WalletRepository walletRepository;
+  private final WalletUpdatesRepository walletUpdatesRepository;
+  private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  private final OnboardingRestConnector onboardingRestConnector;
+  private final IbanProducer ibanProducer;
+  private final TimelineProducer timelineProducer;
+  private final WalletMapper walletMapper;
+  private final TimelineMapper timelineMapper;
+  private final ErrorProducer errorProducer;
+  private final NotificationProducer notificationProducer;
+  private final AuditUtilities auditUtilities;
+  private final Utilities utilities;
 
-  @Value(
-      "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String timelineServer;
+  private final String timelineServer;
 
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}")
-  String timelineTopic;
+  private final String timelineTopic;
 
-  @Value(
-      "${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String notificationServer;
+  private final String notificationServer;
 
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}")
-  String notificationTopic;
+  private final String notificationTopic;
 
-  @Value(
-      "${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String ibanServer;
+  private final String ibanServer;
 
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}")
-  String ibanTopic;
+  private final String ibanTopic;
 
-  @Value(
-      "${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String transactionServer;
+  private final String transactionServer;
 
-  @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}")
-  String transactionTopic;
+  private final String transactionTopic;
 
-  @Value("${app.iban.formalControl}")
-  boolean isFormalControlIban;
+  private final boolean isFormalControlIban;
 
-  @Value("${app.delete.paginationSize}")
+
   private int pageSize;
 
-  @Value("${app.delete.delayTime}")
+
   private long delay;
+
+  public WalletServiceImpl(WalletRepository walletRepository,
+                           WalletUpdatesRepository walletUpdatesRepository,
+                           PaymentInstrumentRestConnector paymentInstrumentRestConnector,
+                           OnboardingRestConnector onboardingRestConnector,
+                           IbanProducer ibanProducer,
+                           TimelineProducer timelineProducer,
+                           WalletMapper walletMapper,
+                           TimelineMapper timelineMapper,
+                           ErrorProducer errorProducer,
+                           NotificationProducer notificationProducer,
+                           AuditUtilities auditUtilities,
+                           Utilities utilities,
+                           @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
+                           @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
+                           @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
+                           @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}") String notificationTopic,
+                           @Value("${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}") String ibanServer,
+                           @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}") String ibanTopic,
+                           @Value("${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}") String transactionServer,
+                           @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}") String transactionTopic,
+                           @Value("${app.iban.formalControl}") boolean isFormalControlIban,
+                           @Value("${app.delete.paginationSize}") int pageSize,
+                           @Value("${app.delete.delayTime}") long delay) {
+    this.walletRepository = walletRepository;
+    this.walletUpdatesRepository = walletUpdatesRepository;
+    this.paymentInstrumentRestConnector = paymentInstrumentRestConnector;
+    this.onboardingRestConnector = onboardingRestConnector;
+    this.ibanProducer = ibanProducer;
+    this.timelineProducer = timelineProducer;
+    this.walletMapper = walletMapper;
+    this.timelineMapper = timelineMapper;
+    this.errorProducer = errorProducer;
+    this.notificationProducer = notificationProducer;
+    this.auditUtilities = auditUtilities;
+    this.utilities = utilities;
+    this.timelineServer = timelineServer;
+    this.timelineTopic = timelineTopic;
+    this.notificationServer = notificationServer;
+    this.notificationTopic = notificationTopic;
+    this.ibanServer = ibanServer;
+    this.ibanTopic = ibanTopic;
+    this.transactionServer = transactionServer;
+    this.transactionTopic = transactionTopic;
+    this.isFormalControlIban = isFormalControlIban;
+    this.pageSize = pageSize;
+    this.delay = delay;
+  }
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
