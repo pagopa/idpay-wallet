@@ -1,11 +1,5 @@
 package it.gov.pagopa.wallet.controller;
 
-import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
-import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
@@ -17,13 +11,6 @@ import it.gov.pagopa.wallet.exception.custom.InitiativeInvalidException;
 import it.gov.pagopa.wallet.exception.custom.InvalidIbanException;
 import it.gov.pagopa.wallet.exception.custom.UserNotOnboardedException;
 import it.gov.pagopa.wallet.service.WalletService;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import it.gov.pagopa.wallet.utils.Utilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
@@ -41,6 +28,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(
@@ -259,7 +258,7 @@ class WalletControllerTest {
     @Test
     void delete_instrument_initiative_ko() throws Exception {
         // Given
-        doThrow(new InitiativeInvalidException(INITIATIVE_ENDED, String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
 
@@ -481,7 +480,7 @@ class WalletControllerTest {
     @Test
     void enroll_iban_initiative_ko() throws Exception {
         // Given
-        doThrow(new InitiativeInvalidException(INITIATIVE_ENDED, String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
@@ -771,7 +770,7 @@ class WalletControllerTest {
         final InstrumentIssuerDTO instrument =
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
-        doThrow(new InitiativeInvalidException(INITIATIVE_ENDED, String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollInstrumentIssuer(
                         Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.any(InstrumentIssuerDTO.class));
@@ -910,7 +909,7 @@ class WalletControllerTest {
     @Test
     void enroll_instrument_code_ko() throws Exception {
         // Given
-        doThrow(new InitiativeInvalidException(INITIATIVE_ENDED, String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
 

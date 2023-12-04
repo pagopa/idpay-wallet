@@ -76,6 +76,7 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
+  public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
   @Autowired WalletRepository walletRepository;
   @Autowired WalletUpdatesRepository walletUpdatesRepository;
   @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
@@ -169,6 +170,7 @@ public class WalletServiceImpl implements WalletService {
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "the initiative is discount type");
+      log.error("[ENROLL_INSTRUMENT] It is not possible to enroll a payment instrument for the discount type initiative {}", initiativeId);
       throw new EnrollmentNotAllowedException(
               ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG);
     }
@@ -178,6 +180,7 @@ public class WalletServiceImpl implements WalletService {
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
+      log.error("[ENROLL_INSTRUMENT] The user {} has unsubscribed from initiative {}", userId, initiativeId);
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
     InstrumentCallBodyDTO dto =
@@ -234,8 +237,10 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanKO(
           "the initiative is discount type", userId, initiativeId, channel);
+      log.error("[ENROLL_IBAN] It is not possible enroll an iban for the discount type initiative {}", initiativeId);
       throw new EnrollmentNotAllowedException(
               ENROLL_IBAN_DISCOUNT_INITIATIVE, String.format(IBAN_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, initiativeId));
     }
@@ -245,6 +250,7 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanKO(
           WALLET_STATUS_UNSUBSCRIBED_MESSAGE, userId, initiativeId, channel);
+      log.error("[ENROLL_IBAN] The user {} has unsubscribed from initiative {}",userId, initiativeId);
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
@@ -258,7 +264,9 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     if (!iban.startsWith("IT")) {
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanValidationKO(iban);
+      log.error("[ENROLL_IBAN] Iban inserted from the user {} is not italian", userId);
       throw new InvalidIbanException(String.format(ERROR_IBAN_NOT_ITALIAN, iban));
     }
     if (isFormalControlIban) {
@@ -293,7 +301,9 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     if (!wallet.getStatus().equals(WalletStatus.SUSPENDED)) {
       if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+        performanceLog(startTime, WalletConstants.SUSPENSION);
         auditUtilities.logSuspensionKO(userId, initiativeId);
+        log.error("[SUSPENSION] The user {} has unsubscribed from initiative {}", userId, initiativeId);
         throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
       }
 
@@ -302,7 +312,7 @@ public class WalletServiceImpl implements WalletService {
       try {
         walletUpdatesRepository.suspendWallet(
             initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
-        log.info("[SUSPEND_USER] Sending event to ONBOARDING");
+        log.info("[SUSPENSION] Sending event to ONBOARDING");
         onboardingRestConnector.suspendOnboarding(initiativeId, userId);
       } catch (Exception e) {
         auditUtilities.logSuspensionKO(userId, initiativeId);
@@ -310,7 +320,7 @@ public class WalletServiceImpl implements WalletService {
         performanceLog(startTime, WalletConstants.SUSPENSION);
         throw e;
       }
-      sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+       sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
       sendSuspensionReadmissionNotification(
           WalletConstants.SUSPENSION, initiativeId, userId, wallet.getInitiativeName());
 
@@ -326,6 +336,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      performanceLog(startTime, WalletConstants.READMISSION);
       auditUtilities.logReadmissionKO(userId, initiativeId);
       log.info(
           "[READMISSION] Wallet readmission to the initiative {} is not possible", initiativeId);
@@ -344,7 +355,7 @@ public class WalletServiceImpl implements WalletService {
     }
     try {
       walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
-      log.info("[READMIT_USER] Sending event to ONBOARDING");
+      log.info("[READMISSION] Sending event to ONBOARDING");
       onboardingRestConnector.readmitOnboarding(initiativeId, userId);
     } catch (Exception e) {
       auditUtilities.logReadmissionKO(userId, initiativeId);
@@ -577,7 +588,7 @@ public class WalletServiceImpl implements WalletService {
             .orElse(null);
 
     if (wallet == null) {
-      log.error("[PROCESS_ACK] Wallet not found");
+      log.error("[PROCESS_ACK] Wallet not found for the user {}", instrumentAckDTO.getUserId());
       performanceLog(startTime, "PROCESS_ACK");
       throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, instrumentAckDTO.getInitiativeId()));
     }
@@ -670,6 +681,8 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
+      log.error("[ENROLL_INSTRUMENT_ISSUER] It is not possible to enroll a payment instrument for the discount type initiative {}", initiativeId);
       throw new EnrollmentNotAllowedException(
               ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, initiativeId));
     }
@@ -678,6 +691,7 @@ public class WalletServiceImpl implements WalletService {
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
+      log.error("[ENROLL_INSTRUMENT_ISSUER] The user {} has unsubscribed from initiative {}", userId, initiativeId);
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
@@ -741,8 +755,10 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "the initiative is refund type");
+      log.error("[ENROLL_INSTRUMENT_CODE] It is not possible to enroll an idpayCode for the refund type initiative {}", initiativeId);
       throw new EnrollmentNotAllowedException(
               ENROLL_INSTRUMENT_REFUND_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_REFUND_MSG, initiativeId));
     }
@@ -750,8 +766,10 @@ public class WalletServiceImpl implements WalletService {
     checkEndDate(wallet.getEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
+      log.error("[ENROLL_INSTRUMENT_CODE] The user {} has unsubscribed from initiative {}", userId, initiativeId);
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
@@ -765,7 +783,7 @@ public class WalletServiceImpl implements WalletService {
     try {
       log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentCode(dto);
-      performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
     } catch (ServiceException e) {
       sendRejectedInstrumentToTimeline(initiativeId, userId, dto.getChannel(),
           dto.getInstrumentType(), WalletConstants.REJECTED_ADD_INSTRUMENT);
@@ -774,7 +792,7 @@ public class WalletServiceImpl implements WalletService {
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "error in payment instrument request");
 
-      performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       throw e;
     }
   }
@@ -992,8 +1010,8 @@ public class WalletServiceImpl implements WalletService {
       LocalDate requestDate = LocalDate.now();
 
       if (requestDate.isAfter(endDate)) {
-        throw new InitiativeInvalidException(
-                INITIATIVE_ENDED, String.format(INITIATIVE_ENDED_MSG, initiativeId));
+        log.info("[CHECK_END_DATE] The operation is not allowed because the initiative {} has already ended", initiativeId);
+        throw new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, initiativeId));
       }
   }
 
