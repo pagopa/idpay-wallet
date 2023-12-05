@@ -126,8 +126,6 @@ class WalletServiceTest {
     WalletService walletService;
     @MockBean
     AuditUtilities auditUtilities;
-    @MockBean
-    Utilities utilities;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String FAMILY_ID = "TEST_FAMILY_ID";

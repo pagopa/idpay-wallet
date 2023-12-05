@@ -4,31 +4,7 @@ import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.Counters;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InitiativesStatusDTO;
-import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
-import it.gov.pagopa.wallet.dto.InstrumentFromDiscountDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
-import it.gov.pagopa.wallet.dto.QueueCommandOperationDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
-import it.gov.pagopa.wallet.dto.RefundDTO;
-import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-import it.gov.pagopa.wallet.dto.StatusOnInitiativeDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
@@ -45,7 +21,12 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
-import it.gov.pagopa.wallet.utils.Utilities;
+import lombok.extern.slf4j.Slf4j;
+import org.iban4j.IbanUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -53,11 +34,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.iban4j.IbanUtil;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.stereotype.Service;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
@@ -87,31 +63,17 @@ public class WalletServiceImpl implements WalletService {
   private final ErrorProducer errorProducer;
   private final NotificationProducer notificationProducer;
   private final AuditUtilities auditUtilities;
-  private final Utilities utilities;
-
   private final String timelineServer;
-
   private final String timelineTopic;
-
   private final String notificationServer;
-
   private final String notificationTopic;
-
   private final String ibanServer;
-
   private final String ibanTopic;
-
   private final String transactionServer;
-
   private final String transactionTopic;
-
   private final boolean isFormalControlIban;
-
-
-  private int pageSize;
-
-
-  private long delay;
+  private final int pageSize;
+  private final long delay;
 
   public WalletServiceImpl(WalletRepository walletRepository,
                            WalletUpdatesRepository walletUpdatesRepository,
@@ -124,7 +86,6 @@ public class WalletServiceImpl implements WalletService {
                            ErrorProducer errorProducer,
                            NotificationProducer notificationProducer,
                            AuditUtilities auditUtilities,
-                           Utilities utilities,
                            @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
                            @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
                            @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
@@ -147,7 +108,6 @@ public class WalletServiceImpl implements WalletService {
     this.errorProducer = errorProducer;
     this.notificationProducer = notificationProducer;
     this.auditUtilities = auditUtilities;
-    this.utilities = utilities;
     this.timelineServer = timelineServer;
     this.timelineTopic = timelineTopic;
     this.notificationServer = notificationServer;
