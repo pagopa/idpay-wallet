@@ -18,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashMap;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.SUSPENSION_NOT_ALLOWED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -49,7 +50,7 @@ class UtilitiesTest {
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
 
-        ErrorDTO errorDTO = new ErrorDTO(400, MESSAGE);
+        ErrorDTO errorDTO = new ErrorDTO(SUSPENSION_NOT_ALLOWED, MESSAGE);
         Mockito.when(objectMapper.readValue(anyString(), (Class<ErrorDTO>) any())).thenReturn(errorDTO);
 
         String error = utilities.exceptionConverter(e);
@@ -64,7 +65,7 @@ class UtilitiesTest {
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
 
-        ErrorDTO errorDTO = new ErrorDTO(400, null);
+        ErrorDTO errorDTO = new ErrorDTO(SUSPENSION_NOT_ALLOWED, null);
         Mockito.when(objectMapper.readValue(anyString(), (Class<ErrorDTO>) any())).thenReturn(errorDTO);
 
         String error = utilities.exceptionConverter(e);

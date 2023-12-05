@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "DELETE",
+    "urlPath": "/idpay/onboarding/disable",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "initiativeId": "INITIATIVE_ID",
+          "userId": "USER_ID",
+          "unsubscribeDate": "${json-unit.any-string}"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": "204"
+  }
+}

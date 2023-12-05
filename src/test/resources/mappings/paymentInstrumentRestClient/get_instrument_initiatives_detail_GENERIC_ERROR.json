@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/idpay/instrument/initiatives/.*/USER_ID_GENERIC_ERROR/detail"
+  },
+  "response": {
+    "status": "500",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

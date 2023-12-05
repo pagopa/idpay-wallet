@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.INVALID_REQUEST;
+
 @RestControllerAdvice
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -36,7 +38,7 @@ public class ValidationExceptionHandler {
         ErrorManager.getRequestDetails(request), message);
     log.debug("Something went wrong while validating http request", ex);
 
-    return new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message);
+    return new ErrorDTO(INVALID_REQUEST, message);
   }
 
   @ExceptionHandler(MissingRequestHeaderException.class)
@@ -50,6 +52,6 @@ public class ValidationExceptionHandler {
         ErrorManager.getRequestDetails(request), message);
     log.debug("Something went wrong handling request", ex);
 
-    return new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message);
+    return new ErrorDTO(INVALID_REQUEST, message);
   }
 }

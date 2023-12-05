@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "DELETE",
+    "urlPath": "/idpay/instrument/deactivate",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "userId": "USER_ID",
+          "initiativeId": "INITIATIVE_ID",
+          "instrumentId": "INSTRUMENT_ID"
+        }
+      }
+    ]
+  }
+}
