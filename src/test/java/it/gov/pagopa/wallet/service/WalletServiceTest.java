@@ -1,47 +1,11 @@
 package it.gov.pagopa.wallet.service;
 
-import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
-import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
-import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 import com.mongodb.MongoClientException;
-import feign.FeignException;
-import feign.Request;
-import feign.RequestTemplate;
-import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.Counters;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InitiativesStatusDTO;
-import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
-import it.gov.pagopa.wallet.dto.QueueCommandOperationDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
-import it.gov.pagopa.wallet.dto.RefundDTO;
-import it.gov.pagopa.wallet.dto.RewardDTO;
-import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-import it.gov.pagopa.wallet.dto.StatusOnInitiativeDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
@@ -58,22 +22,10 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -89,6 +41,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
+import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -1551,34 +1517,6 @@ class WalletServiceTest {
         verify(walletRepositoryMock, times(2)).save(any());
         verify(onboardingRestConnector, times(1)).rollback(any(), any());
         verify(paymentInstrumentRestConnector, times(1)).rollback(any(), any());
-    }
-
-    @Disabled
-    void unsubscribe_wallet_ko() {
-
-        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET_2));
-
-        Request request =
-                Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
-
-        Mockito.doNothing().when(onboardingRestConnector).disableOnboarding(any());
-        Mockito.doNothing().when(paymentInstrumentRestConnector).disableAllInstrument(any());
-
-        //case error not possible
-        doThrow(new FeignException.BadRequest("", request, new byte[0], null))
-                .when(timelineMapper)
-                .unsubscribeToTimeline(anyString(), anyString(), any());
-
-        try {
-            walletService.unsubscribe(INITIATIVE_ID, USER_ID);
-            Assertions.fail();
-        } catch (ServiceException e) {
-            assertNull(TEST_WALLET_2.getRequestUnsubscribeDate());
-            assertNotEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET_2.getStatus());
-            Mockito.verify(onboardingRestConnector, Mockito.times(1)).rollback(anyString(), anyString());
-            Mockito.verify(paymentInstrumentRestConnector, Mockito.times(1)).rollback(anyString(), anyString());
-        }
     }
 
     @Test
