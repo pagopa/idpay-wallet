@@ -55,21 +55,21 @@ class ErrorManagerTest {
 
   @Test
   void handleExceptionClientExceptionWithBody() throws Exception {
-    Mockito.doThrow(new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, 400,"Error ClientExceptionWithBody"))
+    Mockito.doThrow(new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, "Error","Error ClientExceptionWithBody"))
             .when(testControllerSpy).testEndpoint();
 
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":400,\"message\":\"Error ClientExceptionWithBody\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":Error,\"message\":\"Error ClientExceptionWithBody\"}"));
 
-    Mockito.doThrow(new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, 400,"Error ClientExceptionWithBody", new Exception()))
+    Mockito.doThrow(new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, "Error","Error ClientExceptionWithBody", new Exception()))
             .when(testControllerSpy).testEndpoint();
 
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":400,\"message\":\"Error ClientExceptionWithBody\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":Error,\"message\":\"Error ClientExceptionWithBody\"}"));
   }
 
   @Test
@@ -81,7 +81,7 @@ class ErrorManagerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":500,\"message\":\"Something gone wrong\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":WALLET_GENERIC_ERROR,\"message\":\"Something gone wrong\"}"));
 
     Mockito.doThrow(new ClientException(HttpStatus.BAD_REQUEST, "ClientException with httpStatus and message"))
             .when(testControllerSpy).testEndpoint();
@@ -89,7 +89,7 @@ class ErrorManagerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":500,\"message\":\"Something gone wrong\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":WALLET_GENERIC_ERROR,\"message\":\"Something gone wrong\"}"));
 
     Mockito.doThrow(new ClientException(HttpStatus.BAD_REQUEST, "ClientException with httpStatus, message and throwable", new Throwable()))
             .when(testControllerSpy).testEndpoint();
@@ -97,7 +97,7 @@ class ErrorManagerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":500,\"message\":\"Something gone wrong\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":WALLET_GENERIC_ERROR,\"message\":\"Something gone wrong\"}"));
   }
 
   @Test
@@ -108,6 +108,6 @@ class ErrorManagerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-            .andExpect(MockMvcResultMatchers.content().json("{\"code\":500,\"message\":\"Something gone wrong\"}"));
+            .andExpect(MockMvcResultMatchers.content().json("{\"code\":WALLET_GENERIC_ERROR,\"message\":\"Something gone wrong\"}"));
   }
 }

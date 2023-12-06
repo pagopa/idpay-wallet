@@ -1,9 +1,0 @@
-{
-  "request": {
-    "method": "DELETE",
-    "urlPath": "/idpay/instrument/disableall"
-  },
-  "response": {
-    "status": "204"
-  }
-}

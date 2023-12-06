@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/idpay/instrument/discount/enroll",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "userId": "USER_ID",
+          "initiativeId": "INITIATIVE_ID"
+        }
+      }
+    ]
+  }
+}

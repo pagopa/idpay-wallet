@@ -1,26 +1,20 @@
 package it.gov.pagopa.wallet.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
+import it.gov.pagopa.common.web.exception.ServiceException;
+import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
-import it.gov.pagopa.wallet.exception.WalletException;
+import it.gov.pagopa.wallet.exception.custom.EnrollmentNotAllowedException;
+import it.gov.pagopa.wallet.exception.custom.InitiativeInvalidException;
+import it.gov.pagopa.wallet.exception.custom.InvalidIbanException;
+import it.gov.pagopa.wallet.exception.custom.UserNotOnboardedException;
 import it.gov.pagopa.wallet.service.WalletService;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import it.gov.pagopa.wallet.utils.Utilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
-import org.iban4j.UnsupportedCountryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -29,17 +23,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(
         value = {WalletController.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@Import({ServiceExceptionConfig.class})
 class WalletControllerTest {
 
     private static final String BASE_URL = "http://localhost:8080/idpay/wallet";
@@ -167,12 +174,13 @@ class WalletControllerTest {
 
     @Test
     void enroll_instrument_initiative_ko() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        // Given
+        doThrow(new EnrollmentNotAllowedException(
+                ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG))
                 .when(walletServiceMock)
                 .enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -189,21 +197,20 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isForbidden())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+        assertEquals(ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, error.getCode());
+        assertEquals(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, error.getMessage());
     }
 
     @Test
     void enroll_initiative_wallet_not_found() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -220,10 +227,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
@@ -251,12 +258,12 @@ class WalletControllerTest {
 
     @Test
     void delete_instrument_initiative_ko() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        // Given
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.delete(
@@ -273,21 +280,20 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isForbidden())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+        assertEquals(INITIATIVE_ENDED, error.getCode());
+        assertEquals(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
     void delete_instrument_initiative_wallet_not_found() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.delete(
@@ -304,10 +310,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
@@ -332,13 +338,12 @@ class WalletControllerTest {
 
     @Test
     void status_not_found() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .getEnrollmentStatus(INITIATIVE_ID, USER_ID);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.get(
@@ -348,21 +353,20 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
     void enroll_iban_wallet_not_found() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -373,19 +377,22 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
     void enroll_iban_wallet_format() throws Exception {
+        // Given
         final IbanBodyDTO iban = new IbanBodyDTO(IBAN_WRONG, DESCRIPTION_OK, CHANNEL);
 
-        Mockito.doThrow(new IbanFormatException())
+        doThrow(new IbanFormatException())
                 .when(walletServiceMock)
                 .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, CHANNEL, DESCRIPTION_OK);
+
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -396,17 +403,21 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isBadRequest())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+        assertEquals(INVALID_REQUEST, error.getCode());
     }
 
     @Test
     void enroll_iban_invalid_digit() throws Exception {
+        // Given
         final IbanBodyDTO iban = new IbanBodyDTO(IBAN_KO_NOT_IT, DESCRIPTION_OK, CHANNEL);
 
-        Mockito.doThrow(new InvalidCheckDigitException())
+        doThrow(new InvalidCheckDigitException())
                 .when(walletServiceMock)
                 .enrollIban(INITIATIVE_ID, USER_ID, IBAN_KO_NOT_IT, CHANNEL, DESCRIPTION_OK);
+
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -417,17 +428,21 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isBadRequest())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+        assertEquals(INVALID_REQUEST, error.getCode());
     }
 
     @Test
     void enroll_iban_not_it() throws Exception {
+        // Given
         final IbanBodyDTO iban = new IbanBodyDTO(IBAN_WRONG_DIGIT, DESCRIPTION_OK, CHANNEL);
 
-        Mockito.doThrow(new UnsupportedCountryException())
+        doThrow(new InvalidIbanException(String.format(ERROR_IBAN_NOT_ITALIAN, IBAN_WRONG_DIGIT)))
                 .when(walletServiceMock)
                 .enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, CHANNEL, DESCRIPTION_OK);
+
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -435,15 +450,18 @@ class WalletControllerTest {
                                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                                         .content(objectMapper.writeValueAsString(iban))
                                         .accept(MediaType.APPLICATION_JSON_VALUE))
-                        .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                        .andExpect(MockMvcResultMatchers.status().isForbidden())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+        assertEquals(IBAN_NOT_ITALIAN, error.getCode());
+        assertEquals(String.format(ERROR_IBAN_NOT_ITALIAN, IBAN_WRONG_DIGIT), error.getMessage());
     }
 
     @Test
     void enroll_iban_empty_body() throws Exception {
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -454,20 +472,20 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isBadRequest())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+        assertEquals(INVALID_REQUEST, error.getCode());
         assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
     }
 
     @Test
     void enroll_iban_initiative_ko() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        // Given
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -478,10 +496,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isForbidden())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+        assertEquals(INITIATIVE_ENDED, error.getCode());
+        assertEquals(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
@@ -549,13 +567,12 @@ class WalletControllerTest {
 
     @Test
     void detail_not_found() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .getWalletDetail(INITIATIVE_ID, USER_ID);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.get(BASE_URL + "/" + INITIATIVE_ID + "/" + USER_ID)
@@ -564,9 +581,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
@@ -593,13 +611,12 @@ class WalletControllerTest {
 
     @Test
     void detail_issuer_not_found() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .getWalletDetailIssuer(INITIATIVE_ID, USER_ID);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.get(
@@ -609,9 +626,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
@@ -644,12 +662,12 @@ class WalletControllerTest {
 
     @Test
     void unsubscribeInitiative_not_found() throws Exception {
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        // Given
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .unsubscribe(INITIATIVE_ID, USER_ID);
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.delete(
@@ -659,10 +677,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
@@ -694,7 +712,7 @@ class WalletControllerTest {
 
     @Test
     void processAck_ko_not_found() throws Exception {
-
+        // Given
         final InstrumentAckDTO instrumentAckDTO =
                 new InstrumentAckDTO(
                         INITIATIVE_ID,
@@ -708,12 +726,11 @@ class WalletControllerTest {
                         LocalDateTime.now(),
                         1);
 
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .processAck(Mockito.any(InstrumentAckDTO.class));
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(BASE_URL + PROCESS_ACK_URL)
@@ -723,10 +740,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
 
@@ -750,16 +767,16 @@ class WalletControllerTest {
 
     @Test
     void enroll_instrument_issuer_initiative_ko() throws Exception {
-
+        // Given
         final InstrumentIssuerDTO instrument =
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
-        Mockito.doThrow(
-                        new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollInstrumentIssuer(
                         Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.any(InstrumentIssuerDTO.class));
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -770,25 +787,24 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isForbidden())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+        assertEquals(INITIATIVE_ENDED, error.getCode());
+        assertEquals(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
     void enroll_instrument_issuer_wallet_not_found() throws Exception {
-
+        // Given
         final InstrumentIssuerDTO instrument =
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
-        Mockito.doThrow(
-                        new WalletException(
-                                HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND))
+        doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollInstrumentIssuer(
                         Mockito.eq(INITIATIVE_ID), Mockito.eq(USER_ID), Mockito.any(InstrumentIssuerDTO.class));
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -799,17 +815,18 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_WALLET_NOT_FOUND, error.getMessage());
+        assertEquals(USER_NOT_ONBOARDED, error.getCode());
+        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), error.getMessage());
     }
 
     @Test
     void enroll_instrument_issuer_empty_body() throws Exception {
-
+        // Given
         final InstrumentIssuerDTO instrument = new InstrumentIssuerDTO("", "", "", "", "");
 
+        // When
         MvcResult res =
                 mvc.perform(
                                 MockMvcRequestBuilders.put(
@@ -820,9 +837,10 @@ class WalletControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isBadRequest())
                         .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+        assertEquals(INVALID_REQUEST, error.getCode());
+        assertTrue(error.getMessage().contains(WalletConstants.ERROR_MANDATORY_FIELD));
     }
 
     @Test
@@ -891,12 +909,12 @@ class WalletControllerTest {
 
     @Test
     void enroll_instrument_code_ko() throws Exception {
-
-        Mockito.doThrow(
-                        new WalletException(HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO))
+        // Given
+        doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
                 .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
 
+        // When
         MvcResult res = mvc.perform(
                         MockMvcRequestBuilders.put(
                                         BASE_URL
@@ -911,10 +929,37 @@ class WalletControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn();
 
+        // Then
         ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+        assertEquals(INITIATIVE_ENDED, error.getCode());
+        assertEquals(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID), error.getMessage());
+    }
 
-        assertEquals(HttpStatus.FORBIDDEN.value(), error.getCode());
-        assertEquals(WalletConstants.ERROR_INITIATIVE_KO, error.getMessage());
+    @Test
+    void enroll_instrument_code_ko_genericServiceException() throws Exception {
+        // Given
+        doThrow(new ServiceException("DUMMY_EXCEPTION_CODE", "DUMMY_EXCEPTION_MESSAGE"))
+                .when(walletServiceMock)
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
 
+        // When
+        MvcResult res = mvc.perform(
+                        MockMvcRequestBuilders.put(
+                                        BASE_URL
+                                                + "/"
+                                                + INITIATIVE_ID
+                                                + "/"
+                                                + USER_ID
+                                                + "/code"
+                                                + ENROLL_INSTRUMENT_URL)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andReturn();
+
+        // Then
+        ErrorDTO error = objectMapper.readValue(res.getResponse().getContentAsString(), ErrorDTO.class);
+        assertEquals("DUMMY_EXCEPTION_CODE", error.getCode());
+        assertEquals("DUMMY_EXCEPTION_MESSAGE", error.getMessage());
     }
 }
