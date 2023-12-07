@@ -1,6 +1,0 @@
-{
-  "request": {
-    "method": "DELETE",
-    "urlPath": "/idpay/instrument/deactivate"
-  }
-}

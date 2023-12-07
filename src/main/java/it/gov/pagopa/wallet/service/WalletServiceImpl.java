@@ -1,69 +1,42 @@
 package it.gov.pagopa.wallet.service;
 
-import feign.FeignException;
+import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.Counters;
-import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueDTO;
-import it.gov.pagopa.wallet.dto.IbanQueueWalletDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.InitiativesStatusDTO;
-import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
-import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
-import it.gov.pagopa.wallet.dto.InstrumentFromDiscountDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
-import it.gov.pagopa.wallet.dto.QueueCommandOperationDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
-import it.gov.pagopa.wallet.dto.RefundDTO;
-import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-import it.gov.pagopa.wallet.dto.StatusOnInitiativeDTO;
-import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
+import it.gov.pagopa.wallet.enums.ChannelTransaction;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.event.producer.TimelineProducer;
-import it.gov.pagopa.wallet.exception.WalletException;
 import it.gov.pagopa.wallet.exception.WalletUpdateException;
+import it.gov.pagopa.wallet.exception.custom.*;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
-import it.gov.pagopa.wallet.utils.Utilities;
+import lombok.extern.slf4j.Slf4j;
+import org.iban4j.IbanUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.iban4j.IbanUtil;
-import org.iban4j.UnsupportedCountryException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.stereotype.Service;
+
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 
 @Slf4j
 @Service
@@ -78,55 +51,75 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
-  @Autowired WalletRepository walletRepository;
-  @Autowired WalletUpdatesRepository walletUpdatesRepository;
-  @Autowired PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-  @Autowired OnboardingRestConnector onboardingRestConnector;
-  @Autowired IbanProducer ibanProducer;
-  @Autowired TimelineProducer timelineProducer;
-  @Autowired WalletMapper walletMapper;
-  @Autowired TimelineMapper timelineMapper;
-  @Autowired ErrorProducer errorProducer;
-  @Autowired NotificationProducer notificationProducer;
-  @Autowired AuditUtilities auditUtilities;
-  @Autowired Utilities utilities;
+  public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
+  private final WalletRepository walletRepository;
+  private final WalletUpdatesRepository walletUpdatesRepository;
+  private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  private final OnboardingRestConnector onboardingRestConnector;
+  private final IbanProducer ibanProducer;
+  private final TimelineProducer timelineProducer;
+  private final WalletMapper walletMapper;
+  private final TimelineMapper timelineMapper;
+  private final ErrorProducer errorProducer;
+  private final NotificationProducer notificationProducer;
+  private final AuditUtilities auditUtilities;
+  private final String timelineServer;
+  private final String timelineTopic;
+  private final String notificationServer;
+  private final String notificationTopic;
+  private final String ibanServer;
+  private final String ibanTopic;
+  private final String transactionServer;
+  private final String transactionTopic;
+  private final boolean isFormalControlIban;
+  private final int pageSize;
+  private final long delay;
 
-  @Value(
-      "${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String timelineServer;
-
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}")
-  String timelineTopic;
-
-  @Value(
-      "${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String notificationServer;
-
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}")
-  String notificationTopic;
-
-  @Value(
-      "${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String ibanServer;
-
-  @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}")
-  String ibanTopic;
-
-  @Value(
-      "${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}")
-  String transactionServer;
-
-  @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}")
-  String transactionTopic;
-
-  @Value("${app.iban.formalControl}")
-  boolean isFormalControlIban;
-
-  @Value("${app.delete.paginationSize}")
-  private int pageSize;
-
-  @Value("${app.delete.delayTime}")
-  private long delay;
+  public WalletServiceImpl(WalletRepository walletRepository,
+                           WalletUpdatesRepository walletUpdatesRepository,
+                           PaymentInstrumentRestConnector paymentInstrumentRestConnector,
+                           OnboardingRestConnector onboardingRestConnector,
+                           IbanProducer ibanProducer,
+                           TimelineProducer timelineProducer,
+                           WalletMapper walletMapper,
+                           TimelineMapper timelineMapper,
+                           ErrorProducer errorProducer,
+                           NotificationProducer notificationProducer,
+                           AuditUtilities auditUtilities,
+                           @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
+                           @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
+                           @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
+                           @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}") String notificationTopic,
+                           @Value("${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}") String ibanServer,
+                           @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}") String ibanTopic,
+                           @Value("${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}") String transactionServer,
+                           @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}") String transactionTopic,
+                           @Value("${app.iban.formalControl}") boolean isFormalControlIban,
+                           @Value("${app.delete.paginationSize}") int pageSize,
+                           @Value("${app.delete.delayTime}") long delay) {
+    this.walletRepository = walletRepository;
+    this.walletUpdatesRepository = walletUpdatesRepository;
+    this.paymentInstrumentRestConnector = paymentInstrumentRestConnector;
+    this.onboardingRestConnector = onboardingRestConnector;
+    this.ibanProducer = ibanProducer;
+    this.timelineProducer = timelineProducer;
+    this.walletMapper = walletMapper;
+    this.timelineMapper = timelineMapper;
+    this.errorProducer = errorProducer;
+    this.notificationProducer = notificationProducer;
+    this.auditUtilities = auditUtilities;
+    this.timelineServer = timelineServer;
+    this.timelineTopic = timelineTopic;
+    this.notificationServer = notificationServer;
+    this.notificationTopic = notificationTopic;
+    this.ibanServer = ibanServer;
+    this.ibanTopic = ibanTopic;
+    this.transactionServer = transactionServer;
+    this.transactionTopic = transactionTopic;
+    this.isFormalControlIban = isFormalControlIban;
+    this.pageSize = pageSize;
+    this.delay = delay;
+  }
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -154,11 +147,8 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet getWallet(String initiativeId, String userId) {
     return walletRepository
-        .findByInitiativeIdAndUserId(initiativeId, userId)
-        .orElseThrow(
-            () ->
-                new WalletException(
-                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+            .findById(generateWalletId(userId, initiativeId))
+            .orElseThrow(() -> new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId)));
   }
 
   @Override
@@ -174,17 +164,18 @@ public class WalletServiceImpl implements WalletService {
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "the initiative is discount type");
-      throw new WalletException(
-          HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI);
+      log.error("[ENROLL_INSTRUMENT] It is not possible to enroll a payment instrument for the discount type initiative {}", initiativeId);
+      throw new EnrollmentNotAllowedException(
+              ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG);
     }
 
-    checkEndDate(wallet.getEndDate());
+    checkEndDate(wallet.getEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
-      throw new WalletException(
-          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+      log.error("[ENROLL_INSTRUMENT] The user {} has unsubscribed from initiative {}", userId, initiativeId);
+      throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
     InstrumentCallBodyDTO dto =
         new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO,
@@ -194,18 +185,14 @@ public class WalletServiceImpl implements WalletService {
       log.info("[ENROLL_INSTRUMENT] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrument(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT");
-    } catch (Exception e) {
+    } catch (ServiceException e) {
       sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
           WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.REJECTED_ADD_INSTRUMENT);
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentKO(
           userId, initiativeId, idWallet, "error in payment instrument request");
       performanceLog(startTime, "ENROLL_INSTRUMENT");
-
-      if (e instanceof FeignException feignException){
-        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
-      }
-      throw new WalletException(500, e.getMessage());
+      throw e;
     }
   }
 
@@ -218,21 +205,18 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    checkEndDate(wallet.getEndDate());
+    checkEndDate(wallet.getEndDate(), initiativeId);
 
     DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId);
 
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
       performanceLog(startTime, "DELETE_INSTRUMENT");
-    } catch (Exception e) {
+    } catch (ServiceException e) {
       sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
           null, WalletConstants.REJECTED_DELETE_INSTRUMENT);
       performanceLog(startTime, "DELETE_INSTRUMENT");
-      if (e instanceof FeignException feignException){
-        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
-      }
-      throw new WalletException(500, e.getMessage());
+      throw e;
     }
   }
 
@@ -247,19 +231,21 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanKO(
           "the initiative is discount type", userId, initiativeId, channel);
-      throw new WalletException(
-          HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_IBAN);
+      log.error("[ENROLL_IBAN] It is not possible enroll an iban for the discount type initiative {}", initiativeId);
+      throw new EnrollmentNotAllowedException(
+              ENROLL_IBAN_DISCOUNT_INITIATIVE, String.format(IBAN_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, initiativeId));
     }
 
-    checkEndDate(wallet.getEndDate());
+    checkEndDate(wallet.getEndDate(), initiativeId);
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanKO(
           WALLET_STATUS_UNSUBSCRIBED_MESSAGE, userId, initiativeId, channel);
-      throw new WalletException(
-          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+      log.error("[ENROLL_IBAN] The user {} has unsubscribed from initiative {}",userId, initiativeId);
+      throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
     if (wallet.getIban() != null && (wallet.getIban().equals(iban))) {
@@ -272,8 +258,10 @@ public class WalletServiceImpl implements WalletService {
 
     iban = iban.toUpperCase();
     if (!iban.startsWith("IT")) {
+      performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanValidationKO(iban);
-      throw new UnsupportedCountryException(iban + " Iban is not italian");
+      log.error("[ENROLL_IBAN] Iban inserted from the user {} is not italian", userId);
+      throw new InvalidIbanException(String.format(ERROR_IBAN_NOT_ITALIAN, iban));
     }
     if (isFormalControlIban) {
       formalControl(iban);
@@ -307,9 +295,10 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     if (!wallet.getStatus().equals(WalletStatus.SUSPENDED)) {
       if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+        performanceLog(startTime, WalletConstants.SUSPENSION);
         auditUtilities.logSuspensionKO(userId, initiativeId);
-        throw new WalletException(
-            HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+        log.error("[SUSPENSION] The user {} has unsubscribed from initiative {}", userId, initiativeId);
+        throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
       }
 
       LocalDateTime localDateTime = LocalDateTime.now();
@@ -317,15 +306,15 @@ public class WalletServiceImpl implements WalletService {
       try {
         walletUpdatesRepository.suspendWallet(
             initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
-        log.info("[SUSPEND_USER] Sending event to ONBOARDING");
+        log.info("[SUSPENSION] Sending event to ONBOARDING");
         onboardingRestConnector.suspendOnboarding(initiativeId, userId);
       } catch (Exception e) {
         auditUtilities.logSuspensionKO(userId, initiativeId);
         this.rollbackWallet(backupStatus, wallet);
         performanceLog(startTime, WalletConstants.SUSPENSION);
-        throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        throw e;
       }
-      sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+       sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
       sendSuspensionReadmissionNotification(
           WalletConstants.SUSPENSION, initiativeId, userId, wallet.getInitiativeName());
 
@@ -341,11 +330,11 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      performanceLog(startTime, WalletConstants.READMISSION);
       auditUtilities.logReadmissionKO(userId, initiativeId);
       log.info(
           "[READMISSION] Wallet readmission to the initiative {} is not possible", initiativeId);
-      throw new WalletException(
-          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+      throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
     LocalDateTime localDateTime = LocalDateTime.now();
@@ -360,7 +349,7 @@ public class WalletServiceImpl implements WalletService {
     }
     try {
       walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
-      log.info("[READMIT_USER] Sending event to ONBOARDING");
+      log.info("[READMISSION] Sending event to ONBOARDING");
       onboardingRestConnector.readmitOnboarding(initiativeId, userId);
     } catch (Exception e) {
       auditUtilities.logReadmissionKO(userId, initiativeId);
@@ -370,7 +359,7 @@ public class WalletServiceImpl implements WalletService {
       wallet.setUpdateDate(localDateTime);
       walletRepository.save(wallet);
       performanceLog(startTime, WalletConstants.READMISSION);
-      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+      throw e;
     }
     sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, localDateTime));
     sendSuspensionReadmissionNotification(
@@ -424,6 +413,7 @@ public class WalletServiceImpl implements WalletService {
       if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(
           evaluationDTO.getInitiativeRewardType())) {
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
+        wallet.setNInstr(1);
         paymentInstrumentRestConnector.enrollDiscountInitiative(
             InstrumentFromDiscountDTO.builder()
                 .initiativeId(evaluationDTO.getInitiativeId())
@@ -455,27 +445,27 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
       log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",
           initiativeId, userId);
-    } catch (FeignException e) {
+    } catch (ServiceException e) {
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
           userId, initiativeId, "request of disabling all payment instruments failed");
       log.info(
           "[UNSUBSCRIBE] Request of disabling all payment instruments on initiative {} for user {} failed",
           initiativeId, userId);
-      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+      throw e;
     }
     try {
       onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
       log.info("[UNSUBSCRIBE] Onboarding disabled on initiative {} for user {}", initiativeId,
           userId);
-    } catch (FeignException e) {
+    } catch (ServiceException e) {
       paymentInstrumentRestConnector.rollback(initiativeId, userId);
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
           userId, initiativeId, "request of disabling onboarding failed");
       log.info("[UNSUBSCRIBE] Request of disabling onboarding on initiative {} for user {} failed",
           initiativeId, userId);
-      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+      throw e;
     }
     try {
       if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
@@ -488,7 +478,7 @@ public class WalletServiceImpl implements WalletService {
             userId);
       }
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-    } catch (FeignException e) {
+    } catch (Exception e) {
       this.rollbackWallet(statusTemp, wallet);
       onboardingRestConnector.rollback(initiativeId, userId);
       paymentInstrumentRestConnector.rollback(initiativeId, userId);
@@ -497,16 +487,24 @@ public class WalletServiceImpl implements WalletService {
           userId, initiativeId, "request of disabling wallet failed");
       log.info("[UNSUBSCRIBE] Request of disabling wallet on initiative {} for user {} failed",
           initiativeId, userId);
-      throw new WalletException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+      throw e;
     }
+    QueueOperationDTO queueOperationDTO =
+            timelineMapper.unsubscribeToTimeline(
+                    wallet.getInitiativeId(),
+                    wallet.getUserId(),
+                    wallet.getRequestUnsubscribeDate()
+            );
+    sendToTimeline(queueOperationDTO);
   }
+
 
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
     long startTime = System.currentTimeMillis();
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
-        && !(rewardTransactionDTO.getChannel().equals("QRCODE")
+        && !(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
         || rewardTransactionDTO.getStatus().equals("CANCELLED")))) {
       log.info("[PROCESS_TRANSACTION] Transaction not in status REWARDED, skipping message");
@@ -546,7 +544,7 @@ public class WalletServiceImpl implements WalletService {
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
           walletRepository
-              .findByInitiativeIdAndUserId(walletPI.getInitiativeId(), walletPI.getUserId())
+              .findById(generateWalletId(walletPI.getUserId(), walletPI.getInitiativeId()))
               .orElse(null);
       if (wallet == null) {
         log.info(
@@ -580,24 +578,27 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(
-                instrumentAckDTO.getInitiativeId(), instrumentAckDTO.getUserId())
+            .findById(generateWalletId(instrumentAckDTO.getUserId(), instrumentAckDTO.getInitiativeId()))
             .orElse(null);
 
     if (wallet == null) {
-      log.error("[PROCESS_ACK] Wallet not found");
+      log.error("[PROCESS_ACK] Wallet not found for the user {}", instrumentAckDTO.getUserId());
       performanceLog(startTime, "PROCESS_ACK");
-      throw new WalletException(
-          HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND);
+      throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, instrumentAckDTO.getInitiativeId()));
     }
 
     if (!instrumentAckDTO.getOperationType().equals(WalletConstants.REJECTED_ADD_INSTRUMENT)) {
       wallet.setNInstr(instrumentAckDTO.getNinstr());
+
+      String status = WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType()) ?
+              wallet.getStatus() : setStatus(wallet);
+
       walletUpdatesRepository.updateInstrumentNumber(
-          instrumentAckDTO.getInitiativeId(),
-          instrumentAckDTO.getUserId(),
-          instrumentAckDTO.getNinstr(),
-          setStatus(wallet));
+              instrumentAckDTO.getInitiativeId(),
+              instrumentAckDTO.getUserId(),
+              instrumentAckDTO.getNinstr(),
+              status);
+
     }
 
     QueueOperationDTO queueOperationDTO = timelineMapper.ackToTimeline(instrumentAckDTO);
@@ -620,7 +621,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(refundDTO.getInitiativeId(), refundDTO.getBeneficiaryId())
+            .findById(generateWalletId(refundDTO.getBeneficiaryId(), refundDTO.getInitiativeId()))
             .orElse(null);
 
     if (wallet == null) {
@@ -674,16 +675,18 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(wallet.getInitiativeRewardType())) {
-      throw new WalletException(
-          HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_DISCOUNT_PI);
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
+      log.error("[ENROLL_INSTRUMENT_ISSUER] It is not possible to enroll a payment instrument for the discount type initiative {}", initiativeId);
+      throw new EnrollmentNotAllowedException(
+              ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, initiativeId));
     }
 
-    checkEndDate(wallet.getEndDate());
+    checkEndDate(wallet.getEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
-      throw new WalletException(
-          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+      log.error("[ENROLL_INSTRUMENT_ISSUER] The user {} has unsubscribed from initiative {}", userId, initiativeId);
+      throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
     InstrumentIssuerCallDTO instrumentIssuerCallDTO =
@@ -702,16 +705,12 @@ public class WalletServiceImpl implements WalletService {
       log.info("[ENROLL_INSTRUMENT_ISSUER] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentIssuer(instrumentIssuerCallDTO);
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
-    } catch (Exception e) {
+    } catch (ServiceException e) {
       sendRejectedInstrumentToTimeline(initiativeId, userId, body.getChannel(),
           WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.REJECTED_ADD_INSTRUMENT);
       log.error("[ENROLL_INSTRUMENT_ISSUER] Error in Payment Instrument Request");
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
-
-      if (e instanceof FeignException feignException){
-        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
-      }
-      throw new WalletException(500, e.getMessage());
+      throw e;
     }
   }
 
@@ -750,19 +749,22 @@ public class WalletServiceImpl implements WalletService {
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "the initiative is refund type");
-      throw new WalletException(
-          HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_REFUND_PI);
+      log.error("[ENROLL_INSTRUMENT_CODE] It is not possible to enroll an idpayCode for the refund type initiative {}", initiativeId);
+      throw new EnrollmentNotAllowedException(
+              ENROLL_INSTRUMENT_REFUND_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_REFUND_MSG, initiativeId));
     }
 
-    checkEndDate(wallet.getEndDate());
+    checkEndDate(wallet.getEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
-      throw new WalletException(
-          HttpStatus.BAD_REQUEST.value(), WalletConstants.ERROR_INITIATIVE_UNSUBSCRIBED);
+      log.error("[ENROLL_INSTRUMENT_CODE] The user {} has unsubscribed from initiative {}", userId, initiativeId);
+      throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
     InstrumentCallBodyDTO dto = InstrumentCallBodyDTO.builder()
@@ -775,8 +777,8 @@ public class WalletServiceImpl implements WalletService {
     try {
       log.info("[ENROLL_INSTRUMENT_CODE] Calling Payment Instrument");
       paymentInstrumentRestConnector.enrollInstrumentCode(dto);
-      performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
-    } catch (Exception e) {
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
+    } catch (ServiceException e) {
       sendRejectedInstrumentToTimeline(initiativeId, userId, dto.getChannel(),
           dto.getInstrumentType(), WalletConstants.REJECTED_ADD_INSTRUMENT);
 
@@ -784,12 +786,8 @@ public class WalletServiceImpl implements WalletService {
       auditUtilities.logEnrollmentInstrumentCodeKO(
           userId, initiativeId, "error in payment instrument request");
 
-      performanceLog(startTime, "ENROLL_INSTRUMENT_CODE");
-
-      if (e instanceof FeignException feignException){
-        throw new WalletException(feignException.status(), utilities.exceptionConverter(feignException));
-      }
-      throw new WalletException(500, e.getMessage());
+      performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
+      throw e;
     }
   }
 
@@ -800,11 +798,10 @@ public class WalletServiceImpl implements WalletService {
       Counters counters,
       BigDecimal accruedReward) {
 
-    if (!(rewardTransactionDTO.getChannel().equals("QRCODE")
+    if (!(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-      Wallet userWallet = walletRepository.findByInitiativeIdAndUserId(initiativeId,
-          rewardTransactionDTO.getUserId()).orElse(null);
+      Wallet userWallet = walletRepository.findById(generateWalletId(rewardTransactionDTO.getUserId(), initiativeId)).orElse(null);
 
       if (userWallet == null) {
         log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}",
@@ -858,11 +855,9 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
     return walletRepository
-        .findByInitiativeIdAndUserId(initiativeId, userId)
-        .orElseThrow(
-            () ->
-                new WalletException(
-                    HttpStatus.NOT_FOUND.value(), WalletConstants.ERROR_WALLET_NOT_FOUND));
+            .findById(generateWalletId(userId, initiativeId))
+            .orElseThrow(
+                    () -> new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId)));
   }
 
   private String setStatus(Wallet wallet) {
@@ -889,7 +884,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findByInitiativeIdAndUserId(iban.getInitiativeId(), iban.getUserId())
+            .findById(generateWalletId(iban.getUserId(), iban.getInitiativeId()))
             .orElse(null);
 
     if (wallet == null) {
@@ -1005,17 +1000,13 @@ public class WalletServiceImpl implements WalletService {
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
-  private void checkEndDate(LocalDate endDate) {
-    try {
+  private void checkEndDate(LocalDate endDate, String initiativeId) {
       LocalDate requestDate = LocalDate.now();
 
       if (requestDate.isAfter(endDate)) {
-        throw new WalletException(
-            HttpStatus.FORBIDDEN.value(), WalletConstants.ERROR_INITIATIVE_KO);
+        log.info("[CHECK_END_DATE] The operation is not allowed because the initiative {} has already ended", initiativeId);
+        throw new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, initiativeId));
       }
-    } catch (FeignException e) {
-      throw new WalletException(e.status(), e.contentUTF8());
-    }
   }
 
   private void sendToTimeline(QueueOperationDTO queueOperationDTO) {
@@ -1048,6 +1039,10 @@ public class WalletServiceImpl implements WalletService {
         "[PERFORMANCE_LOG] [{}] Time occurred to perform business logic: {} ms",
         service,
         System.currentTimeMillis() - startTime);
+  }
+
+  private String generateWalletId(String userId, String initiativeId){
+    return userId.concat("_").concat(initiativeId);
   }
 
   @Override
@@ -1113,10 +1108,10 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
       return walletMapper.toInstrumentOnInitiativesDTO(
           idWallet, instrumentDetailDTO, initiativesStatusDTO);
-    } catch (FeignException e) {
+    } catch (ServiceException e) {
       log.error("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Error in Payment Instrument Request");
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
-      throw new WalletException(e.status(), e.getMessage());
+      throw e;
     }
   }
 }

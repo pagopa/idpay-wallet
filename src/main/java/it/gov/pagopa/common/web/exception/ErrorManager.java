@@ -9,13 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.GENERIC_ERROR;
+
 @RestControllerAdvice
 @Slf4j
 public class ErrorManager {
   private static final ErrorDTO defaultErrorDTO;
 
   static {
-    defaultErrorDTO = new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something gone wrong");
+    defaultErrorDTO = new ErrorDTO(GENERIC_ERROR, "Something gone wrong");
   }
 
   @ExceptionHandler(RuntimeException.class)

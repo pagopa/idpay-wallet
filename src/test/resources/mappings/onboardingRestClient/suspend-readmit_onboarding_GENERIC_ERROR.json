@@ -1,0 +1,9 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPathPattern": "/idpay/onboarding/INITIATIVE_ID/USER_ID_GENERIC_ERROR/(suspend|readmit)"
+  },
+  "response": {
+    "status": "500"
+  }
+}

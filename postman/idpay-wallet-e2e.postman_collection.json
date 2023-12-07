@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "9ddbb611-23e7-4aae-a078-6af62d717cd7",
-		"name": "Wallet - e2e",
+		"_postman_id": "63b018ca-193e-4cef-a59b-265edd5654bb",
+		"name": "Wallet - e2e - Copy without CF NEW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26036736",
-		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036679-9ddbb611-23e7-4aae-a078-6af62d717cd7?action=share&source=collection_link&creator=26036736"
+		"_exporter_id": "26036679",
+		"_collection_link": "https://idpay-test-funzionali.postman.co/workspace/IDPay-Test-Funzionali~d5f80577-ab5d-4d50-87c4-a81b6bcba6bc/collection/26036736-63b018ca-193e-4cef-a59b-265edd5654bb?action=share&source=collection_link&creator=26036679"
 	},
 	"item": [
 		{
@@ -924,7 +924,7 @@
 														{
 															"key": "file",
 															"type": "file",
-															"src": "./postman/example_merchant_valid.csv"
+															"src": "./postman/Esercente di test IdPay.csv"
 														}
 													]
 												},
@@ -1071,7 +1071,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -1083,7 +1083,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -2306,7 +2306,7 @@
 							"name": "Onboarding User with NF",
 							"item": [
 								{
-									"name": "mock family Copy",
+									"name": "mock family",
 									"request": {
 										"method": "PUT",
 										"header": [
@@ -3716,7 +3716,7 @@
 							"name": "GET Initiative Detail (CIT)2",
 							"item": [
 								{
-									"name": "Generate Token IO Copy",
+									"name": "Generate Token IO",
 									"event": [
 										{
 											"listen": "test",
@@ -3780,7 +3780,7 @@
 									"response": []
 								},
 								{
-									"name": "Get Initiative Detail Copy",
+									"name": "Get Initiative Detail",
 									"event": [
 										{
 											"listen": "test",
@@ -3848,70 +3848,6 @@
 						{
 							"name": "Onboarding User with criteria",
 							"item": [
-								{
-									"name": "Generate Token IO",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test('Wallet - Happy case - Enroll instrument - APP IO - Onboarding - Generate Token IO', () => {\r",
-													"    //verify response HTTP status \r",
-													"    pm.response.to.have.status(200);\r",
-													"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript"
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"setTimeout(() => {}, 5000);"
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "POST",
-										"header": [
-											{
-												"key": "Ocp-Apim-Subscription-Key",
-												"value": "{{genericSubscriptionKey}}",
-												"type": "default"
-											},
-											{
-												"key": "Ocp-Apim-Trace",
-												"value": "true",
-												"type": "default"
-											}
-										],
-										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"rtd",
-												"mock-io",
-												"login"
-											],
-											"query": [
-												{
-													"key": "fiscalCode",
-													"value": "{{CF_2}}"
-												}
-											]
-										}
-									},
-									"response": []
-								},
 								{
 									"name": "Accept T&C",
 									"event": [
@@ -5959,7 +5895,7 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													""
+													"setTimeout(()=> {}, 10000)"
 												],
 												"type": "text/javascript"
 											}
@@ -7584,7 +7520,7 @@
 													"\r",
 													"pm.test(\"Wallet - Happy case - Enroll IDPAYCODE - Check status IDPAYCODE  - Verify IDPAYCODE is enabled\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.idPayCodeEnabled).eq(true);\r",
+													"    pm.expect(jsonResponse.isIdPayCodeEnabled).eq(true);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -8344,7 +8280,7 @@
 													"\r",
 													"pm.test(\"Wallet - Happy case - Enroll IDPAYCODE - Check status IDPAYCODE  - Verify IDPAYCODE is enabled\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.idPayCodeEnabled).eq(true);\r",
+													"    pm.expect(jsonResponse.isIdPayCodeEnabled).eq(true);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -8728,12 +8664,12 @@
 											"script": {
 												"exec": [
 													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Enroll instrument - Response status is 400\", function () {\r",
-													"    pm.response.to.have.status(400);\r",
+													"    pm.response.to.have.status(403);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Enroll instrument - Response message is : You are unsubscribed at this initiative!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll payment instrument - Enroll instrument - Response message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('You are unsubscribed at this initiative!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_UNSUBSCRIBED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -8987,12 +8923,12 @@
 											"script": {
 												"exec": [
 													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Enroll iban - Response status is 400\", function () {\r",
-													"    pm.response.to.have.status(400);\r",
+													"    pm.response.to.have.status(403);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Enroll iban - Response message is: You are unsubscribed at this initiative!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy case - Unsubscribed user try to enroll iban - Enroll iban - Response message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('You are unsubscribed at this initiative!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_UNSUBSCRIBED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -9438,9 +9374,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - Message is The selected payment instrument is not active for such user and initiative.\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Enroll PI already in use - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The selected payment instrument is not active for such user and initiative.');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_INSTRUMENT_NOT_FOUND');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -9633,9 +9569,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - Message is The selected payment instrument is not active for such user and initiative.\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - idWallet not found - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The selected payment instrument is not active for such user and initiative.');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_INSTRUMENT_NOT_FOUND');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -10672,7 +10608,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10684,7 +10620,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -10702,9 +10638,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - enrolling instrument - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - enrolling instrument - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -10773,7 +10709,7 @@
 													"\r",
 													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - Get Status - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -10832,7 +10768,7 @@
 													"\r",
 													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active for this User - Get Detail - Message is The requested initiative is not active for the current user!\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -11115,7 +11051,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -11127,7 +11063,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -11145,9 +11081,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Enroll instrument - Response message is equals to: The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Enroll instrument - Response message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -11214,9 +11150,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet status - Response message is equals to: The requested initiative is not active for the current user! \", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet status - Response message contain info about ko \", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -11273,9 +11209,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet detail - Response message is equals to: The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Payment Instrument - Initiative not active - Get wallet detail - Response message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -11315,73 +11251,6 @@
 												"idpay",
 												"wallet",
 												"{{initiativeId-draft}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "DELETE initiative",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Initiative with whitelist - Unhappy case - Initiative deletion - Ente Admin delete(enabled:false) an initiative in status draft - Responses with 204\", function () {\r",
-													"    pm.response.to.have.status(204);\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript"
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{identityPortalToken}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "DELETE",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											},
-											{
-												"key": "Accept",
-												"value": "application/json"
-											}
-										],
-										"url": {
-											"raw": "{{baseUrlInitiative}}/:initiativeId/beneficiary/instruments",
-											"host": [
-												"{{baseUrlInitiative}}"
-											],
-											"path": [
-												":initiativeId",
-												"beneficiary",
-												"instruments"
-											],
-											"variable": [
-												{
-													"key": "initiativeId",
-													"value": "{{initiativeId-draft}}"
-												}
 											]
 										}
 									},
@@ -11632,7 +11501,7 @@
 													"\r",
 													"pm.test(\"Wallet - Unhappy case - Payment instrument - ISSUER Enroll instrument already in use - Enroll instrument - Response message is equals to: Payment instrument already associated to another citizen\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('Payment instrument already associated to another citizen');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_INSTRUMENT_ALREADY_ASSOCIATED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -11951,7 +11820,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
+									"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11963,7 +11832,7 @@
 									"query": [
 										{
 											"key": "fiscalCode",
-											"value": "{{CF_2}}"
+											"value": "{{CF_fake}}"
 										}
 									]
 								}
@@ -11981,9 +11850,9 @@
 											"    pm.response.to.have.status(404);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Wallet - Unhappy case - Get Hpan list - Initiative Id field empty - Response message is The requested initiative is not active for the current user!\", function () {\r",
+											"pm.test(\"Wallet - Unhappy case - Get Hpan list - Initiative Id field empty - Response message contain info about ko\", function () {\r",
 											"    const responseJson = pm.response.json();\r",
-											"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+											"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 											"});\r",
 											""
 										],
@@ -12860,7 +12729,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -12872,7 +12741,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -12890,9 +12759,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - enrolling iban - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - enrolling iban - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -12958,9 +12827,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Status - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Status - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -13017,9 +12886,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Detail - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Initiative not active for this User - Get Detail - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -13925,7 +13794,7 @@
 													}
 												],
 												"url": {
-													"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
+													"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -13937,7 +13806,7 @@
 													"query": [
 														{
 															"key": "fiscalCode",
-															"value": "{{CF_2}}"
+															"value": "{{CF_fake}}"
 														}
 													]
 												}
@@ -14147,12 +14016,12 @@
 											"script": {
 												"exec": [
 													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - enrolling iban - Responses with 400\", function () {\r",
-													"    pm.response.to.have.status(400);\r",
+													"    pm.response.to.have.status(403);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - enrolling iban - Message is Iban is not italian\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban not italian - enrolling iban - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('GB29NWBK60161331926819 Iban is not italian');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_IBAN_NOT_ITALIAN');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -14343,6 +14212,11 @@
 													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban empty field - enrolling iban - Responses with 400\", function () {\r",
 													"    pm.response.to.have.status(400);\r",
 													"});\r",
+													"\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban empty field - enrolling iban - Message contain info about ko\", function () {\r",
+													"    const responseJson = pm.response.json();\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_INVALID_REQUEST');\r",
+													"});\r",
 													""
 												],
 												"type": "text/javascript"
@@ -14456,7 +14330,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -14468,7 +14342,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -14486,9 +14360,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - enrolling iban - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - enrolling iban - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -14554,9 +14428,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Status - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Status - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -14613,9 +14487,9 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Detail - Message is The requested initiative is not active for the current user!\", function () {\r",
+													"pm.test(\"Wallet - Unhappy Case - Iban - Enroll iban initiative not active - Get Detail - Message contain info about ko\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql('The requested initiative is not active for the current user!');\r",
+													"    pm.expect(responseJson.code).to.eql('WALLET_USER_NOT_ONBOARDED');\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -14715,7 +14589,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_1}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -14727,7 +14601,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_1}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -14852,7 +14726,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_2}}",
+											"raw": "{{baseUrl}}/rtd/mock-io/login?fiscalCode={{CF_fake}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -14864,7 +14738,7 @@
 											"query": [
 												{
 													"key": "fiscalCode",
-													"value": "{{CF_2}}"
+													"value": "{{CF_fake}}"
 												}
 											]
 										}
@@ -14957,6 +14831,15 @@
 											"name": "Generate Token IO",
 											"event": [
 												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"//setTimeout(() => {}, 5000);"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
 													"listen": "test",
 													"script": {
 														"exec": [
@@ -14966,15 +14849,6 @@
 															"    pm.collectionVariables.set(\"tokenIO\", pm.response.text());\r",
 															"});\r",
 															""
-														],
-														"type": "text/javascript"
-													}
-												},
-												{
-													"listen": "prerequest",
-													"script": {
-														"exec": [
-															"setTimeout(() => {}, 5000);"
 														],
 														"type": "text/javascript"
 													}
@@ -15021,21 +14895,21 @@
 											"name": "Accept T&C",
 											"event": [
 												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"//setTimeout(() => {}, 15000);"
+														],
+														"type": "text/javascript"
+													}
+												},
+												{
 													"listen": "test",
 													"script": {
 														"exec": [
 															"pm.test(\"Wallet - Happy case - Initiative discount - Onboarding - Accept T&C - return status 204\", function () {\r",
 															"    pm.response.to.have.status(204);\r",
 															"});"
-														],
-														"type": "text/javascript"
-													}
-												},
-												{
-													"listen": "prerequest",
-													"script": {
-														"exec": [
-															"setTimeout(() => {}, 15000);"
 														],
 														"type": "text/javascript"
 													}
@@ -15211,12 +15085,11 @@
 											"script": {
 												"exec": [
 													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Associate IDPAYCODE to initiative without generate IDPAYCODE - Responses with 403\", function () {\r",
-													"    pm.response.to.have.status(403);\r",
+													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
 													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Associate IDPAYCODE to initiative without generate IDPAYCODE - Check message is 'IdpayCode must be generated'\", function () {\r",
-													"     const message = pm.response.json().message;\r",
-													"     pm.expect(message).eq(\"IdpayCode must be generated\")\r",
+													"     pm.expect(pm.response.json().code).eq(\"WALLET_INSTRUMENT_IDPAYCODE_NOT_FOUND\")\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15274,7 +15147,7 @@
 													"\r",
 													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Check status IDPAYCODE  - Verify IDPAYCODE is disabled\", function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.idPayCodeEnabled).eq(false);\r",
+													"    pm.expect(jsonResponse.isIdPayCodeEnabled).eq(false);\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15389,9 +15262,8 @@
 													"    pm.response.to.have.status(404);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Generate IDPAYCODE with initiativeId - Check message is 'Resource not found while enrolling idpayCode on ms wallet'\" , function () {\r",
-													"    let message = pm.response.json().message;\r",
-													"    pm.expect(message).eq(\"Resource not found while enrolling idpayCode on ms wallet\");\r",
+													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Generate IDPAYCODE with initiativeId - Check message is 'The requested initiative is not active for the current user!'\" , function () {\r",
+													"    pm.expect(pm.response.json().code).eq(\"PAYMENT_INSTRUMENT_USER_NOT_ONBOARDED\");\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15513,8 +15385,7 @@
 													"});\r",
 													"\r",
 													"pm.test(\"Wallet - Unhappy case - Enroll IDPAYCODE - Associate IDPAYCODE to initiative without onboarding - Check message is 'The requested initiative is not active for the current user!'\", function () {\r",
-													"     const message = pm.response.json().message;\r",
-													"     pm.expect(message).eq(\"The requested initiative is not active for the current user!\")\r",
+													"     pm.expect(pm.response.json().code).eq(\"WALLET_USER_NOT_ONBOARDED\")\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15881,7 +15752,7 @@
 		},
 		{
 			"key": "initiativeId",
-			"value": ""
+			"value": "64a57c68f604477a2463f8f0"
 		},
 		{
 			"key": "familyUnitComposition",
@@ -15930,7 +15801,7 @@
 		},
 		{
 			"key": "initiativeId_idpaycode",
-			"value": ""
+			"value": "6512e6b7f494f74465e52f7f"
 		},
 		{
 			"key": "idpayCode",
