@@ -1,11 +1,11 @@
 package it.gov.pagopa.common.web.exception;
 
-import it.gov.pagopa.common.web.dto.ErrorDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,8 +24,12 @@ public class ServiceExceptionHandler {
         this.transcodeMap = transcodeMap;
     }
 
+    @SuppressWarnings("squid:S1452")
     @ExceptionHandler(ServiceException.class)
-    protected ResponseEntity<ErrorDTO> handleException(ServiceException error, HttpServletRequest request) {
+    protected ResponseEntity<? extends ServiceExceptionResponse> handleException(ServiceException error, HttpServletRequest request) {
+        if(null != error.getResponse()){
+            return handleBodyProvidedException(error,transcodeException(error));
+        }
         return errorManager.handleException(transcodeException(error), request);
     }
 
@@ -38,5 +42,11 @@ public class ServiceExceptionHandler {
         }
 
         return new ClientExceptionWithBody(httpStatus, error.getCode(), error.getMessage(), error.getCause());
+    }
+
+    private ResponseEntity<? extends ServiceExceptionResponse> handleBodyProvidedException(ServiceException error, ClientException clientException){
+        return ResponseEntity.status(clientException.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error.getResponse());
     }
 }
