@@ -71,7 +71,7 @@ class MongoExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("TOO_MANY_REQUESTS"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Too Many Requests"))
             .andExpect(MockMvcResultMatchers.header().exists(HttpHeaders.RETRY_AFTER))
             .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.RETRY_AFTER, "1"))
             .andExpect(MockMvcResultMatchers.header().string("Retry-After-Ms", "34"));
@@ -97,7 +97,7 @@ class MongoExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("TOO_MANY_REQUESTS"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Too Many Requests"))
             .andExpect(MockMvcResultMatchers.header().exists(HttpHeaders.RETRY_AFTER))
             .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.RETRY_AFTER, "1"))
             .andExpect(MockMvcResultMatchers.header().string("Retry-After-Ms", "34"));
@@ -123,6 +123,6 @@ class MongoExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-            .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"TOO_MANY_REQUESTS\"}", false));
+            .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}", false));
   }
 }
