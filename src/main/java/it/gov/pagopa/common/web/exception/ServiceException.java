@@ -11,9 +11,6 @@ public class ServiceException extends RuntimeException{
     public ServiceException(String code, String message) {
         this(code, message, null, false, null);
     }
-    public ServiceException(String code, String message, ServiceExceptionPayload payload) {
-        this(code, message, payload, false, null);
-    }
 
     public ServiceException(String code, String message, ServiceExceptionPayload payload, boolean printStackTrace, Throwable ex) {
         super(message, ex);
