@@ -33,14 +33,14 @@ class ServiceExceptionHandlerTest {
 
         @GetMapping("/test")
         String testEndpoint() {
-            throw new ServiceException("DUMMY_CODE", "DUMMY_MESSAGE", new ErrorResponseTest("RESPONSE",0));
+            throw new ServiceException("DUMMY_CODE", "DUMMY_MESSAGE", new ErrorPayloadTest("RESPONSE",0));
         }
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    static class ErrorResponseTest implements ServiceExceptionResponse {
+    static class ErrorPayloadTest implements ServiceExceptionPayload {
         private String stringCode;
         private long longCode;
     }
