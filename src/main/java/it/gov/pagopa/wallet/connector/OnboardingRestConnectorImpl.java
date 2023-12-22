@@ -31,11 +31,11 @@ public class OnboardingRestConnectorImpl implements OnboardingRestConnector {
     } catch (FeignException e){
       if (e.status() == 404){
         log.error("[DISABLE_ONBOARDING] The user {} is not onboarded on initiative {}", body.getUserId(), body.getInitiativeId());
-        throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, body.getInitiativeId()));
+        throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, body.getInitiativeId()), true, e);
       }
 
       log.error("[DISABLE_ONBOARDING] An error occurred while invoking the onboarding microservice");
-      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG);
+      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG, true, e);
     }
   }
 
@@ -48,16 +48,16 @@ public class OnboardingRestConnectorImpl implements OnboardingRestConnector {
         log.info("[SUSPEND_ONBOARDING] Cannot suspend user {} on initiative {} because they are not in a valid state",
                 userId, initiativeId);
         throw new OperationNotAllowedException(
-                SUSPENSION_NOT_ALLOWED, String.format(ERROR_SUSPENSION_STATUS_MSG, initiativeId));
+                SUSPENSION_NOT_ALLOWED, String.format(ERROR_SUSPENSION_STATUS_MSG, initiativeId), null, true, e);
       }
 
       if (e.status() == 404){
         log.error("[SUSPEND_ONBOARDING] The user {} is not onboarded on initiative {}", userId, initiativeId);
-        throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId));
+        throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId), true, e);
       }
 
       log.error("[SUSPEND_ONBOARDING] An error occurred while invoking the onboarding microservice");
-      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG);
+      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG, true, e);
     }
   }
   @Override
@@ -69,16 +69,16 @@ public class OnboardingRestConnectorImpl implements OnboardingRestConnector {
         log.info("[READMIT_ONBOARDING] Cannot readmit user {} on initiative {} because they are not in a valid state",
                 userId, initiativeId);
         throw new OperationNotAllowedException(
-                READMISSION_NOT_ALLOWED, String.format(ERROR_READMIT_STATUS_MSG, initiativeId));
+                READMISSION_NOT_ALLOWED, String.format(ERROR_READMIT_STATUS_MSG, initiativeId), null, true, e);
       }
 
       if (e.status() == 404){
         log.error("[READMIT_ONBOARDING] The user {} is not onboarded on initiative {}", userId, initiativeId);
-        throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId));
+        throw new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId), true, e);
       }
 
       log.error("[READMIT_ONBOARDING] An error occurred while invoking the onboarding microservice");
-      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG);
+      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG, true, e);
     }
   }
 
@@ -88,7 +88,7 @@ public class OnboardingRestConnectorImpl implements OnboardingRestConnector {
       onboardingRestClient.rollback(initiativeId, userId);
     } catch (FeignException e){
       log.error("[ROLLBACK] An error occurred while invoking the onboarding microservice");
-      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG);
+      throw new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG, true, e);
     }
   }
 
