@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.5</version>
+    <version>3.1.7</version>
   </parent>
 
   <groupId>it.gov.pagopa.wallet</groupId>
@@ -63,18 +63,14 @@
       <version>1.18.30</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-okhttp</artifactId>
-      <version>13.0</version>
+      <version>13.1</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>janino</artifactId>
-      <version>3.1.10</version>
+      <version>3.1.11</version>
     </dependency>
 
     <!-- Security fixes -->
@@ -111,25 +107,14 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-contract-wiremock</artifactId>
-      <version>4.0.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
       <artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
-      <version>4.9.3</version>
+      <version>4.11.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -149,6 +134,14 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.3</version>
+        <configuration>
+          <argLine>@{argLine} -Duser.timezone=Europe/Rome</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${project.parent.version}</version>
@@ -163,7 +156,7 @@
       <plugin>
         <groupId>io.github.git-commit-id</groupId>
         <artifactId>git-commit-id-maven-plugin</artifactId>
-        <version>5.0.0</version>
+        <version>7.0.0</version>
         <executions>
           <execution>
             <id>get-the-git-infos</id>
