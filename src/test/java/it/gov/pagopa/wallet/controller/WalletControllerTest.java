@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
+import it.gov.pagopa.wallet.config.WalletErrorManagerConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -46,7 +47,7 @@ import static org.mockito.Mockito.doThrow;
 @WebMvcTest(
         value = {WalletController.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@Import({ServiceExceptionConfig.class})
+@Import({ServiceExceptionConfig.class, WalletErrorManagerConfig.class})
 class WalletControllerTest {
 
     private static final String BASE_URL = "http://localhost:8080/idpay/wallet";
