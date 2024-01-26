@@ -99,7 +99,7 @@ spring:
           type: kafka
           environment:
             spring.cloud.stream.kafka.binder:
-              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_RULE_ENGINE:}
+              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
               configuration:
                 sasl.jaas.config: ${KAFKA_RULE_ENGINE_SASL_JAAS_CONFIG:}
         kafka-timeline:
