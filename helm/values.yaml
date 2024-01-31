@@ -80,11 +80,11 @@ microservice-chart:
       KAFKA_TOPIC_NOTIFICATION: idpay_notification_request_topic
       KAFKA_CHECKIBAN_OUTCOME_GROUP_IN: idpay-checkiban-outcome-consumer-group
       KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
+      KAFKA_TOPIC_RULE_ENGINE: idpay_transaction_topic
       KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
 
     idpay-eventhub-01:
       KAFKA_BINDER_BROKER_ENDPOINT_LIST_01: kafka_broker
-      KAFKA_TOPIC_RULE_ENGINE: idpay_transaction_topic
       KAFKA_TOPIC_REWARD: idpay_reward_notification_response_topic
       KAFKA_TOPIC_ERRORS: idpay_error_topic
       KAFKA_REWARD_GROUP_IN: idpay_reward_notification_response_consumer_group
