@@ -99,21 +99,21 @@ spring:
           type: kafka
           environment:
             spring.cloud.stream.kafka.binder:
-              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST_01:}
+              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
               configuration:
                 sasl.jaas.config: ${KAFKA_RULE_ENGINE_SASL_JAAS_CONFIG:}
         kafka-timeline:
           type: kafka
           environment:
             spring.cloud.stream.kafka.binder:
-              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST_01:}
+              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
               configuration:
                 sasl.jaas.config: ${KAFKA_TIMELINE_SASL_JAAS_CONFIG:}
         kafka-errors:
           type: kafka
           environment:
             spring.cloud.stream.kafka.binder:
-              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST_01:}
+              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_ERRORS:}
               configuration:
                 sasl.jaas.config: ${KAFKA_ERRORS_SASL_JAAS_CONFIG:}
         kafka-notification:
