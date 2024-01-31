@@ -106,7 +106,7 @@ spring:
           type: kafka
           environment:
             spring.cloud.stream.kafka.binder:
-              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST:}
+              brokers: ${KAFKA_BINDER_BROKER_ENDPOINT_LIST_01:}
               configuration:
                 sasl.jaas.config: ${KAFKA_TIMELINE_SASL_JAAS_CONFIG:}
         kafka-errors:
