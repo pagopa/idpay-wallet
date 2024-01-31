@@ -97,7 +97,7 @@
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
-															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+															"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 														],
 														"type": "text/javascript"
 													}
@@ -1605,7 +1605,7 @@
 													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 													"\r",
 													"pm.collectionVariables.set('channel_type', 'web');\r",
-													"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+													"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 												],
 												"type": "text/javascript"
 											}
@@ -3064,7 +3064,7 @@
 													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 													"\r",
 													"pm.collectionVariables.set('channel_type', 'web');\r",
-													"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+													"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 												],
 												"type": "text/javascript"
 											}
@@ -5053,7 +5053,7 @@
 													"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 													"\r",
 													"pm.collectionVariables.set('channel_type', 'web');\r",
-													"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+													"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 												],
 												"type": "text/javascript"
 											}
@@ -6388,7 +6388,7 @@
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
-															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+															"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 														],
 														"type": "text/javascript"
 													}
@@ -9850,7 +9850,7 @@
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
-															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+															"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 														],
 														"type": "text/javascript"
 													}
@@ -10933,7 +10933,7 @@
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
-															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+															"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 														],
 														"type": "text/javascript"
 													}
@@ -11991,7 +11991,7 @@
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
-															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+															"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 														],
 														"type": "text/javascript"
 													}
@@ -13053,7 +13053,7 @@
 															"pm.collectionVariables.set('description', pm.variables.replaceIn('{{$randomLoremSentence}}'));\r",
 															"\r",
 															"pm.collectionVariables.set('channel_type', 'web');\r",
-															"pm.collectionVariables.set('channel_contact', pm.variables.replaceIn('{{$randomUrl}}'));"
+															"pm.collectionVariables.set('channel_contact', 'https://www.google.it');"
 														],
 														"type": "text/javascript"
 													}
