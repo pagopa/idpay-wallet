@@ -77,28 +77,26 @@ microservice-chart:
       KAFKA_TOPIC_IBAN: idpay_checkiban_evaluation_topic
       KAFKA_TOPIC_OUTCOME: idpay_onboarding_outcome_topic
       KAFKA_TOPIC_CHECKIBAN_OUTCOME: idpay_checkiban_outcome_topic
-      KAFKA_TOPIC_TIMELINE: idpay_timeline_topic
       KAFKA_TOPIC_NOTIFICATION: idpay_notification_request_topic
       KAFKA_CHECKIBAN_OUTCOME_GROUP_IN: idpay-checkiban-outcome-consumer-group
       KAFKA_OUTCOME_GROUP_IN: idpay-onboarding-outcome-wallet-consumer-group
-    idpay-eventhub-01:
-      KAFKA_BINDER_BROKER_ENDPOINT_RULE_ENGINE: kafka_broker
-      KAFKA_BINDER_BROKER_ENDPOINT_REWARD: kafka_broker
-      KAFKA_BINDER_BROKER_ENDPOINT_ERRORS: kafka_broker
-      KAFKA_BINDER_BROKER_ENDPOINT_COMMANDS: kafka_broker
       KAFKA_TOPIC_RULE_ENGINE: idpay_transaction_topic
+      KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
+
+    idpay-eventhub-01:
+      KAFKA_BINDER_BROKER_ENDPOINT_LIST_01: kafka_broker
       KAFKA_TOPIC_REWARD: idpay_reward_notification_response_topic
       KAFKA_TOPIC_ERRORS: idpay_error_topic
-      KAFKA_RULE_ENGINE_GROUP_IN: idpay_transaction_wallet_consumer_group
       KAFKA_REWARD_GROUP_IN: idpay_reward_notification_response_consumer_group
+      KAFKA_TOPIC_TIMELINE: idpay_timeline_topic
 
   envSecret:
     MONGODB_URI: mongodb-connection-string
     KAFKA_CHECKIBAN_OUTCOME_SASL_JAAS_CONFIG: evh-idpay-checkiban-outcome-idpay-checkiban-outcome-consumer-jaas-config-idpay-00
     KAFKA_IBAN_SASL_JAAS_CONFIG: evh-idpay-checkiban-evaluation-idpay-checkiban-evaluation-producer-jaas-config-idpay-00
-    KAFKA_TIMELINE_SASL_JAAS_CONFIG: evh-idpay-timeline-idpay-timeline-producer-jaas-config-idpay-00
+    KAFKA_TIMELINE_SASL_JAAS_CONFIG: evh-idpay-timeline-idpay-timeline-producer-jaas-config-idpay-01
     KAFKA_OUTCOME_SASL_JAAS_CONFIG: evh-idpay-onboarding-outcome-idpay-onboarding-outcome-consumer-jaas-config-idpay-00
-    KAFKA_RULE_ENGINE_SASL_JAAS_CONFIG: evh-idpay-transaction-idpay-transaction-consumer-jaas-config-idpay-01
+    KAFKA_RULE_ENGINE_SASL_JAAS_CONFIG: evh-idpay-transaction-idpay-transaction-consumer-jaas-config-idpay-00
     KAFKA_REWARD_SASL_JAAS_CONFIG: evh-idpay-reward-notification-response-idpay-reward-notification-response-consumer-jaas-config-idpay-01
     KAFKA_NOTIFICATION_SASL_JAAS_CONFIG: evh-idpay-notification-request-idpay-notification-request-producer-jaas-config-idpay-00
     KAFKA_ERRORS_SASL_JAAS_CONFIG: evh-idpay-errors-idpay-errors-producer-jaas-config-idpay-01

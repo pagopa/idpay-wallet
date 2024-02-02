@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import it.gov.pagopa.wallet.utils.json.BigDecimalScale2Deserializer;
 import java.math.BigDecimal;
@@ -15,6 +16,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
+
+  @JsonAlias("_id")
   private String id;
 
   private String idTrxAcquirer;
