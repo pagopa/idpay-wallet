@@ -104,8 +104,8 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
-  public ResponseEntity<Void> enrollInstrumentCode(String initiativeId, String userId) {
-    walletService.enrollInstrumentCode(initiativeId, userId);
+  public ResponseEntity<Void> enrollInstrumentCode(String initiativeId, String userId, EnrollCodeDTO body) {
+    walletService.enrollInstrumentCode(initiativeId, userId, body.getChannel());
     return new ResponseEntity<>(HttpStatus.OK);
   }
 }

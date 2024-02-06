@@ -143,6 +143,8 @@ class WalletControllerTest {
                     null,
                     100L);
 
+    private static final EnrollCodeDTO ENROLL_CODE_DTO = new EnrollCodeDTO(CHANNEL);
+
     @MockBean
     WalletService walletServiceMock;
 
@@ -890,8 +892,7 @@ class WalletControllerTest {
 
     @Test
     void enroll_instrument_code_ok() throws Exception {
-
-        Mockito.doNothing().when(walletServiceMock).enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+        Mockito.doNothing().when(walletServiceMock).enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL);
 
         mvc.perform(
                         MockMvcRequestBuilders.put(
@@ -903,6 +904,7 @@ class WalletControllerTest {
                                                 + "/code"
                                                 + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(ENROLL_CODE_DTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
@@ -913,7 +915,7 @@ class WalletControllerTest {
         // Given
         doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL);
 
         // When
         MvcResult res = mvc.perform(
@@ -926,6 +928,7 @@ class WalletControllerTest {
                                                 + "/code"
                                                 + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(ENROLL_CODE_DTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn();
@@ -941,7 +944,7 @@ class WalletControllerTest {
         // Given
         doThrow(new ServiceException("DUMMY_EXCEPTION_CODE", "DUMMY_EXCEPTION_MESSAGE"))
                 .when(walletServiceMock)
-                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL);
 
         // When
         MvcResult res = mvc.perform(
@@ -954,6 +957,7 @@ class WalletControllerTest {
                                                 + "/code"
                                                 + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(ENROLL_CODE_DTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
                 .andReturn();

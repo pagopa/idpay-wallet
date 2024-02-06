@@ -82,5 +82,6 @@ public interface WalletController {
   @PutMapping("/{initiativeId}/{userId}/code/instruments")
   ResponseEntity<Void> enrollInstrumentCode(
           @PathVariable("initiativeId") String initiativeId,
-          @PathVariable("userId") String userId);
+          @PathVariable("userId") String userId,
+          @Valid @RequestBody EnrollCodeDTO body);
 }

@@ -48,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.CHANNEL_APP_IO;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
@@ -2474,7 +2475,7 @@ class WalletServiceTest {
                 .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
 
 
-        walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+        walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
 
         assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
         assertEquals(0, TEST_WALLET.getNInstr());
@@ -2496,7 +2497,7 @@ class WalletServiceTest {
 
         // When
         IDPayCodeNotFoundException exception = assertThrows(IDPayCodeNotFoundException.class,
-                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
+                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(IDPAYCODE_NOT_FOUND, exception.getCode());
@@ -2518,7 +2519,7 @@ class WalletServiceTest {
 
         // When
         EnrollmentNotAllowedException exception = assertThrows(EnrollmentNotAllowedException.class,
-                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
+                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(ENROLL_INSTRUMENT_REFUND_INITIATIVE, exception.getCode());
@@ -2542,7 +2543,7 @@ class WalletServiceTest {
 
         // When
         UserUnsubscribedException exception = assertThrows(UserUnsubscribedException.class,
-                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
+                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_UNSUBSCRIBED, exception.getCode());

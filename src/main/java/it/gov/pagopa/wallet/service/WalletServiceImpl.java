@@ -740,7 +740,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void enrollInstrumentCode(String initiativeId, String userId) {
+  public void enrollInstrumentCode(String initiativeId, String userId, String channel) {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT_CODE] Checking the status of initiative {}", initiativeId);
@@ -770,7 +770,7 @@ public class WalletServiceImpl implements WalletService {
     InstrumentCallBodyDTO dto = InstrumentCallBodyDTO.builder()
         .userId(userId)
         .initiativeId(initiativeId)
-        .channel(WalletConstants.CHANNEL_APP_IO)
+        .channel(channel)
         .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
         .build();
 
