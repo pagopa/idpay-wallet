@@ -83,5 +83,5 @@ public interface WalletController {
   ResponseEntity<Void> enrollInstrumentCode(
           @PathVariable("initiativeId") String initiativeId,
           @PathVariable("userId") String userId,
-          @Valid @RequestBody EnrollCodeDTO body);
+          @RequestBody EnrollCodeDTO body);
 }
