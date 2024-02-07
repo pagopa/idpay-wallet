@@ -143,8 +143,6 @@ class WalletControllerTest {
                     null,
                     100L);
 
-    private static final EnrollCodeDTO ENROLL_CODE_DTO = new EnrollCodeDTO(CHANNEL);
-
     @MockBean
     WalletService walletServiceMock;
 
@@ -904,7 +902,6 @@ class WalletControllerTest {
                                                 + "/code"
                                                 + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(ENROLL_CODE_DTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
@@ -928,7 +925,6 @@ class WalletControllerTest {
                                                 + "/code"
                                                 + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(ENROLL_CODE_DTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn();
@@ -957,7 +953,6 @@ class WalletControllerTest {
                                                 + "/code"
                                                 + ENROLL_INSTRUMENT_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(ENROLL_CODE_DTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
                 .andReturn();
