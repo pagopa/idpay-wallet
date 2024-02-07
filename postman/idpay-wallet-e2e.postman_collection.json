@@ -14621,7 +14621,7 @@
 													"\r",
 													"pm.test(\"API GET Initiative Detail IO - Unhappy case - InitiativeId fake - Response contains info about an unprocessable status\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
-													"    pm.expect(responseJson.message).to.eql(`Initiative with initiativeId fake not found.`)\r",
+													"    pm.expect(responseJson.code).to.eql(`INITIATIVE_NOT_FOUND`)\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -14759,7 +14759,7 @@
 													"pm.test(\"API GET Initiative Detail IO - Unhappy case - Initiative not in status PUBLISHED or CLOSED - CIT trying to get initiative detail of an initiative not in status PUBLISHED or CLOSED - Response contains info about an unprocessable status\", function () {\r",
 													"    const responseJson = pm.response.json();\r",
 													"    const initiativeId = pm.collectionVariables.get(\"initiativeId-draft\");\r",
-													"    pm.expect(responseJson.message).to.eql(`Initiative with initiativeId ${initiativeId} not found.`)\r",
+													"    pm.expect(responseJson.code).to.eql(`INITIATIVE_NOT_FOUND`)\r",
 													"});"
 												],
 												"type": "text/javascript"
@@ -15791,7 +15791,7 @@
 		},
 		{
 			"key": "CF_fake_3",
-			"value": "BRTVNL63E26X000U",
+			"value": "ABCVNL63E26X000U",
 			"type": "string"
 		},
 		{
