@@ -50,10 +50,10 @@ class AuditUtilitiesTest {
 
   @Test
   void logEnrollInstrument_ok(){
-    auditUtilities.logEnrollmentInstrument(USER_ID,INITIATIVE_ID,IDWALLET);
+    auditUtilities.logEnrollmentInstrument(USER_ID, INITIATIVE_ID, IDWALLET, CHANNEL);
 
     Assertions.assertEquals(
-            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative from APP IO." +
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative from " + CHANNEL +
                     " suser=%s cs1Label=initiativeId cs1=%s cs3Label=idWallet cs3=%s")
                     .formatted(
                             AuditUtilities.SRCIP,
@@ -322,16 +322,16 @@ class AuditUtilitiesTest {
 
   @Test
   void logEnrollInstrumentCode(){
-    auditUtilities.logEnrollmentInstrumentCode(USER_ID,INITIATIVE_ID);
+    auditUtilities.logEnrollmentInstrumentCode(USER_ID, INITIATIVE_ID, CHANNEL);
 
     Assertions.assertEquals(
-            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative from APP IO." +
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of idpay code to an initiative." +
                     " suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s cs3Label=instrumentType cs3=%s")
                     .formatted(
                             AuditUtilities.SRCIP,
                             USER_ID,
                             INITIATIVE_ID,
-                            WalletConstants.CHANNEL_APP_IO,
+                            CHANNEL,
                             WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
                     ),
             memoryAppender.getLoggedEvents().get(0).getFormattedMessage()
@@ -340,17 +340,17 @@ class AuditUtilitiesTest {
 
   @Test
   void logEnrollInstrumentCodeKO(){
-    auditUtilities.logEnrollmentInstrumentCodeKO(USER_ID,INITIATIVE_ID, MSG);
+    auditUtilities.logEnrollmentInstrumentCodeKO(USER_ID, INITIATIVE_ID, MSG, CHANNEL);
 
     Assertions.assertEquals(
-            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of an instrument to an initiative failed: %s" +
+            ("CEF:0|PagoPa|IDPAY|1.0|7|User interaction|2| event=Wallet dstip=%s msg=Request for association of idpay code to an initiative failed: %s" +
                     " suser=%s cs1Label=initiativeId cs1=%s cs2Label=channel cs2=%s cs3Label=instrumentType cs3=%s")
                     .formatted(
                             AuditUtilities.SRCIP,
                             MSG,
                             USER_ID,
                             INITIATIVE_ID,
-                            WalletConstants.CHANNEL_APP_IO,
+                            CHANNEL,
                             WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
                     ),
             memoryAppender.getLoggedEvents().get(0).getFormattedMessage()

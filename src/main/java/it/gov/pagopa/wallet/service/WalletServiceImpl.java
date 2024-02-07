@@ -152,11 +152,11 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void enrollInstrument(String initiativeId, String userId, String idWallet) {
+  public void enrollInstrument(String initiativeId, String userId, String idWallet, String channel) {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT] Checking the status of initiative {}", initiativeId);
-    auditUtilities.logEnrollmentInstrument(userId, initiativeId, idWallet);
+    auditUtilities.logEnrollmentInstrument(userId, initiativeId, idWallet, channel);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
@@ -178,7 +178,7 @@ public class WalletServiceImpl implements WalletService {
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
     InstrumentCallBodyDTO dto =
-        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, WalletConstants.CHANNEL_APP_IO,
+        new InstrumentCallBodyDTO(userId, initiativeId, idWallet, channel,
             WalletConstants.INSTRUMENT_TYPE_CARD);
 
     try {
@@ -186,7 +186,7 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.enrollInstrument(dto);
       performanceLog(startTime, "ENROLL_INSTRUMENT");
     } catch (ServiceException e) {
-      sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
+      sendRejectedInstrumentToTimeline(initiativeId, userId, channel,
           WalletConstants.INSTRUMENT_TYPE_CARD, WalletConstants.REJECTED_ADD_INSTRUMENT);
       log.error("[ENROLL_INSTRUMENT] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentKO(
@@ -197,7 +197,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void deleteInstrument(String initiativeId, String userId, String instrumentId) {
+  public void deleteInstrument(String initiativeId, String userId, String instrumentId, String channel) {
     long startTime = System.currentTimeMillis();
 
     log.info("[DELETE_INSTRUMENT] Checking the status of initiative {}", initiativeId);
@@ -213,7 +213,7 @@ public class WalletServiceImpl implements WalletService {
       paymentInstrumentRestConnector.deleteInstrument(dto);
       performanceLog(startTime, "DELETE_INSTRUMENT");
     } catch (ServiceException e) {
-      sendRejectedInstrumentToTimeline(initiativeId, userId, WalletConstants.CHANNEL_APP_IO,
+      sendRejectedInstrumentToTimeline(initiativeId, userId, channel,
           null, WalletConstants.REJECTED_DELETE_INSTRUMENT);
       performanceLog(startTime, "DELETE_INSTRUMENT");
       throw e;
@@ -744,14 +744,14 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
 
     log.info("[ENROLL_INSTRUMENT_CODE] Checking the status of initiative {}", initiativeId);
-    auditUtilities.logEnrollmentInstrumentCode(userId, initiativeId);
+    auditUtilities.logEnrollmentInstrumentCode(userId, initiativeId, channel);
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
     if (WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       auditUtilities.logEnrollmentInstrumentCodeKO(
-          userId, initiativeId, "the initiative is refund type");
+          userId, initiativeId, "the initiative is refund type", channel);
       log.error("[ENROLL_INSTRUMENT_CODE] It is not possible to enroll an idpayCode for the refund type initiative {}", initiativeId);
       throw new EnrollmentNotAllowedException(
               ENROLL_INSTRUMENT_REFUND_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_REFUND_MSG, initiativeId));
@@ -762,7 +762,7 @@ public class WalletServiceImpl implements WalletService {
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       auditUtilities.logEnrollmentInstrumentCodeKO(
-          userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE);
+          userId, initiativeId, WALLET_STATUS_UNSUBSCRIBED_MESSAGE, channel);
       log.error("[ENROLL_INSTRUMENT_CODE] The user {} has unsubscribed from initiative {}", userId, initiativeId);
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
@@ -784,7 +784,7 @@ public class WalletServiceImpl implements WalletService {
 
       log.error("[ENROLL_INSTRUMENT_CODE] Error in Payment Instrument Request");
       auditUtilities.logEnrollmentInstrumentCodeKO(
-          userId, initiativeId, "error in payment instrument request");
+          userId, initiativeId, "error in payment instrument request", channel);
 
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
       throw e;

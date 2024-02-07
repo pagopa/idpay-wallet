@@ -18,14 +18,14 @@ public class WalletControllerImpl implements WalletController {
 
   @Override
   public ResponseEntity<Void> enrollInstrument(
-      String initiativeId, String userId, String idWallet) {
-    walletService.enrollInstrument(initiativeId, userId, idWallet);
+      String initiativeId, String userId, String idWallet, String channel) {
+    walletService.enrollInstrument(initiativeId, userId, idWallet, channel);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<Void> deleteInstrument(String initiativeId, String userId, String instrumentId) {
-    walletService.deleteInstrument(initiativeId, userId, instrumentId);
+  public ResponseEntity<Void> deleteInstrument(String initiativeId, String userId, String instrumentId, String channel) {
+    walletService.deleteInstrument(initiativeId, userId, instrumentId, channel);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 

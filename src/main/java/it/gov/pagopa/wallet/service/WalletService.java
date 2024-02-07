@@ -17,8 +17,8 @@ public interface WalletService {
   EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId);
   WalletDTO getWalletDetail(String initiativeId, String userId);
   WalletDTO getWalletDetailIssuer(String initiativeId, String userId);
-  void enrollInstrument(String initiativeId, String userId, String idWallet);
-  void deleteInstrument(String initiativeId, String userId, String instrumentId);
+  void enrollInstrument(String initiativeId, String userId, String idWallet, String channel);
+  void deleteInstrument(String initiativeId, String userId, String instrumentId, String channel);
   void enrollIban(String initiativeId, String userId, String iban, String channel, String description);
   void suspendWallet(String initiativeId, String userId);
   void readmitWallet(String initiativeId, String userId);

@@ -15,13 +15,15 @@ public interface WalletController {
   ResponseEntity<Void> enrollInstrument(
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId,
-      @PathVariable("idWallet") String idWallet);
+      @PathVariable("idWallet") String idWallet,
+      @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 
   @DeleteMapping("/{initiativeId}/{userId}/instruments/{instrumentId}")
   ResponseEntity<Void> deleteInstrument(
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId,
-      @PathVariable("instrumentId") String instrumentId);
+      @PathVariable("instrumentId") String instrumentId,
+      @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 
   @GetMapping("/{initiativeId}/{userId}/status")
   ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(
