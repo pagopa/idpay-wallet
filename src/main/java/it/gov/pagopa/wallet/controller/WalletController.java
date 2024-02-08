@@ -62,7 +62,9 @@ public interface WalletController {
 
   @DeleteMapping("/{initiativeId}/{userId}/unsubscribe")
   ResponseEntity<Void> unsubscribeInitiative(
-      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId,
+      @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 
   @PutMapping("/acknowledge")
   ResponseEntity<Void> processAck(@RequestBody InstrumentAckDTO body);

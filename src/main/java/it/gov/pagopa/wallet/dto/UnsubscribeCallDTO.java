@@ -10,4 +10,5 @@ public class UnsubscribeCallDTO {
   private String initiativeId;
   private String userId;
   private String unsubscribeDate;
+  private String channel;
 }

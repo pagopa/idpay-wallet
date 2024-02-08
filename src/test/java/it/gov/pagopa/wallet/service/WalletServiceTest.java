@@ -1290,7 +1290,7 @@ class WalletServiceTest {
                 .when(walletRepositoryMock)
                 .save(any(Wallet.class));
 
-        walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+        walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
         assertNotNull(TEST_WALLET.getRequestUnsubscribeDate());
         assertEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
 
@@ -1305,7 +1305,7 @@ class WalletServiceTest {
                 .thenReturn(Optional.of(TEST_WALLET));
 
 
-        walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+        walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
 
 
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(any());
@@ -1319,7 +1319,7 @@ class WalletServiceTest {
 
         // When
         UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_NOT_ONBOARDED, exception.getCode());
@@ -1458,7 +1458,7 @@ class WalletServiceTest {
 
         // When
         OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(GENERIC_ERROR, exception.getCode());
@@ -1483,7 +1483,7 @@ class WalletServiceTest {
 
         // When
         PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(GENERIC_ERROR, exception.getCode());
@@ -1507,7 +1507,7 @@ class WalletServiceTest {
 
         // When
         MongoClientException exception = assertThrows(MongoClientException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals("ERROR", exception.getMessage());

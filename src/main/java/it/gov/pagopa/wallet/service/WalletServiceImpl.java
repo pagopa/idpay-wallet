@@ -207,7 +207,7 @@ public class WalletServiceImpl implements WalletService {
 
     checkEndDate(wallet.getEndDate(), initiativeId);
 
-    DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId);
+    DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId, channel);
 
     try {
       paymentInstrumentRestConnector.deleteInstrument(dto);
@@ -430,7 +430,7 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void unsubscribe(String initiativeId, String userId) {
+  public void unsubscribe(String initiativeId, String userId, String channel) {
     long startTime = System.currentTimeMillis();
 
     log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
@@ -440,7 +440,7 @@ public class WalletServiceImpl implements WalletService {
     wallet.setRequestUnsubscribeDate(now);
     UnsubscribeCallDTO unsubscribeCallDTO =
         new UnsubscribeCallDTO(
-            initiativeId, userId, wallet.getRequestUnsubscribeDate().toString());
+            initiativeId, userId, wallet.getRequestUnsubscribeDate().toString(), channel);
     try {
       paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
       log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",

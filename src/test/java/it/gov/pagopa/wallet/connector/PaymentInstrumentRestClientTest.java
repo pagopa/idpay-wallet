@@ -115,7 +115,7 @@ class PaymentInstrumentRestClientTest {
   void disable_all_instrument() {
     // Given
     final UnsubscribeCallDTO instrument =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString(), CHANNEL);
 
     // When
       assertDoesNotThrow(() -> restConnector.disableAllInstrument(instrument));
@@ -125,7 +125,7 @@ class PaymentInstrumentRestClientTest {
   void disable_all_instrument_GENERIC_ERROR() {
     // Given
     final UnsubscribeCallDTO instrument =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString());
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString(), CHANNEL);
 
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
@@ -140,7 +140,7 @@ class PaymentInstrumentRestClientTest {
   void delete_instrument() {
     // Given
     final DeactivationBodyDTO instrument =
-        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID);
+        new DeactivationBodyDTO(USER_ID, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
 
     // When
     assertDoesNotThrow(() -> restConnector.deleteInstrument(instrument));
@@ -150,7 +150,7 @@ class PaymentInstrumentRestClientTest {
   void delete_instrument_FORBIDDEN() {
     // Given
     final DeactivationBodyDTO instrument =
-            new DeactivationBodyDTO(USER_ID_FORBIDDEN, INITIATIVE_ID, INSTRUMENT_ID);
+            new DeactivationBodyDTO(USER_ID_FORBIDDEN, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
 
     // When
     InstrumentDeleteNotAllowedException exception = assertThrows(InstrumentDeleteNotAllowedException.class,
@@ -165,7 +165,7 @@ class PaymentInstrumentRestClientTest {
   void delete_instrument_NOT_FOUND() {
     // Given
     final DeactivationBodyDTO instrument =
-            new DeactivationBodyDTO(USER_ID_NOT_FOUND, INITIATIVE_ID, INSTRUMENT_ID);
+            new DeactivationBodyDTO(USER_ID_NOT_FOUND, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
 
     // When
     PaymentInstrumentNotFoundException exception = assertThrows(PaymentInstrumentNotFoundException.class,
@@ -180,7 +180,7 @@ class PaymentInstrumentRestClientTest {
   void delete_instrument_GENERIC_ERROR() {
     // Given
     final DeactivationBodyDTO instrument =
-            new DeactivationBodyDTO(USER_ID_GENERIC_ERROR, INITIATIVE_ID, INSTRUMENT_ID);
+            new DeactivationBodyDTO(USER_ID_GENERIC_ERROR, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
 
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,

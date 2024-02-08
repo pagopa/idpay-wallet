@@ -79,8 +79,8 @@ public class WalletControllerImpl implements WalletController {
   }
 
   @Override
-  public ResponseEntity<Void> unsubscribeInitiative(String initiativeId, String userId) {
-    walletService.unsubscribe(initiativeId, userId);
+  public ResponseEntity<Void> unsubscribeInitiative(String initiativeId, String userId, String channel) {
+    walletService.unsubscribe(initiativeId, userId, channel);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

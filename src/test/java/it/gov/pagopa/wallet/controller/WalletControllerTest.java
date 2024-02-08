@@ -666,7 +666,7 @@ class WalletControllerTest {
         // Given
         doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .unsubscribe(INITIATIVE_ID, USER_ID);
+                .unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL);
 
         // When
         MvcResult res =
