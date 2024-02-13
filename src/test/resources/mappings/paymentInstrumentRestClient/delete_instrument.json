@@ -7,7 +7,8 @@
         "equalToJson": {
           "userId": "USER_ID",
           "initiativeId": "INITIATIVE_ID",
-          "instrumentId": "INSTRUMENT_ID"
+          "instrumentId": "INSTRUMENT_ID",
+          "channel": "CHANNEL"
         }
       }
     ]

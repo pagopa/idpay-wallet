@@ -7,7 +7,8 @@
         "equalToJson": {
           "initiativeId": "INITIATIVE_ID",
           "userId": "USER_ID",
-          "unsubscribeDate": "${json-unit.any-string}"
+          "unsubscribeDate": "${json-unit.any-string}",
+          "channel": "CHANNEL"
         }
       }
     ]

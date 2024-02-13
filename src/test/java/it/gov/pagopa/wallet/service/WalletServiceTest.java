@@ -48,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static it.gov.pagopa.wallet.constants.WalletConstants.CHANNEL_APP_IO;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
@@ -477,7 +478,7 @@ class WalletServiceTest {
                 .enrollInstrument(any(InstrumentCallBodyDTO.class));
 
 
-        walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+        walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO);
 
         assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
         assertEquals(0, TEST_WALLET.getNInstr());
@@ -498,7 +499,7 @@ class WalletServiceTest {
 
         // When
         PaymentInstrumentNotFoundException exception = assertThrows(PaymentInstrumentNotFoundException.class,
-                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET));
+                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO));
 
         // Then
         assertEquals(PAYMENT_INSTRUMENT_NOT_FOUND, exception.getCode());
@@ -513,7 +514,7 @@ class WalletServiceTest {
 
         // When
         EnrollmentNotAllowedException exception = assertThrows(EnrollmentNotAllowedException.class,
-                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET));
+                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO));
 
         // Then
         assertEquals(ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, exception.getCode());
@@ -608,7 +609,7 @@ class WalletServiceTest {
 
         // When
         InitiativeInvalidException exception = assertThrows(InitiativeInvalidException.class,
-                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET));
+                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO));
 
         // Then
         assertEquals(INITIATIVE_ENDED, exception.getCode());
@@ -628,7 +629,7 @@ class WalletServiceTest {
 
         // When
         UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET));
+                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_NOT_ONBOARDED, exception.getCode());
@@ -648,7 +649,7 @@ class WalletServiceTest {
 
         // When
         UserUnsubscribedException exception = assertThrows(UserUnsubscribedException.class,
-                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET));
+                () -> walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_UNSUBSCRIBED, exception.getCode());
@@ -676,7 +677,7 @@ class WalletServiceTest {
 
         Mockito.doNothing().when(timelineProducer).sendEvent(any(QueueOperationDTO.class));
 
-        walletService.deleteInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+        walletService.deleteInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO);
 
         assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
         assertEquals(1, TEST_WALLET.getNInstr());
@@ -691,7 +692,7 @@ class WalletServiceTest {
 
         // When
         InitiativeInvalidException exception = assertThrows(InitiativeInvalidException.class,
-                () -> walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID));
+                () -> walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(INITIATIVE_ENDED, exception.getCode());
@@ -717,7 +718,7 @@ class WalletServiceTest {
 
         // When
         PaymentInstrumentNotFoundException exception = assertThrows(PaymentInstrumentNotFoundException.class,
-                () -> walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID));
+                () -> walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(PAYMENT_INSTRUMENT_NOT_FOUND, exception.getCode());
@@ -738,7 +739,7 @@ class WalletServiceTest {
 
         // When
         UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-                () -> walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID));
+                () -> walletService.deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_NOT_ONBOARDED, exception.getCode());
@@ -1289,7 +1290,7 @@ class WalletServiceTest {
                 .when(walletRepositoryMock)
                 .save(any(Wallet.class));
 
-        walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+        walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
         assertNotNull(TEST_WALLET.getRequestUnsubscribeDate());
         assertEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
 
@@ -1304,7 +1305,7 @@ class WalletServiceTest {
                 .thenReturn(Optional.of(TEST_WALLET));
 
 
-        walletService.unsubscribe(INITIATIVE_ID, USER_ID);
+        walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
 
 
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(any());
@@ -1318,7 +1319,7 @@ class WalletServiceTest {
 
         // When
         UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_NOT_ONBOARDED, exception.getCode());
@@ -1457,7 +1458,7 @@ class WalletServiceTest {
 
         // When
         OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(GENERIC_ERROR, exception.getCode());
@@ -1482,7 +1483,7 @@ class WalletServiceTest {
 
         // When
         PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(GENERIC_ERROR, exception.getCode());
@@ -1506,7 +1507,7 @@ class WalletServiceTest {
 
         // When
         MongoClientException exception = assertThrows(MongoClientException.class,
-                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID));
+                () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals("ERROR", exception.getMessage());
@@ -2474,7 +2475,7 @@ class WalletServiceTest {
                 .enrollInstrumentCode(Mockito.any(InstrumentCallBodyDTO.class));
 
 
-        walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+        walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
 
         assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
         assertEquals(0, TEST_WALLET.getNInstr());
@@ -2496,7 +2497,7 @@ class WalletServiceTest {
 
         // When
         IDPayCodeNotFoundException exception = assertThrows(IDPayCodeNotFoundException.class,
-                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
+                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(IDPAYCODE_NOT_FOUND, exception.getCode());
@@ -2518,7 +2519,7 @@ class WalletServiceTest {
 
         // When
         EnrollmentNotAllowedException exception = assertThrows(EnrollmentNotAllowedException.class,
-                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
+                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(ENROLL_INSTRUMENT_REFUND_INITIATIVE, exception.getCode());
@@ -2542,7 +2543,7 @@ class WalletServiceTest {
 
         // When
         UserUnsubscribedException exception = assertThrows(UserUnsubscribedException.class,
-                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID));
+                () -> walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(USER_UNSUBSCRIBED, exception.getCode());

@@ -155,7 +155,7 @@ class WalletControllerTest {
     @Test
     void enroll_instrument_ok() throws Exception {
 
-        Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+        Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL);
 
         mvc.perform(
                         MockMvcRequestBuilders.put(
@@ -179,7 +179,7 @@ class WalletControllerTest {
         doThrow(new EnrollmentNotAllowedException(
                 ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG))
                 .when(walletServiceMock)
-                .enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+                .enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL);
 
         // When
         MvcResult res =
@@ -209,7 +209,7 @@ class WalletControllerTest {
         // Given
         doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+                .enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL);
 
         // When
         MvcResult res =
@@ -239,7 +239,7 @@ class WalletControllerTest {
 
         Mockito.doNothing()
                 .when(walletServiceMock)
-                .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
+                .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID, CHANNEL);
 
         mvc.perform(
                         MockMvcRequestBuilders.delete(
@@ -262,7 +262,7 @@ class WalletControllerTest {
         // Given
         doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
+                .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID, CHANNEL);
 
         // When
         MvcResult res =
@@ -292,7 +292,7 @@ class WalletControllerTest {
         // Given
         doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID);
+                .deleteInstrument(INITIATIVE_ID, USER_ID, INSTRUMENT_ID, CHANNEL);
 
         // When
         MvcResult res =
@@ -666,7 +666,7 @@ class WalletControllerTest {
         // Given
         doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .unsubscribe(INITIATIVE_ID, USER_ID);
+                .unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL);
 
         // When
         MvcResult res =
@@ -754,7 +754,7 @@ class WalletControllerTest {
         final InstrumentIssuerDTO instrument =
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
-        Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET);
+        Mockito.doNothing().when(walletServiceMock).enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL);
 
         mvc.perform(
                         MockMvcRequestBuilders.put(
@@ -890,8 +890,7 @@ class WalletControllerTest {
 
     @Test
     void enroll_instrument_code_ok() throws Exception {
-
-        Mockito.doNothing().when(walletServiceMock).enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+        Mockito.doNothing().when(walletServiceMock).enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL);
 
         mvc.perform(
                         MockMvcRequestBuilders.put(
@@ -913,7 +912,7 @@ class WalletControllerTest {
         // Given
         doThrow(new InitiativeInvalidException(String.format(INITIATIVE_ENDED_MSG, INITIATIVE_ID)))
                 .when(walletServiceMock)
-                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL);
 
         // When
         MvcResult res = mvc.perform(
@@ -941,7 +940,7 @@ class WalletControllerTest {
         // Given
         doThrow(new ServiceException("DUMMY_EXCEPTION_CODE", "DUMMY_EXCEPTION_MESSAGE"))
                 .when(walletServiceMock)
-                .enrollInstrumentCode(INITIATIVE_ID, USER_ID);
+                .enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL);
 
         // When
         MvcResult res = mvc.perform(
