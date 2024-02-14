@@ -18,5 +18,7 @@ public class DeactivationBodyDTO {
   @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
   String instrumentId;
 
+  @NotBlank(message = WalletConstants.ERROR_MANDATORY_FIELD)
+  String channel;
 }
 

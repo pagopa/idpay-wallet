@@ -46,6 +46,7 @@ class OnboardingRestClientTest {
   private static final String USER_ID_GENERIC_ERROR = "USER_ID_GENERIC_ERROR";
   private static final String USER_ID_BAD_REQUEST = "USER_ID_BAD_REQUEST";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
+  private static final String CHANNEL = "APP_IO";
 
   @Autowired private OnboardingRestClient restClient;
 
@@ -55,7 +56,7 @@ class OnboardingRestClientTest {
   void disable_Onboarding() {
     // Given
     final UnsubscribeCallDTO unsubscribeDTO =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString());
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString(), CHANNEL);
 
     // When
     assertDoesNotThrow(() -> restConnector.disableOnboarding(unsubscribeDTO));
@@ -65,7 +66,7 @@ class OnboardingRestClientTest {
   void disable_Onboarding_NOT_FOUND() {
     // Given
     final UnsubscribeCallDTO unsubscribeDTO =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_NOT_ONBOARDED, LocalDateTime.now().toString());
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_NOT_ONBOARDED, LocalDateTime.now().toString(), CHANNEL);
 
     // When
     UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
@@ -80,7 +81,7 @@ class OnboardingRestClientTest {
   void disable_Onboarding_GENERIC_ERROR() {
     // Given
     final UnsubscribeCallDTO unsubscribeDTO =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString());
+            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString(), CHANNEL);
 
     // When
     OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,

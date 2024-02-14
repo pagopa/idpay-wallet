@@ -44,10 +44,10 @@ public class AuditUtilities {
     );
   }
 
-  public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet) {
+  public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet, String channel) {
     logAuditString(
             CEF_PATTERN_ID_WALLET,
-            "Request for association of an instrument to an initiative from APP IO.", userId, initiativeId, idWallet
+            "Request for association of an instrument to an initiative from " + channel, userId, initiativeId, idWallet
     );
   }
 
@@ -154,17 +154,17 @@ public class AuditUtilities {
     );
   }
 
-  public void logEnrollmentInstrumentCode(String userId, String initiativeId) {
+  public void logEnrollmentInstrumentCode(String userId, String initiativeId, String channel) {
     logAuditString(
             CEF_PATTERN_INSTRUMENT_TYPE,
-            "Request for association of an instrument to an initiative from APP IO.", userId, initiativeId, WalletConstants.CHANNEL_APP_IO, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
+            "Request for association of idpay code to an initiative.", userId, initiativeId, channel, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
     );
   }
 
-  public void logEnrollmentInstrumentCodeKO(String userId, String initiativeId, String msg) {
+  public void logEnrollmentInstrumentCodeKO(String userId, String initiativeId, String msg, String channel) {
     logAuditString(
             CEF_PATTERN_INSTRUMENT_TYPE,
-            "Request for association of an instrument to an initiative failed: " + msg, userId, initiativeId, WalletConstants.CHANNEL_APP_IO, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
+            "Request for association of idpay code to an initiative failed: " + msg, userId, initiativeId, channel, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
     );
   }
 
