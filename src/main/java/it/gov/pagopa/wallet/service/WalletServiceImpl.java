@@ -799,7 +799,7 @@ public class WalletServiceImpl implements WalletService {
       BigDecimal accruedReward) {
 
     if (!(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
-        && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
+        && List.of("REWARDED", "AUTHORIZATION_REQUESTED").contains(rewardTransactionDTO.getStatus()))) {
 
       Wallet userWallet = walletRepository.findById(generateWalletId(rewardTransactionDTO.getUserId(), initiativeId)).orElse(null);
 
