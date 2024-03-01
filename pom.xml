@@ -13,7 +13,7 @@
   <artifactId>idpay-wallet</artifactId>
   <name>idpay-wallet</name>
   <description>Wallet Microservice</description>
-  <version>1.3.2</version>
+  <version>1.3.3</version>
 
   <properties>
     <java.version>17</java.version>

@@ -1,16 +1,11 @@
 package it.gov.pagopa.wallet.controller;
 
+import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/idpay/wallet")
@@ -20,13 +15,15 @@ public interface WalletController {
   ResponseEntity<Void> enrollInstrument(
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId,
-      @PathVariable("idWallet") String idWallet);
+      @PathVariable("idWallet") String idWallet,
+      @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 
   @DeleteMapping("/{initiativeId}/{userId}/instruments/{instrumentId}")
   ResponseEntity<Void> deleteInstrument(
       @PathVariable("initiativeId") String initiativeId,
       @PathVariable("userId") String userId,
-      @PathVariable("instrumentId") String instrumentId);
+      @PathVariable("instrumentId") String instrumentId,
+      @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 
   @GetMapping("/{initiativeId}/{userId}/status")
   ResponseEntity<EnrollmentStatusDTO> enrollmentStatus(
@@ -65,7 +62,9 @@ public interface WalletController {
 
   @DeleteMapping("/{initiativeId}/{userId}/unsubscribe")
   ResponseEntity<Void> unsubscribeInitiative(
-      @PathVariable("initiativeId") String initiativeId, @PathVariable("userId") String userId);
+      @PathVariable("initiativeId") String initiativeId,
+      @PathVariable("userId") String userId,
+      @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 
   @PutMapping("/acknowledge")
   ResponseEntity<Void> processAck(@RequestBody InstrumentAckDTO body);
@@ -82,5 +81,6 @@ public interface WalletController {
   @PutMapping("/{initiativeId}/{userId}/code/instruments")
   ResponseEntity<Void> enrollInstrumentCode(
           @PathVariable("initiativeId") String initiativeId,
-          @PathVariable("userId") String userId);
+          @PathVariable("userId") String userId,
+          @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
 }
