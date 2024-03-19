@@ -17,4 +17,5 @@ public class Counters {
   private BigDecimal initiativeBudget;
   @JsonDeserialize(using = BigDecimalScale2Deserializer.class)
   private BigDecimal totalAmount;
+  private Long version;
 }
