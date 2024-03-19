@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,4 +38,6 @@ public class WalletDTO {
     private String organizationName;
     private Long nTrx;
     private Long maxTrx;
+    private Long counterVersion;
+    private List<Long> counterHistory;
 }

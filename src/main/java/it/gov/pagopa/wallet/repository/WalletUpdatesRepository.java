@@ -12,10 +12,11 @@ public interface WalletUpdatesRepository {
   void enrollIban(String initiativeId, String userId, String iban, String status);
   void suspendWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime);
   void readmitWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime);
-  Wallet rewardTransaction(String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued);
-  boolean rewardFamilyTransaction(String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount);
+  Wallet rewardTransaction(String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued, Long counterVersion);
+  boolean rewardFamilyTransaction(String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, Long counterVersion);
   void processRefund(String initiativeId, String userId, BigDecimal refunded, Map<String, RefundHistory> history);
   void updateInstrumentNumber(String initiativeId, String userId, int nInstr, String status);
   void decreaseInstrumentNumber(String initiativeId, String userId, String status);
   List<Wallet> deletePaged(String initiativeId, int pageSize);
+  Wallet rewardFamilyUserTransaction(String initiativeId, String userId, LocalDateTime elaborationDateTime, List<Long> counterHistory, BigDecimal accrued);
 }

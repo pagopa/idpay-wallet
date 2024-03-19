@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.model.Wallet;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import it.gov.pagopa.wallet.utils.Utilities;
@@ -39,6 +40,8 @@ public class WalletMapper {
                 .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
                 .isLogoPresent(evaluationDTO.getIsLogoPresent())
                 .maxTrx(evaluationDTO.getMaxTrx())
+                .counterVersion(0L)
+                .counterHistory(new ArrayList<>())
                 .build();
     }
 

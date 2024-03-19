@@ -38,6 +38,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     private static final String FIELD_LAST_COUNTER_UPDATE = Fields.lastCounterUpdate;
     private static final String FIELD_SUSPENSION_DATE = Fields.suspensionDate;
     private static final String FIELD_UPDATE_DATE = Fields.updateDate;
+    private static final String FIELD_COUNTER_VERSION = Fields.counterVersion;
+    private static final String FIELD_COUNTER_HISTORY = Fields.counterHistory;
     private final MongoTemplate mongoTemplate;
 
     public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
@@ -92,7 +94,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public Wallet rewardTransaction(
-            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued) {
+            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, BigDecimal accrued, Long counterVersion) {
 
         log.trace(
                 "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [amount: {}, accrued: {}]",
@@ -109,7 +111,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         .set(FIELD_ACCRUED, accrued)
                         .inc(FIELD_NTRX, 1)
                         .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_COUNTER_VERSION, counterVersion),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
     }
@@ -117,7 +120,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public boolean rewardFamilyTransaction(
-            String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount) {
+            String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, BigDecimal amount, Long counterVersion) {
 
         log.trace("[UPDATE_WALLET_FROM_TRANSACTION][REWARD_TRANSACTION] Updating Family Wallet [amount: {}]", amount);
 
@@ -125,8 +128,11 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_FAMILY_ID).is(familyId)
                 ),
-                new Update().set(FIELD_AMOUNT, amount).set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update()
+                        .set(FIELD_AMOUNT, amount)
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_COUNTER_VERSION, counterVersion),
                 Wallet.class);
 
         return result.getModifiedCount() == result.getMatchedCount();
@@ -176,5 +182,27 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 Query.query(Criteria.where(Fields.initiativeId).is(initiativeId)).with(pageable),
                 Wallet.class
         );
+    }
+
+    @Override
+    public Wallet rewardFamilyUserTransaction(String initiativeId, String userId, LocalDateTime elaborationDateTime, List<Long> counterHistory, BigDecimal accrued) {
+        log.trace(
+                "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [accrued: {}]",
+                accrued);
+
+        return mongoTemplate.findAndModify(
+                Query.query(
+                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).andOperator(
+                                Criteria.where(FIELD_USER_ID).is(userId)
+                        )
+                ),
+                new Update()
+                        .set(FIELD_ACCRUED, accrued)
+                        .inc(FIELD_NTRX, 1)
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_COUNTER_HISTORY, counterHistory),
+                FindAndModifyOptions.options().returnNew(true),
+                Wallet.class);
     }
 }

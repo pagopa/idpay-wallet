@@ -160,6 +160,8 @@ class WalletServiceTest {
     private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
     private static final String OPERATION_TYPE_DELETE_INITIATIVE = "DELETE_INITIATIVE";
     private static final int PAGINATION_VALUE = 100;
+    private static final Long COUNTER_VERSION = 0L;
+    private static final List<Long> COUNTER_HISTORY = new ArrayList<>();
 
     private static Wallet TEST_WALLET =
             Wallet.builder()
@@ -178,6 +180,8 @@ class WalletServiceTest {
                     .accrued(TEST_ACCRUED)
                     .refunded(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
+                    .counterVersion(COUNTER_VERSION)
+                    .counterHistory(COUNTER_HISTORY)
                     .build();
     private static final Wallet TEST_WALLET_DISCOUNT =
             Wallet.builder()
@@ -274,7 +278,9 @@ class WalletServiceTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     10L,
-                    100L);
+                    100L,
+                    COUNTER_VERSION,
+                    COUNTER_HISTORY);
 
     private static final WalletDTO WALLET_REFUNDABLE_DTO =
             new WalletDTO(
@@ -293,7 +299,9 @@ class WalletServiceTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     10L,
-                    100L);
+                    100L,
+                    COUNTER_VERSION,
+                    COUNTER_HISTORY);
 
     private static final WalletDTO WALLET_UNSUBSCRIBED_DTO =
             new WalletDTO(
@@ -312,17 +320,34 @@ class WalletServiceTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     10L,
-                    100L);
-
+                    100L,
+                    COUNTER_VERSION,
+                    COUNTER_HISTORY);
 
     private static final WalletDTO WALLET_ISSUER_DTO =
-            new WalletDTO(null, null, null, null, null, null, 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED, TEST_DATE,
-                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, null, null);
+            new WalletDTO(null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0,
+                    TEST_AMOUNT,
+                    TEST_ACCRUED,
+                    TEST_REFUNDED,
+                    TEST_DATE,
+                    WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
+                    LOGO_URL,
+                    ORGANIZATION_NAME,
+                    null,
+                    null,
+                    COUNTER_VERSION,
+                    COUNTER_HISTORY);
 
     private static final RewardDTO REWARD_DTO =
             RewardDTO.builder()
                     .accruedReward(TEST_AMOUNT)
-                    .counters(new Counters(false, 1L, TEST_AMOUNT, TEST_AMOUNT, TEST_ACCRUED))
+                    .counters(new Counters(false, 1L, TEST_AMOUNT, TEST_AMOUNT, TEST_ACCRUED, 1L))
                     .build();
 
     private static final RewardTransactionDTO REWARD_TRX_DTO_REWARDED =
@@ -457,6 +482,7 @@ class WalletServiceTest {
                 .refunded(TEST_REFUNDED)
                 .lastCounterUpdate(TEST_DATE)
                 .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
+                .counterVersion(COUNTER_VERSION)
                 .build();
     }
 
@@ -1340,7 +1366,9 @@ class WalletServiceTest {
                                 Mockito.eq(USER_ID),
                                 any(),
                                 any(),
-                                any()))
+                                any(),
+                                any())
+                )
                 .thenReturn(TEST_WALLET);
 
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
@@ -1356,7 +1384,9 @@ class WalletServiceTest {
                                 Mockito.eq(USER_ID),
                                 any(),
                                 any(),
-                                any()))
+                                any(),
+                                any())
+                )
                 .thenReturn(TEST_WALLET);
         walletService.processTransaction(REWARD_TRX_DTO_SYNC_REWARDED);
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
@@ -1373,7 +1403,9 @@ class WalletServiceTest {
                                 Mockito.eq(USER_ID),
                                 any(),
                                 any(),
-                                any()))
+                                any(),
+                                any())
+        )
                 .thenReturn(TEST_WALLET);
 
         walletService.processTransaction(REWARD_TRX_DTO_SYNC_AUTHORIZED);
@@ -1386,19 +1418,22 @@ class WalletServiceTest {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET_FAMILY));
 
-        Mockito.when(walletUpdatesRepositoryMock.rewardTransaction(
+        Mockito.when(walletUpdatesRepositoryMock.rewardFamilyUserTransaction(
                         Mockito.eq(INITIATIVE_ID),
                         Mockito.eq(USER_ID),
                         any(),
                         any(),
-                        any()))
+                        any())
+                )
                 .thenReturn(TEST_WALLET_FAMILY);
 
         Mockito.when(walletUpdatesRepositoryMock.rewardFamilyTransaction(
                         Mockito.eq(INITIATIVE_ID),
                         Mockito.eq(FAMILY_ID),
                         any(),
-                        any()))
+                        any(),
+                        any())
+                )
                 .thenReturn(true);
 
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
@@ -1411,19 +1446,22 @@ class WalletServiceTest {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET_FAMILY));
 
-        Mockito.when(walletUpdatesRepositoryMock.rewardTransaction(
+        Mockito.when(walletUpdatesRepositoryMock.rewardFamilyUserTransaction(
                         Mockito.eq(INITIATIVE_ID),
                         Mockito.eq(USER_ID),
                         any(),
                         any(),
-                        any()))
+                        any())
+                )
                 .thenReturn(TEST_WALLET_FAMILY);
 
         Mockito.when(walletUpdatesRepositoryMock.rewardFamilyTransaction(
                         Mockito.eq(INITIATIVE_ID),
                         Mockito.eq(FAMILY_ID),
                         any(),
-                        any()))
+                        any(),
+                        any())
+                )
                 .thenReturn(false);
 
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
@@ -1440,7 +1478,9 @@ class WalletServiceTest {
                                 Mockito.eq(USER_ID),
                                 any(),
                                 any(),
-                                any()))
+                                any(),
+                                any())
+        )
                 .thenReturn(null);
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(any());
@@ -2112,10 +2152,14 @@ class WalletServiceTest {
 
         WalletDTO walletDtoRef = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
-                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L);
+                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
+                0L,
+                List.of());
         WalletDTO walletDtoUnsub = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
-                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L);
+                TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
+                0L,
+                List.of());
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
