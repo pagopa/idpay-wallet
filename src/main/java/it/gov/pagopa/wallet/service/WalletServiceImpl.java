@@ -809,48 +809,71 @@ public class WalletServiceImpl implements WalletService {
         return;
       }
 
-      userWallet = walletUpdatesRepository.rewardTransaction(initiativeId,
-          rewardTransactionDTO.getUserId(),
-          rewardTransactionDTO.getElaborationDateTime(),
-          counters
-              .getInitiativeBudget()
-              .subtract(counters.getTotalReward())
-              .setScale(2, RoundingMode.HALF_DOWN),
-          userWallet.getAccrued()
-              .add(rewardTransactionDTO
-                  .getRewards()
-                  .get(initiativeId)
-                  .getAccruedReward()
-                  .setScale(2, RoundingMode.HALF_DOWN)));
-
-      if (userWallet.getFamilyId() != null) {
-
-        log.info(
-            "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
-            userWallet.getFamilyId(),
-            counters.getTotalReward());
-
-        boolean updateResult =
-            walletUpdatesRepository.rewardFamilyTransaction(
-                initiativeId,
-                userWallet.getFamilyId(),
-                rewardTransactionDTO.getElaborationDateTime(),
-                counters
-                    .getInitiativeBudget()
-                    .subtract(counters.getTotalReward())
-                    .setScale(2, RoundingMode.HALF_DOWN));
-
-        if (!updateResult) {
-          throw new WalletUpdateException(
-              "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
-                  .formatted(userWallet.getFamilyId()));
-        }
+      if (userWallet.getFamilyId() == null) {
+        rewardUserTransaction(initiativeId, rewardTransactionDTO, counters, userWallet);
+      }
+      else {
+        rewardFamilyUserTransaction(initiativeId, rewardTransactionDTO, counters, userWallet);
       }
     }
 
     log.info("[UPDATE_WALLET_FROM_TRANSACTION] Sending transaction to Timeline");
-    sendToTimeline(
-        timelineMapper.transactionToTimeline(initiativeId, rewardTransactionDTO, accruedReward));
+    sendToTimeline(timelineMapper.transactionToTimeline(initiativeId, rewardTransactionDTO, accruedReward));
+  }
+
+  private void rewardFamilyUserTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, Wallet userWallet) {
+    if(userWallet.getCounterVersion() < counters.getVersion()) {
+      log.info(
+              "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
+              userWallet.getFamilyId(),
+              counters.getTotalReward());
+
+      boolean updateResult =
+              walletUpdatesRepository.rewardFamilyTransaction(
+                      initiativeId,
+                      userWallet.getFamilyId(),
+                      rewardTransactionDTO.getElaborationDateTime(),
+                      counters
+                              .getInitiativeBudget()
+                              .subtract(counters.getTotalReward())
+                              .setScale(2, RoundingMode.HALF_DOWN),
+                      counters.getVersion());
+
+      if (!updateResult) {
+        throw new WalletUpdateException(
+                "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Something went wrong updating wallet(s) of family having id: %s"
+                        .formatted(userWallet.getFamilyId()));
+      }
+    }
+    if(!userWallet.getCounterHistory().contains(counters.getVersion())){
+      userWallet.getCounterHistory().add(counters.getVersion());
+      walletUpdatesRepository.rewardFamilyUserTransaction(
+              initiativeId,
+              rewardTransactionDTO.getUserId(),
+              rewardTransactionDTO.getElaborationDateTime(),
+              userWallet.getCounterHistory(),
+              userWallet.getAccrued()
+                      .add(rewardTransactionDTO
+                      .getRewards()
+                      .get(initiativeId)
+                      .getAccruedReward()
+                      .setScale(2, RoundingMode.HALF_DOWN))
+              );
+    }
+  }
+
+  private void rewardUserTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, Wallet userWallet) {
+    if(userWallet.getCounterVersion() < counters.getVersion()) {
+      walletUpdatesRepository.rewardTransaction(initiativeId,
+              rewardTransactionDTO.getUserId(),
+              rewardTransactionDTO.getElaborationDateTime(),
+              counters
+                      .getInitiativeBudget()
+                      .subtract(counters.getTotalReward())
+                      .setScale(2, RoundingMode.HALF_DOWN),
+              counters.getTotalReward(),
+              counters.getVersion());
+    }
   }
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
