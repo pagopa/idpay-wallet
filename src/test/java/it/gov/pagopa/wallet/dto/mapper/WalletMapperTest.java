@@ -36,7 +36,8 @@ class WalletMapperTest {
     private static final LocalDate OPERATION_DATE = LocalDate.now();
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
-
+    private static final Long COUNTER_VERSION = 0L;
+    private static final List<Long> COUNTER_HISTORY = new ArrayList<>();
     private static final Wallet NEW_WALLET =
             Wallet.builder()
                     .id(USER_ID + "_" + INITIATIVE_ID)
@@ -56,6 +57,8 @@ class WalletMapperTest {
                     .organizationName(ORGANIZATION_NAME)
                     .isLogoPresent(Boolean.TRUE)
                     .maxTrx(100L)
+                    .counterVersion(COUNTER_VERSION)
+                    .counterHistory(COUNTER_HISTORY)
                     .build();
 
     private static final Wallet WALLET =

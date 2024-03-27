@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,7 +43,8 @@ public class Wallet {
   private String initiativeRewardType;
   private Boolean isLogoPresent;
   private Long maxTrx;
-
+  private Long counterVersion;
+  private List<Long> counterHistory;
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
