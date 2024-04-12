@@ -99,7 +99,9 @@ class WalletControllerTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     null,
-                    100L);
+                    100L,
+                    0L,
+                    List.of());
     private static final IbanBodyDTO IBAN_BODY_DTO =
             new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -123,7 +125,9 @@ class WalletControllerTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     10L,
-                    100L);
+                    100L,
+                    0L,
+                    List.of());
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
                     null,
@@ -141,7 +145,9 @@ class WalletControllerTest {
                     LOGO_URL,
                     ORGANIZATION_NAME,
                     null,
-                    100L);
+                    100L,
+                    0L,
+                    List.of());
 
     @MockBean
     WalletService walletServiceMock;
