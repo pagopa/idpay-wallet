@@ -4,14 +4,12 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
+import it.gov.pagopa.wallet.utils.Utilities;
+import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import it.gov.pagopa.wallet.utils.Utilities;
-import org.springframework.stereotype.Service;
 
 @Service
 public class WalletMapper {
@@ -33,9 +31,9 @@ public class WalletMapper {
                 .familyId(evaluationDTO.getFamilyId())
                 .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
                 .status(WalletStatus.NOT_REFUNDABLE.name())
-                .amount(evaluationDTO.getBeneficiaryBudget())
-                .accrued(BigDecimal.valueOf(0.00))
-                .refunded(BigDecimal.valueOf(0.00))
+                .amountCents(evaluationDTO.getBeneficiaryBudgetCents())
+                .accruedCents(0L)
+                .refundedCents(0L)
                 .lastCounterUpdate(LocalDateTime.now())
                 .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
                 .isLogoPresent(evaluationDTO.getIsLogoPresent())
@@ -52,9 +50,9 @@ public class WalletMapper {
                 .initiativeName(wallet.getInitiativeName())
                 .endDate(wallet.getEndDate())
                 .status(wallet.getStatus())
-                .amount(wallet.getAmount())
-                .accrued(wallet.getAccrued().subtract(wallet.getRefunded()))
-                .refunded(wallet.getRefunded())
+                .amountCents(wallet.getAmountCents())
+                .accruedCents(wallet.getAccruedCents() - wallet.getRefundedCents())
+                .refundedCents(wallet.getRefundedCents())
                 .nInstr(wallet.getNInstr())
                 .iban(wallet.getIban())
                 .lastCounterUpdate(wallet.getLastCounterUpdate())
@@ -68,9 +66,9 @@ public class WalletMapper {
 
     public WalletDTO toIssuerInitiativeDTO(Wallet wallet) {
         return WalletDTO.builder()
-                .amount(wallet.getAmount())
-                .accrued(wallet.getAccrued().subtract(wallet.getRefunded()))
-                .refunded(wallet.getRefunded())
+                .amountCents(wallet.getAmountCents())
+                .accruedCents(wallet.getAccruedCents() -wallet.getRefundedCents())
+                .refundedCents(wallet.getRefundedCents())
                 .lastCounterUpdate(wallet.getLastCounterUpdate())
                 .build();
     }

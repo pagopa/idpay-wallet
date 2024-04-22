@@ -1,6 +1,5 @@
 package it.gov.pagopa.wallet.dto;
 
-import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RewardDTO {
 
-  private BigDecimal providedReward;
-  private BigDecimal accruedReward;
+  private Long providedRewardCents;
+  private Long accruedRewardCents;
   private boolean capped;
   private boolean dailyCapped;
   private boolean monthlyCapped;

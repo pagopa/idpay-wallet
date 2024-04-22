@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,9 +28,9 @@ public class WalletDTO {
     private LocalDate endDate;
     @JsonProperty("nInstr")
     private int nInstr;
-    private BigDecimal amount;
-    private BigDecimal accrued;
-    private BigDecimal refunded;
+    private Long amountCents;
+    private Long accruedCents;
+    private Long refundedCents;
     private LocalDateTime lastCounterUpdate;
     private String initiativeRewardType;
     private String logoURL;

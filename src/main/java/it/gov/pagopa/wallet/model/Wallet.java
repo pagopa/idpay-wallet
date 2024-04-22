@@ -1,6 +1,5 @@
 package it.gov.pagopa.wallet.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,9 +29,9 @@ public class Wallet {
   private LocalDateTime acceptanceDate;
   private LocalDate endDate;
   private String iban;
-  private BigDecimal amount;
-  private BigDecimal accrued;
-  private BigDecimal refunded;
+  private Long amountCents;
+  private Long accruedCents;
+  private Long refundedCents;
   private Map<String, RefundHistory> refundHistory;
   private Long nTrx;
   private int nInstr;

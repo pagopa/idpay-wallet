@@ -2,7 +2,6 @@ package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import it.gov.pagopa.wallet.utils.json.BigDecimalScale2Deserializer;
-import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,10 +11,10 @@ public class Counters {
   private boolean exhaustedBudget;
   private Long trxNumber;
   @JsonDeserialize(using = BigDecimalScale2Deserializer.class)
-  private BigDecimal totalReward;
+  private Long totalRewardCents;
   @JsonDeserialize(using = BigDecimalScale2Deserializer.class)
-  private BigDecimal initiativeBudget;
+  private Long initiativeBudgetCents;
   @JsonDeserialize(using = BigDecimalScale2Deserializer.class)
-  private BigDecimal totalAmount;
+  private Long totalAmountCents;
   private Long version;
 }
