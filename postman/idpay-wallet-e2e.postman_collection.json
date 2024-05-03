@@ -189,13 +189,13 @@
 															"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 															"pm.collectionVariables.set('...', _.random(0, 180));\r",
 															"*/\r",
-															"//_.random(1.0, 100000.0, true)\r",
-															"pm.collectionVariables.set('budgetCents', 500);\r",
+															"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+															"pm.collectionVariables.set('budget', 500);\r",
 															"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 															"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 															"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 															"pm.collectionVariables.set('rankingEnabled', false);\r",
-															"pm.collectionVariables.set('beneficiaryBudgetCents', 100);//default max 1000\r",
+															"pm.collectionVariables.set('beneficiaryBudget', 100);//default max 1000\r",
 															"pm.collectionVariables.set('rankingStartDate', today);\r",
 															"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 															"pm.collectionVariables.set('startDate', today);\r",
@@ -240,7 +240,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+													"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -354,8 +354,8 @@
 															"\r",
 															"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 															"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-															"pm.collectionVariables.set('trxThresholdFromCents', 50);\r",
-															"pm.collectionVariables.set('trxThresholdToCents', 80);\r",
+															"pm.collectionVariables.set('trxThresholdFrom', 50);\r",
+															"pm.collectionVariables.set('trxThresholdTo', 80);\r",
 															"pm.collectionVariables.set('trxCountFrom', 3);\r",
 															"pm.collectionVariables.set('trxCountTo', 11);\r",
 															"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -389,7 +389,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n  \"initiativeRewardType\": \"DISCOUNT\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n      \"threshold\": {\n      \"fromCents\": {{trxThresholdFromCents}},\n      \"fromIncluded\": true,\n      \"toCents\": {{trxThresholdToCents}},\n      \"toIncluded\": true\n    }\n  }\n}",
+													"raw": "{\n  \"initiativeRewardType\": \"DISCOUNT\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n      \"threshold\": {\n      \"from\": {{trxThresholdFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxThresholdTo}},\n      \"toIncluded\": true\n    }\n  }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -1694,8 +1694,8 @@
 													"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 													"pm.collectionVariables.set('...', _.random(0, 180));\r",
 													"*/\r",
-													"//_.random(1.0, 100000.0, true)\r",
-													"pm.collectionVariables.set('budgetCents', _.floor(_.random(10000, 100000, true),2));\r",
+													"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+													"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
 													"pm.collectionVariables.set('beneficiaryType', 'NF');\r",
 													"const familyUnitCompositionValue = [\"INPS\", \"ANPR\"];\r",
 													"familyUnitCompositionRandomIndex = _.random(0, familyUnitCompositionValue.length - 1);\r",
@@ -1704,7 +1704,7 @@
 													"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 													"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 													"pm.collectionVariables.set('rankingEnabled', false);\r",
-													"pm.collectionVariables.set('beneficiaryBudgetCents', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+													"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
 													"pm.collectionVariables.set('rankingStartDate', today);\r",
 													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 													"pm.collectionVariables.set('startDate', todayP2);\r",
@@ -1749,7 +1749,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"familyUnitComposition\": \"{{familyUnitComposition}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"familyUnitComposition\": \"{{familyUnitComposition}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1863,8 +1863,8 @@
 													"\r",
 													"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 													"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-													"pm.collectionVariables.set('trxThresholdFromCents', 10);\r",
-													"pm.collectionVariables.set('trxThresholdToCents', 50);\r",
+													"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+													"pm.collectionVariables.set('trxThresholdTo', 50);\r",
 													"pm.collectionVariables.set('trxCountFrom', 3);\r",
 													"pm.collectionVariables.set('trxCountTo', 11);\r",
 													"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -1898,7 +1898,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"fromCents\": {{trxThresholdFromCents}},\n            \"fromIncluded\": true,\n            \"toCents\": {{trxThresholdToCents}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -3153,13 +3153,13 @@
 													"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 													"pm.collectionVariables.set('...', _.random(0, 180));\r",
 													"*/\r",
-													"//_.random(1.0, 100000.0, true)\r",
-													"pm.collectionVariables.set('budgetCents', _.floor(_.random(10000, 100000, true),2));\r",
+													"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+													"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
 													"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 													"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 													"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 													"pm.collectionVariables.set('rankingEnabled', false);\r",
-													"pm.collectionVariables.set('beneficiaryBudgetCents', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+													"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
 													"pm.collectionVariables.set('rankingStartDate', today);\r",
 													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 													"pm.collectionVariables.set('startDate', today);\r",
@@ -3204,7 +3204,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -3318,8 +3318,8 @@
 													"\r",
 													"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 													"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-													"pm.collectionVariables.set('trxThresholdFromCents', 10);\r",
-													"pm.collectionVariables.set('trxThresholdToCents', 50);\r",
+													"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+													"pm.collectionVariables.set('trxThresholdTo', 50);\r",
 													"pm.collectionVariables.set('trxCountFrom', 3);\r",
 													"pm.collectionVariables.set('trxCountTo', 11);\r",
 													"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -3353,7 +3353,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"initiativeRewardType\": \"REFUND\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n      \"threshold\": {\n      \"fromCents\": {{trxThresholdFromCents}},\n      \"fromIncluded\": true,\n      \"toCents\": {{trxThresholdToCents}},\n      \"toIncluded\": true\n    }\n  }\n}",
+											"raw": "{\n  \"initiativeRewardType\": \"REFUND\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n      \"threshold\": {\n      \"from\": {{trxThresholdFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxThresholdTo}},\n      \"toIncluded\": true\n    }\n  }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -5142,14 +5142,14 @@
 													"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 													"pm.collectionVariables.set('...', _.random(0, 180));\r",
 													"*/\r",
-													"//_.random(1.0, 100000.0, true)\r",
-													"//pm.collectionVariables.set('budgetCents', _.floor(_.random(10000, 100000, true),2));\r",
-													"pm.collectionVariables.set('budgetCents', 20);\r",
+													"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+													"//pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
+													"pm.collectionVariables.set('budget', 20);\r",
 													"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 													"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 													"pm.collectionVariables.set('beneficiaryKnown', true);\r",
-													"//pm.collectionVariables.set('beneficiaryBudgetCents', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
-													"pm.collectionVariables.set('beneficiaryBudgetCents', 10);//default max 1000\r",
+													"//pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+													"pm.collectionVariables.set('beneficiaryBudget', 10);//default max 1000\r",
 													"pm.collectionVariables.set('rankingStartDate', today);\r",
 													"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 													"pm.collectionVariables.set('startDate', todayP2);\r",
@@ -5194,7 +5194,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+											"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -5332,8 +5332,8 @@
 													"\r",
 													"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 													"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-													"pm.collectionVariables.set('trxThresholdFromCents', 10);\r",
-													"pm.collectionVariables.set('trxThresholdToCents', 50);\r",
+													"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+													"pm.collectionVariables.set('trxThresholdTo', 50);\r",
 													"pm.collectionVariables.set('trxCountFrom', 3);\r",
 													"pm.collectionVariables.set('trxCountTo', 11);\r",
 													"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -5367,7 +5367,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"fromCents\": {{trxThresholdFromCents}},\n            \"fromIncluded\": true,\n            \"toCents\": {{trxThresholdToCents}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+											"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -6480,13 +6480,13 @@
 															"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 															"pm.collectionVariables.set('...', _.random(0, 180));\r",
 															"*/\r",
-															"//_.random(1.0, 100000.0, true)\r",
-															"pm.collectionVariables.set('budgetCents', 500);\r",
+															"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+															"pm.collectionVariables.set('budget', 500);\r",
 															"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 															"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 															"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 															"pm.collectionVariables.set('rankingEnabled', false);\r",
-															"pm.collectionVariables.set('beneficiaryBudgetCents', 100);//default max 1000\r",
+															"pm.collectionVariables.set('beneficiaryBudget', 100);//default max 1000\r",
 															"pm.collectionVariables.set('rankingStartDate', today);\r",
 															"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 															"pm.collectionVariables.set('startDate', today);\r",
@@ -6531,7 +6531,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+													"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -6645,8 +6645,8 @@
 															"\r",
 															"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 															"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-															"pm.collectionVariables.set('trxThresholdFromCents', 50);\r",
-															"pm.collectionVariables.set('trxThresholdToCents', 80);\r",
+															"pm.collectionVariables.set('trxThresholdFrom', 50);\r",
+															"pm.collectionVariables.set('trxThresholdTo', 80);\r",
 															"pm.collectionVariables.set('trxCountFrom', 3);\r",
 															"pm.collectionVariables.set('trxCountTo', 11);\r",
 															"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -6680,7 +6680,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n  \"initiativeRewardType\": \"DISCOUNT\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n      \"threshold\": {\n      \"fromCents\": {{trxThresholdFromCents}},\n      \"fromIncluded\": true,\n      \"toCents\": {{trxThresholdToCents}},\n      \"toIncluded\": true\n    }\n  }\n}",
+													"raw": "{\n  \"initiativeRewardType\": \"DISCOUNT\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n      \"threshold\": {\n      \"from\": {{trxThresholdFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxThresholdTo}},\n      \"toIncluded\": true\n    }\n  }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -9939,13 +9939,13 @@
 															"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 															"pm.collectionVariables.set('...', _.random(0, 180));\r",
 															"*/\r",
-															"//_.random(1.0, 100000.0, true)\r",
-															"pm.collectionVariables.set('budgetCents', _.floor(_.random(10000, 100000, true),2));\r",
+															"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+															"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
 															"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 															"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 															"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 															"pm.collectionVariables.set('rankingEnabled', false);\r",
-															"pm.collectionVariables.set('beneficiaryBudgetCents', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+															"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
 															"pm.collectionVariables.set('rankingStartDate', today);\r",
 															"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 															"pm.collectionVariables.set('startDate', todayP2);\r",
@@ -9990,7 +9990,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+													"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -10104,8 +10104,8 @@
 															"\r",
 															"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 															"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-															"pm.collectionVariables.set('trxThresholdFromCents', 10);\r",
-															"pm.collectionVariables.set('trxThresholdToCents', 50);\r",
+															"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+															"pm.collectionVariables.set('trxThresholdTo', 50);\r",
 															"pm.collectionVariables.set('trxCountFrom', 3);\r",
 															"pm.collectionVariables.set('trxCountTo', 11);\r",
 															"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -10139,7 +10139,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{ \n  \"initiativeRewardType\": \"REFUND\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n    \"daysOfWeek\": [\n      {\n        \"daysOfWeek\": [\n          \"{{trxDaysOfWeek}}\"\n        ],\n        \"intervals\": [\n          {\n            \"startTime\": \"00:00:00.000\",\n            \"endTime\": \"{{trxDayEndTime}}\"\n          }\n        ]\n      }\n    ],\n    \"threshold\": {\n      \"fromCents\": {{trxThresholdFromCents}},\n      \"fromIncluded\": true,\n      \"toCents\": {{trxThresholdToCents}},\n      \"toIncluded\": true\n    },\n    \"mccFilter\": {\n      \"allowedList\": true,\n      \"values\": [\n        \"0742\", \"0743\", \"0744\"\n      ]\n    },\n    \"trxCount\": {\n      \"from\": {{trxCountFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxCountTo}},\n      \"toIncluded\": true\n    }\n  }\n}",
+													"raw": "{ \n  \"initiativeRewardType\": \"REFUND\",\n  \"rewardRule\": {\n    \"_type\": \"{{rewardRuleType}}\",\n    \"rewardValue\": {{rewardRuleValue}},\n    \"rewardValueType\": \"{{rewardValueType}}\"\n  },\n  \"trxRule\": {\n    \"daysOfWeek\": [\n      {\n        \"daysOfWeek\": [\n          \"{{trxDaysOfWeek}}\"\n        ],\n        \"intervals\": [\n          {\n            \"startTime\": \"00:00:00.000\",\n            \"endTime\": \"{{trxDayEndTime}}\"\n          }\n        ]\n      }\n    ],\n    \"threshold\": {\n      \"from\": {{trxThresholdFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxThresholdTo}},\n      \"toIncluded\": true\n    },\n    \"mccFilter\": {\n      \"allowedList\": true,\n      \"values\": [\n        \"0742\", \"0743\", \"0744\"\n      ]\n    },\n    \"trxCount\": {\n      \"from\": {{trxCountFrom}},\n      \"fromIncluded\": true,\n      \"to\": {{trxCountTo}},\n      \"toIncluded\": true\n    }\n  }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -12080,13 +12080,13 @@
 															"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 															"pm.collectionVariables.set('...', _.random(0, 180));\r",
 															"*/\r",
-															"//_.random(1.0, 100000.0, true)\r",
-															"pm.collectionVariables.set('budgetCents', _.floor(_.random(10000, 100000, true),2));\r",
+															"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+															"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
 															"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 															"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 															"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 															"pm.collectionVariables.set('rankingEnabled', false);\r",
-															"pm.collectionVariables.set('beneficiaryBudgetCents', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+															"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
 															"pm.collectionVariables.set('rankingStartDate', today);\r",
 															"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 															"pm.collectionVariables.set('startDate', todayP2);\r",
@@ -12131,7 +12131,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+													"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -12245,8 +12245,8 @@
 															"\r",
 															"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 															"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-															"pm.collectionVariables.set('trxThresholdFromCents', 10);\r",
-															"pm.collectionVariables.set('trxThresholdToCents', 50);\r",
+															"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+															"pm.collectionVariables.set('trxThresholdTo', 50);\r",
 															"pm.collectionVariables.set('trxCountFrom', 3);\r",
 															"pm.collectionVariables.set('trxCountTo', 11);\r",
 															"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -12280,7 +12280,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"fromCents\": {{trxThresholdFromCents}},\n            \"fromIncluded\": true,\n            \"toCents\": {{trxThresholdToCents}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+													"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -13142,13 +13142,13 @@
 															"var futureDate = pm.variables.replaceIn('{{$$randomDateFuture}}');\r",
 															"pm.collectionVariables.set('...', _.random(0, 180));\r",
 															"*/\r",
-															"//_.random(1.0, 100000.0, true)\r",
-															"pm.collectionVariables.set('budgetCents', _.floor(_.random(10000, 100000, true),2));\r",
+															"//_.floor(_.random(1.0, 100000.0, true),2)\r",
+															"pm.collectionVariables.set('budget', _.floor(_.random(10000, 100000, true),2));\r",
 															"pm.collectionVariables.set('beneficiaryType', 'PF');\r",
 															"//pm.collectionVariables.set('beneficiaryKnown', pm.variables.replaceIn('{{$randomBoolean}}'));\r",
 															"pm.collectionVariables.set('beneficiaryKnown', false);\r",
 															"pm.collectionVariables.set('rankingEnabled', false);\r",
-															"pm.collectionVariables.set('beneficiaryBudgetCents', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
+															"pm.collectionVariables.set('beneficiaryBudget', pm.variables.replaceIn('{{$randomInt}}'));//default max 1000\r",
 															"pm.collectionVariables.set('rankingStartDate', today);\r",
 															"pm.collectionVariables.set('rankingEndDate', todayP1);\r",
 															"pm.collectionVariables.set('startDate', todayP2);\r",
@@ -13193,7 +13193,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"budgetCents\": {{budgetCents}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudgetCents\": {{beneficiaryBudgetCents}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
+													"raw": "{\n    \"budget\": {{budget}},\n    \"beneficiaryType\": \"{{beneficiaryType}}\",\n    \"beneficiaryKnown\": {{beneficiaryKnown}},\n    \"rankingEnabled\": {{rankingEnabled}},\n    \"beneficiaryBudget\": {{beneficiaryBudget}},\n    \"rankingStartDate\": \"{{rankingStartDate}}\",\n    \"rankingEndDate\": \"{{rankingEndDate}}\",\n    \"startDate\": \"{{startDate}}\",\n    \"endDate\": \"{{endDate}}\",\n    \"descriptionMap\": {\n        \"it\": \"it\"\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -13307,8 +13307,8 @@
 															"\r",
 															"pm.collectionVariables.set('trxDaysOfWeek', pm.variables.replaceIn('{{$randomWeekday}}').toString().toUpperCase());\r",
 															"pm.collectionVariables.set('trxDayEndTime', endTime[0]);\r",
-															"pm.collectionVariables.set('trxThresholdFromCents', 10);\r",
-															"pm.collectionVariables.set('trxThresholdToCents', 50);\r",
+															"pm.collectionVariables.set('trxThresholdFrom', 10);\r",
+															"pm.collectionVariables.set('trxThresholdTo', 50);\r",
 															"pm.collectionVariables.set('trxCountFrom', 3);\r",
 															"pm.collectionVariables.set('trxCountTo', 11);\r",
 															"pm.collectionVariables.set('trxRewardLimitFrequency', 'DAILY');\r",
@@ -13342,7 +13342,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"fromCents\": {{trxThresholdFromCents}},\n            \"fromIncluded\": true,\n            \"toCents\": {{trxThresholdToCents}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
+													"raw": "{\n    \"initiativeRewardType\": \"REFUND\",\n    \"rewardRule\": {\n        \"_type\": \"{{rewardRuleType}}\",\n        \"rewardValue\": {{rewardRuleValue}},\n        \"rewardValueType\": \"{{rewardValueType}}\"\n    },\n    \"trxRule\": {\n        \"daysOfWeek\": [\n            {\n                \"daysOfWeek\": [\n                    \"{{trxDaysOfWeek}}\"\n                ],\n                \"intervals\": [\n                    {\n                        \"startTime\": \"00:00:00.000\",\n                        \"endTime\": \"{{trxDayEndTime}}\"\n                    }\n                ]\n            }\n        ],\n        \"threshold\": {\n            \"from\": {{trxThresholdFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxThresholdTo}},\n            \"toIncluded\": true\n        },\n        \"mccFilter\": {\n            \"allowedList\": true,\n            \"values\": [\n                \"0742\",\n                \"0743\",\n                \"0744\"\n            ]\n        },\n        \"trxCount\": {\n            \"from\": {{trxCountFrom}},\n            \"fromIncluded\": true,\n            \"to\": {{trxCountTo}},\n            \"toIncluded\": true\n        }\n    }\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -15584,7 +15584,7 @@
 	"variable": [
 		{
 			"key": "tokenIO",
-			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJSTExDTEQ5Mk0wOEE2NjJPIiwiaWF0IjoxNjc3NTg1NTIxLCJleHAiOjE2Nzc1ODkxMjF9.OpNGD0kDnbYGP810h83d2XjBlRpfqtQKjoafEekbO1o"
+			"value": ""
 		},
 		{
 			"key": "serviceId - initiative with criteria",
@@ -15655,7 +15655,7 @@
 			"value": ""
 		},
 		{
-			"key": "budgetCents",
+			"key": "budget",
 			"value": ""
 		},
 		{
@@ -15671,7 +15671,7 @@
 			"value": ""
 		},
 		{
-			"key": "beneficiaryBudgetCents",
+			"key": "beneficiaryBudget",
 			"value": ""
 		},
 		{
@@ -15711,11 +15711,11 @@
 			"value": ""
 		},
 		{
-			"key": "trxThresholdFromCents",
+			"key": "trxThresholdFrom",
 			"value": ""
 		},
 		{
-			"key": "trxThresholdToCents",
+			"key": "trxThresholdTo",
 			"value": ""
 		},
 		{
