@@ -2604,7 +2604,7 @@
 													"\r",
 													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking amount corresponds to beneficiaryBudget', function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.amountCents).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudgetCents')));\r",
+													"    pm.expect(jsonResponse.amountCents).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget'))*100);\r",
 													"});\r",
 													"var jsonData = JSON.parse(responseBody);\r",
 													"pm.collectionVariables.set('familyId', jsonData.familyId);\r",
@@ -2881,7 +2881,7 @@
 													"\r",
 													"pm.test('Wallet - Happy case - Initiative with NF - Check detail wallet amount - Get wallet detail - Response status is 200', function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.amountCents).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudgetCents')));\r",
+													"    pm.expect(jsonResponse.amountCents).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget'))*100);\r",
 													"});\r",
 													"\r",
 													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking familyId is the same', function () {\r",
@@ -15655,7 +15655,7 @@
 			"value": ""
 		},
 		{
-			"key": "budgetCents",
+			"key": "budget",
 			"value": ""
 		},
 		{
@@ -15671,7 +15671,7 @@
 			"value": ""
 		},
 		{
-			"key": "beneficiaryBudgetCents",
+			"key": "beneficiaryBudget",
 			"value": ""
 		},
 		{
