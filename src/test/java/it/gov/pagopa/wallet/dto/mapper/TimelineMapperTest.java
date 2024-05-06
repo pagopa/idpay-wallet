@@ -10,7 +10,6 @@ import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.WalletStatus;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -44,7 +43,7 @@ class TimelineMapperTest {
   private static final String INSTRUMENT_ID = "instrument_id";
   private static final String CIRCUIT_TYPE = "test_circuit";
   private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
-  private static final BigDecimal BIG_DECIMAL = BigDecimal.valueOf(0.00);
+  private static final Long LONG = 0L;
   private static final LocalDateTime OPERATION_DATE = LocalDateTime.now();
   private static final LocalDate OPERATION_DATE_ONLY_DATE = LocalDate.now();
   private static final LocalDate START_DATE = LocalDate.now();
@@ -63,7 +62,7 @@ class TimelineMapperTest {
           OPERATION_DATE,
           OPERATION_DATE,
           List.of(),
-          new BigDecimal(500),
+          50000L,
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
           ORGANIZATION_NAME,
           Boolean.FALSE,
@@ -92,8 +91,8 @@ class TimelineMapperTest {
           .brandLogo(BRAND_LOGO)
           .brand(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
-          .amount(BIG_DECIMAL)
-          .effectiveAmount(BIG_DECIMAL)
+          .amountCents(LONG)
+          .effectiveAmountCents(LONG)
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .channel("RTD")
@@ -112,8 +111,8 @@ class TimelineMapperTest {
           .brandLogo(BRAND_LOGO)
           .brand(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
-          .amount(BIG_DECIMAL)
-          .effectiveAmount(BIG_DECIMAL)
+          .amountCents(LONG)
+          .effectiveAmountCents(LONG)
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .channel("QRCODE")
@@ -132,8 +131,8 @@ class TimelineMapperTest {
           .brandLogo(BRAND_LOGO)
           .brand(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
-          .amount(BIG_DECIMAL)
-          .effectiveAmount(BIG_DECIMAL)
+          .amountCents(LONG)
+          .effectiveAmountCents(LONG)
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .channel("QRCODE")
@@ -152,8 +151,8 @@ class TimelineMapperTest {
           .brandLogo(BRAND_LOGO)
           .brand(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
-          .amount(BIG_DECIMAL)
-          .effectiveAmount(BIG_DECIMAL)
+          .amountCents(LONG)
+          .effectiveAmountCents(LONG)
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .channel("RTD")
@@ -171,8 +170,8 @@ class TimelineMapperTest {
           .brandLogo(BRAND_LOGO)
           .brand(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
-          .amount(BIG_DECIMAL)
-          .effectiveAmount(BIG_DECIMAL)
+          .amountCents(LONG)
+          .effectiveAmountCents(LONG)
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .channel("QRCODE")
@@ -190,7 +189,7 @@ class TimelineMapperTest {
           .brandLogo(BRAND_LOGO)
           .brand(BRAND_LOGO)
           .circuitType(CIRCUIT_TYPE)
-          .amount(BIG_DECIMAL)
+          .amountCents(LONG)
           .idTrxIssuer(USER_ID)
           .idTrxAcquirer(USER_ID)
           .channel("RTD")
@@ -297,7 +296,7 @@ class TimelineMapperTest {
   @Test
   void transactionToTimeline() {
     QueueOperationDTO actual =
-        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_REWARDED, BIG_DECIMAL);
+        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_REWARDED, LONG);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
@@ -305,9 +304,9 @@ class TimelineMapperTest {
     assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
-    assertEquals(BIG_DECIMAL, actual.getAmount());
-    assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
-    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(LONG, actual.getAmountCents());
+    assertEquals(LONG, actual.getEffectiveAmountCents());
+    assertEquals(LONG, actual.getAccruedCents());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("RTD", actual.getChannel());
@@ -318,7 +317,7 @@ class TimelineMapperTest {
   void transactionToTimeline_Rewarded_QRCODE() {
     QueueOperationDTO actual =
         timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_REWARDED_QRCODE,
-            BIG_DECIMAL);
+                LONG);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
@@ -326,9 +325,9 @@ class TimelineMapperTest {
     assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
-    assertEquals(BIG_DECIMAL, actual.getAmount());
-    assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
-    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(LONG, actual.getAmountCents());
+    assertEquals(LONG, actual.getEffectiveAmountCents());
+    assertEquals(LONG, actual.getAccruedCents());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("QRCODE", actual.getChannel());
@@ -342,7 +341,7 @@ class TimelineMapperTest {
   void transactionToTimeline_Authorized_QRCODE() {
     QueueOperationDTO actual =
         timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_AUTHORIZED_QRCODE,
-            BIG_DECIMAL);
+                LONG);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
@@ -350,9 +349,9 @@ class TimelineMapperTest {
     assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
-    assertEquals(BIG_DECIMAL, actual.getAmount());
-    assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
-    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(LONG, actual.getAmountCents());
+    assertEquals(LONG, actual.getEffectiveAmountCents());
+    assertEquals(LONG, actual.getAccruedCents());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("QRCODE", actual.getChannel());
@@ -366,7 +365,7 @@ class TimelineMapperTest {
   void transactionToTimeline_Authorized_RTD() {
     QueueOperationDTO actual =
         timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_AUTHORIZED_RTD,
-            BIG_DECIMAL);
+                LONG);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
@@ -374,9 +373,9 @@ class TimelineMapperTest {
     assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
-    assertEquals(BIG_DECIMAL, actual.getAmount());
-    assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
-    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(LONG, actual.getAmountCents());
+    assertEquals(LONG, actual.getEffectiveAmountCents());
+    assertEquals(LONG, actual.getAccruedCents());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("RTD", actual.getChannel());
@@ -389,7 +388,7 @@ class TimelineMapperTest {
   @Test
   void transactionToTimelineCancelled() {
     QueueOperationDTO actual =
-        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_CANCELLED, BIG_DECIMAL);
+        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_CANCELLED, LONG);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("TRANSACTION", actual.getOperationType());
@@ -397,9 +396,9 @@ class TimelineMapperTest {
     assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
-    assertEquals(BIG_DECIMAL, actual.getAmount());
-    assertEquals(BIG_DECIMAL, actual.getEffectiveAmount());
-    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(LONG, actual.getAmountCents());
+    assertEquals(LONG, actual.getEffectiveAmountCents());
+    assertEquals(LONG, actual.getAccruedCents());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("QRCODE", actual.getChannel());
@@ -409,7 +408,7 @@ class TimelineMapperTest {
   @Test
   void transactionToTimelineReversal() {
     QueueOperationDTO actual =
-        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_REVERSAL, BIG_DECIMAL);
+        timelineMapper.transactionToTimeline(INITIATIVE_ID, REWARD_TRX_DTO_REVERSAL, LONG);
     assertEquals(USER_ID, actual.getUserId());
     assertEquals(INITIATIVE_ID, actual.getInitiativeId());
     assertEquals("REVERSAL", actual.getOperationType());
@@ -417,8 +416,8 @@ class TimelineMapperTest {
     assertEquals(INSTRUMENT_ID, actual.getInstrumentId());
     assertEquals(BRAND_LOGO, actual.getBrandLogo());
     assertEquals(CIRCUIT_TYPE, actual.getCircuitType());
-    assertEquals(BIG_DECIMAL, actual.getAmount());
-    assertEquals(BIG_DECIMAL, actual.getAccrued());
+    assertEquals(LONG, actual.getAmountCents());
+    assertEquals(LONG, actual.getAccruedCents());
     assertEquals(USER_ID, actual.getIdTrxIssuer());
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
   }

@@ -31,7 +31,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -117,9 +116,9 @@ class WalletControllerTest {
                     IBAN_OK,
                     DATE,
                     1,
-                    new BigDecimal("450.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("0.00"),
+                    45000L,
+                    5000L ,
+                    0L,
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     LOGO_URL,
@@ -137,9 +136,9 @@ class WalletControllerTest {
                     null,
                     null,
                     0,
-                    new BigDecimal("450.00"),
-                    new BigDecimal("50.00"),
-                    new BigDecimal("0.00"),
+                    45000L,
+                    5000L ,
+                    0L,
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     LOGO_URL,
@@ -565,9 +564,9 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getEndDate(), walletDTO.getEndDate());
         assertEquals(INITIATIVE_DTO.getIban(), walletDTO.getIban());
         assertEquals(INITIATIVE_DTO.getNInstr(), walletDTO.getNInstr());
-        assertEquals(INITIATIVE_DTO.getAmount(), walletDTO.getAmount());
-        assertEquals(INITIATIVE_DTO.getAccrued(), walletDTO.getAccrued());
-        assertEquals(INITIATIVE_DTO.getRefunded(), walletDTO.getRefunded());
+        assertEquals(INITIATIVE_DTO.getAmountCents(), walletDTO.getAmountCents());
+        assertEquals(INITIATIVE_DTO.getAccruedCents(), walletDTO.getAccruedCents());
+        assertEquals(INITIATIVE_DTO.getRefundedCents(), walletDTO.getRefundedCents());
         assertEquals(INITIATIVE_DTO.getNTrx(), walletDTO.getNTrx());
         assertEquals(INITIATIVE_DTO.getMaxTrx(),walletDTO.getMaxTrx());
     }
@@ -611,9 +610,9 @@ class WalletControllerTest {
 
         WalletDTO walletDTO =
                 objectMapper.readValue(res.getResponse().getContentAsString(), WalletDTO.class);
-        assertEquals(INITIATIVE_ISSUER_DTO.getAmount(), walletDTO.getAmount());
-        assertEquals(INITIATIVE_ISSUER_DTO.getAccrued(), walletDTO.getAccrued());
-        assertEquals(INITIATIVE_ISSUER_DTO.getRefunded(), walletDTO.getRefunded());
+        assertEquals(INITIATIVE_ISSUER_DTO.getAmountCents(), walletDTO.getAmountCents());
+        assertEquals(INITIATIVE_ISSUER_DTO.getAccruedCents(), walletDTO.getAccruedCents());
+        assertEquals(INITIATIVE_ISSUER_DTO.getRefundedCents(), walletDTO.getRefundedCents());
     }
 
     @Test

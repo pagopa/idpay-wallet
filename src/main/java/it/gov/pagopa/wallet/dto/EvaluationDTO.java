@@ -2,13 +2,13 @@ package it.gov.pagopa.wallet.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -30,7 +30,7 @@ public class EvaluationDTO {
   private LocalDateTime criteriaConsensusTimestamp;
   @NotNull
   private List<OnboardingRejectionReason> onboardingRejectionReasons;
-  private BigDecimal beneficiaryBudget;
+  private Long beneficiaryBudgetCents;
   private String initiativeRewardType;
   private String organizationName;
   private Boolean isLogoPresent;

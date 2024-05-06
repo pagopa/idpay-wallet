@@ -2604,7 +2604,7 @@
 													"\r",
 													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking amount corresponds to beneficiaryBudget', function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.amount).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget')));\r",
+													"    pm.expect(jsonResponse.amountCents).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget'))*100);\r",
 													"});\r",
 													"var jsonData = JSON.parse(responseBody);\r",
 													"pm.collectionVariables.set('familyId', jsonData.familyId);\r",
@@ -2881,7 +2881,7 @@
 													"\r",
 													"pm.test('Wallet - Happy case - Initiative with NF - Check detail wallet amount - Get wallet detail - Response status is 200', function () {\r",
 													"    let jsonResponse = pm.response.json();\r",
-													"    pm.expect(jsonResponse.amount).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget')));\r",
+													"    pm.expect(jsonResponse.amountCents).eqls(parseInt(pm.collectionVariables.get('beneficiaryBudget'))*100);\r",
 													"});\r",
 													"\r",
 													"pm.test('Wallet - Happy case - Initiative with NF - Get wallet detail - Checking familyId is the same', function () {\r",
@@ -15584,7 +15584,7 @@
 	"variable": [
 		{
 			"key": "tokenIO",
-			"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJSTExDTEQ5Mk0wOEE2NjJPIiwiaWF0IjoxNjc3NTg1NTIxLCJleHAiOjE2Nzc1ODkxMjF9.OpNGD0kDnbYGP810h83d2XjBlRpfqtQKjoafEekbO1o"
+			"value": ""
 		},
 		{
 			"key": "serviceId - initiative with criteria",

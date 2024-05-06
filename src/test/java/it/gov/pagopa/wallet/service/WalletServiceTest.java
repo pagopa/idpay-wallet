@@ -42,7 +42,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -140,9 +139,9 @@ class WalletServiceTest {
     private static final LocalDateTime TEST_SUSPENSION_DATE = LocalDateTime.now().minusDays(1);
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
     private static final LocalDate TEST_END_DATE = LocalDate.now().plusDays(2);
-    private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
-    private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
-    private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
+    private static final Long TEST_AMOUNT = 200L;
+    private static final Long TEST_ACCRUED = 4000L;
+    private static final Long TEST_REFUNDED = 0L;
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_PENDING_ENROLLMENT = "PENDING_ENROLLMENT_REQUEST";
     private static final String WALLET_NOT_REFUNDABLE = "NOT_REFUNDABLE";
@@ -177,9 +176,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .counterVersion(COUNTER_VERSION)
                     .counterHistory(COUNTER_HISTORY)
@@ -194,9 +193,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .counterVersion(TEST_VERSION)
                     .counterHistory(COUNTER_HISTORY)
@@ -211,9 +210,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .counterVersion(TEST_VERSION)
                     .counterHistory(List.of(TEST_VERSION))
@@ -227,9 +226,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT)
                     .build();
@@ -241,9 +240,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                     .build();
@@ -255,9 +254,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.UNSUBSCRIBED)
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .build();
 
     private static final Wallet TEST_WALLET_SUSPENDED =
@@ -268,9 +267,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.SUSPENDED)
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .updateDate(TEST_DATE)
                     .suspensionDate(TEST_SUSPENSION_DATE)
@@ -278,7 +277,7 @@ class WalletServiceTest {
                     .build();
 
     private static final Wallet TEST_WALLET_ISSUER =
-            Wallet.builder().amount(TEST_AMOUNT).accrued(TEST_ACCRUED).refunded(TEST_REFUNDED).build();
+            Wallet.builder().amountCents(TEST_AMOUNT).accruedCents(TEST_ACCRUED).refundedCents(TEST_REFUNDED).build();
 
     private static final QueueOperationDTO TEST_OPERATION_DTO =
             QueueOperationDTO.builder().userId(USER_ID).build();
@@ -291,9 +290,9 @@ class WalletServiceTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .build();
 
@@ -382,7 +381,7 @@ class WalletServiceTest {
 
     private static final RewardDTO REWARD_DTO =
             RewardDTO.builder()
-                    .accruedReward(TEST_AMOUNT)
+                    .accruedRewardCents(TEST_AMOUNT)
                     .counters(new Counters(false, 1L, TEST_AMOUNT, TEST_AMOUNT, TEST_ACCRUED, TEST_VERSION))
                     .build();
 
@@ -443,7 +442,7 @@ class WalletServiceTest {
                     TEST_DATE,
                     TEST_DATE,
                     List.of(),
-                    new BigDecimal(500),
+                    500L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
@@ -461,7 +460,7 @@ class WalletServiceTest {
                     TEST_DATE,
                     TEST_DATE,
                     List.of(),
-                    new BigDecimal(500),
+                    500L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
@@ -479,7 +478,7 @@ class WalletServiceTest {
                     TEST_DATE,
                     TEST_DATE,
                     List.of(),
-                    new BigDecimal(500),
+                    500L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
@@ -497,7 +496,7 @@ class WalletServiceTest {
                     TEST_DATE,
                     TEST_DATE,
                     List.of(),
-                    new BigDecimal(500),
+                    500L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
@@ -513,9 +512,9 @@ class WalletServiceTest {
                 .acceptanceDate(TEST_DATE)
                 .status(WalletStatus.NOT_REFUNDABLE.name())
                 .endDate(TEST_DATE_ONLY_DATE)
-                .amount(TEST_AMOUNT)
-                .accrued(TEST_ACCRUED)
-                .refunded(TEST_REFUNDED)
+                .amountCents(TEST_AMOUNT)
+                .accruedCents(TEST_ACCRUED)
+                .refundedCents(TEST_REFUNDED)
                 .lastCounterUpdate(TEST_DATE)
                 .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                 .counterVersion(COUNTER_VERSION)
@@ -1125,9 +1124,9 @@ class WalletServiceTest {
         assertEquals(WALLET_DTO.getEndDate(), actual.getEndDate());
         assertEquals(WALLET_DTO.getIban(), actual.getIban());
         assertEquals(WALLET_DTO.getNInstr(), actual.getNInstr());
-        assertEquals(WALLET_DTO.getAmount(), actual.getAmount());
-        assertEquals(WALLET_DTO.getAccrued(), actual.getAccrued());
-        assertEquals(WALLET_DTO.getRefunded(), actual.getRefunded());
+        assertEquals(WALLET_DTO.getAmountCents(), actual.getAmountCents());
+        assertEquals(WALLET_DTO.getAccruedCents(), actual.getAccruedCents());
+        assertEquals(WALLET_DTO.getRefundedCents(), actual.getRefundedCents());
         assertEquals(WALLET_DTO.getNTrx(), actual.getNTrx());
         assertEquals(WALLET_DTO.getMaxTrx(), actual.getMaxTrx());
 
@@ -1160,9 +1159,9 @@ class WalletServiceTest {
                 .thenReturn(WALLET_ISSUER_DTO);
 
         WalletDTO actual = walletService.getWalletDetailIssuer(INITIATIVE_ID, USER_ID);
-        assertEquals(WALLET_DTO.getAmount(), actual.getAmount());
-        assertEquals(WALLET_DTO.getAccrued(), actual.getAccrued());
-        assertEquals(WALLET_DTO.getRefunded(), actual.getRefunded());
+        assertEquals(WALLET_DTO.getAmountCents(), actual.getAmountCents());
+        assertEquals(WALLET_DTO.getAccruedCents(), actual.getAccruedCents());
+        assertEquals(WALLET_DTO.getRefundedCents(), actual.getRefundedCents());
 
     }
 
@@ -1218,11 +1217,11 @@ class WalletServiceTest {
         Wallet wallet = TEST_WALLET_FAMILY.toBuilder().userId(USER_ID.concat("_1")).build();
         Mockito.when(walletMapper.map(any())).thenReturn(wallet);
         Mockito.when(walletRepositoryMock.findByInitiativeIdAndFamilyId(INITIATIVE_ID, FAMILY_ID))
-                .thenReturn(List.of(TEST_WALLET_FAMILY.toBuilder().amount(TEST_AMOUNT).build()));
+                .thenReturn(List.of(TEST_WALLET_FAMILY.toBuilder().amountCents(TEST_AMOUNT).build()));
 
         walletService.createWallet(EVALUATION_ONBOARDING_OK);
 
-        Assertions.assertEquals(0, TEST_AMOUNT.compareTo(wallet.getAmount()));
+        Assertions.assertEquals(0, TEST_AMOUNT.compareTo(wallet.getAmountCents()));
         Mockito.verify(walletRepositoryMock).save(any(Wallet.class));
         Mockito.verify(timelineProducer).sendEvent(any());
     }
@@ -1813,7 +1812,7 @@ class WalletServiceTest {
                         "CRO");
 
         TEST_WALLET.setRefundHistory(null);
-        TEST_WALLET.setRefunded(TEST_REFUNDED);
+        TEST_WALLET.setRefundedCents(TEST_REFUNDED);
 
         Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
 
@@ -1859,7 +1858,7 @@ class WalletServiceTest {
                         "CRO");
 
         TEST_WALLET.setRefundHistory(null);
-        TEST_WALLET.setRefunded(TEST_REFUNDED);
+        TEST_WALLET.setRefundedCents(TEST_REFUNDED);
 
         Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
 
@@ -1911,7 +1910,7 @@ class WalletServiceTest {
         map.put("NOT_ID", new RefundHistory(1L));
 
         TEST_WALLET.setRefundHistory(map);
-        TEST_WALLET.setRefunded(TEST_ACCRUED);
+        TEST_WALLET.setRefundedCents(TEST_ACCRUED);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -1960,7 +1959,7 @@ class WalletServiceTest {
         map.put("NOT_ID", new RefundHistory(2L));
 
         TEST_WALLET.setRefundHistory(map);
-        TEST_WALLET.setRefunded(TEST_ACCRUED);
+        TEST_WALLET.setRefundedCents(TEST_ACCRUED);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -2043,7 +2042,7 @@ class WalletServiceTest {
                         "CRO");
 
         TEST_WALLET.setRefundHistory(null);
-        TEST_WALLET.setRefunded(BigDecimal.valueOf(0.00));
+        TEST_WALLET.setRefundedCents(0L);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
