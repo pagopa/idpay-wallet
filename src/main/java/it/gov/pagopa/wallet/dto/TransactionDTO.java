@@ -1,15 +1,13 @@
 package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import it.gov.pagopa.wallet.utils.json.BigDecimalScale2Deserializer;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.OffsetDateTime;
 
 @Getter
 @SuperBuilder
@@ -43,8 +41,7 @@ public class TransactionDTO {
 
   private String correlationId;
 
-  @JsonDeserialize(using = BigDecimalScale2Deserializer.class)
-  private BigDecimal amount;
+  private Long amountCents;
 
   private String amountCurrency;
 
@@ -70,7 +67,7 @@ public class TransactionDTO {
 
   private String userId;
 
-  private BigDecimal effectiveAmount;
+  private Long effectiveAmountCents;
 
   private String channel;
 

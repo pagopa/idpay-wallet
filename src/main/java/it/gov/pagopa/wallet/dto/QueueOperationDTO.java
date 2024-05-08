@@ -1,7 +1,7 @@
 package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -44,11 +44,11 @@ public class QueueOperationDTO {
 
   private Long rewardFeedbackProgressive;
 
-  private BigDecimal amount;
+  private Long amountCents;
 
-  private BigDecimal effectiveAmount;
+  private Long effectiveAmountCents;
 
-  private BigDecimal accrued;
+  private Long accruedCents;
 
   private String idTrxIssuer;
 

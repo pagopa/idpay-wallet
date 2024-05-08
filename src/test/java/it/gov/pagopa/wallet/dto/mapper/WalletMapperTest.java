@@ -7,7 +7,6 @@ import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,9 +48,9 @@ class WalletMapperTest {
                     .familyId(FAMILY_ID)
                     .acceptanceDate(OPERATION_DATE.atStartOfDay())
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(500))
-                    .accrued(BigDecimal.valueOf(0.00))
-                    .refunded(BigDecimal.valueOf(0.00))
+                    .amountCents(50000L)
+                    .accruedCents(0L)
+                    .refundedCents(0L)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
@@ -72,9 +71,9 @@ class WalletMapperTest {
                     .familyId(FAMILY_ID)
                     .acceptanceDate(OPERATION_DATE.atStartOfDay())
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(490))
-                    .accrued(BigDecimal.valueOf(10.00))
-                    .refunded(BigDecimal.valueOf(1.00))
+                    .amountCents(49000L)
+                    .accruedCents(1000L)
+                    .refundedCents(100L)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
@@ -93,9 +92,9 @@ class WalletMapperTest {
                     .familyId(FAMILY_ID)
                     .acceptanceDate(OPERATION_DATE.atStartOfDay())
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(490))
-                    .accrued(BigDecimal.valueOf(10.00))
-                    .refunded(BigDecimal.valueOf(1.00))
+                    .amountCents(49000L)
+                    .accruedCents(1000L)
+                    .refundedCents(100L)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
@@ -115,7 +114,7 @@ class WalletMapperTest {
                     OPERATION_DATE.atStartOfDay(),
                     OPERATION_DATE.atStartOfDay(),
                     List.of(),
-                    new BigDecimal(500),
+                    50000L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
@@ -128,9 +127,9 @@ class WalletMapperTest {
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(490))
-                    .accrued(BigDecimal.valueOf(9.00))
-                    .refunded(BigDecimal.valueOf(1.00))
+                    .amountCents(49000L)
+                    .accruedCents(900L)
+                    .refundedCents(100L)
                     .nInstr(0)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
@@ -146,9 +145,9 @@ class WalletMapperTest {
                     .initiativeName(INITIATIVE_ID)
                     .endDate(OPERATION_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .amount(new BigDecimal(490))
-                    .accrued(BigDecimal.valueOf(9.00))
-                    .refunded(BigDecimal.valueOf(1.00))
+                    .amountCents(49000L)
+                    .accruedCents(900L)
+                    .refundedCents(100L)
                     .nInstr(0)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
@@ -161,9 +160,9 @@ class WalletMapperTest {
 
     private static final WalletDTO ISSUER_INITIATIVE_DTO =
             WalletDTO.builder()
-                    .amount(new BigDecimal(490))
-                    .accrued(BigDecimal.valueOf(9.00))
-                    .refunded(BigDecimal.valueOf(1.00))
+                    .amountCents(49000L)
+                    .accruedCents(900L)
+                    .refundedCents(100L)
                     .lastCounterUpdate(TEST_DATE)
                     .build();
 
