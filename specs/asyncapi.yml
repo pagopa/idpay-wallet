@@ -168,7 +168,7 @@ components:
         Event consumed from application when a delete iban command has published
       summary: Delete documents of the iban
       payload:
-        $ref: "#/components/schemas/IbanQueueDTO"
+        $ref: "#/components/schemas/IbanQueueWalletDTO"
     CreateWallet:
       contentType: application/json
       description: >-
@@ -940,3 +940,31 @@ components:
           type: string
           description: "Key of the Kafka message"
           example: "661626073785876cb5aa7601"
+    IbanQueueWalletDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ID of the user
+          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
+        initiativeId:
+          type: string
+          description: ID of the initiative
+          example: 661626073785876cb5aa7601
+        iban:
+          type: string
+          description: IBAN (International Bank Account Number)
+          example: IT60X0542811101000000123456
+        status:
+          type: string
+          description: Status of the IBAN queue wallet
+          example: QUEUED
+        queueDate:
+          type: string
+          description: Date of queuing
+          format: date-time
+          example: "2024-04-10T09:15:30Z"
+        channel:
+          type: string
+          description: Channel used for queuing
+          example: WEB
