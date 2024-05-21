@@ -5,6 +5,7 @@ info:
   description: >-
     Its purpose is to manage the user initiatives budget info
 tags:
+
   - name: "processTransaction"
     description: " Processing new transaction"
   - name: "processRefund"
@@ -15,6 +16,7 @@ tags:
     description: "Delete iban process"
   - name: "createWallet"
     description: "Create wallet process"
+
   - name: "enrollIbanError"
     description: "Enroll iban error"
   - name: "rewardTransactionError"
@@ -23,12 +25,37 @@ tags:
     description: "Send event to notification error"
   - name: "timelineError"
     description: "Send event to timeline error"
-  - name: "sendToIban"
+
+  - name: "ibanEnrollment"
     description: "Send iban enrollment event to idpay-iban"
-  - name: "sendToNotification"
-    description: "Send event to notification "
-  - name: "sendToTimeline"
-    description: "Send event to timeline"
+
+  - name: "checkIbanToNotification"
+    description: "Send check iban ko event to notification "
+  - name: "refundToNotification"
+    description: "Send refund event to notification "
+  - name: "suspensionReadmissionToNotification"
+    description: "Send suspension readmission event to notification "
+
+  - name: "suspendToTimeline"
+    description: "Send suspended wallet event to timeline"
+  - name: "readmitToTimeline"
+    description: "Send readmitted event to timeline"
+  - name: "onboardingToTimeline"
+    description: "Send onboarded event to timeline"
+  - name: "unsubscribeToTimeline"
+    description: "Send unsubscribed event to timeline"
+  - name: "deleteInstrumentToTimeline"
+    description: "Send deleted instrument event to timeline"
+  - name: "ackToTimeline"
+    description: "Send acknowldged event to timeline"
+  - name: "refundToTimeline"
+    description: "Send refunded event to timeline"
+  - name: "transactionToTimeline"
+    description: "Send transaction event to timeline"
+  - name: "ibanToTimeline"
+    description: "Send iban outcome event to timeline"
+  - name: "rejectedInstrumentToTimeline"
+    description: "Send rejected instrument event to timeline"
 
 channels:
   wallet-process-transacion:
@@ -112,7 +139,7 @@ channels:
         topic: idpay_error_topic
       tags:
         - name: "timelineError"
-  wallet-send-to-iban:
+  wallet-send-enrollment-iban-to-iban:
     publish:
       message:
         $ref: '#/components/messages/IbanQueue'
@@ -120,25 +147,124 @@ channels:
       kafka:
         topic: idpay_checkiban_evaluation_topic
       tags:
-        - name: "sendToIban"
-  wallet-send-to-notification:
+        - name: "ibanEnrollment"
+  wallet-send-check-iban-to-notification:
     publish:
       message:
-        $ref: '#/components/messages/NotificationQueue'
+        $ref: '#/components/messages/CheckIbanToNotification'
     bindings:
       kafka:
         topic: idpay_notification_request_topic
       tags:
-        - name: "sendToNotification"
-  wallet-send-to-timeline:
+        - name: "checkIbanToNotification"
+  wallet-send-refund-to-notification:
     publish:
       message:
-        $ref: '#/components/messages/TimelineQueue'
+        $ref: '#/components/messages/RefundToNotification'
+    bindings:
+      kafka:
+        topic: idpay_notification_request_topic
+      tags:
+        - name: "refundToNotification"
+  wallet-send-suspension-readmission-to-notification:
+    publish:
+      message:
+        $ref: '#/components/messages/SuspensionReadmissionToNotification'
+    bindings:
+      kafka:
+        topic: idpay_notification_request_topic
+      tags:
+        - name: "suspensionReadmissionToNotification"
+  wallet-suspend-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/SuspendToTimeline'
     bindings:
       kafka:
         topic: idpay_timeline_topic
       tags:
-        - name: "sendToTimeline"
+        - name: "suspendToTimeline"
+  wallet-readmit-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/ReadmitToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "readmitToTimeline"
+  wallet-onboarding-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/OnboardingToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "onboardingToTimeline"
+  wallet-unsubscribe-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/UnsubscribeToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "unsubscribeToTimeline"
+  wallet-delete-instrument-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/DeleteInstrumentToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "deleteInstrumentToTimeline"
+  wallet-ack-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/AckToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "ackToTimeline"
+  wallet-refund-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/RefundToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "refundToTimeline"
+  wallet-transaction-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/TransactionToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "transactionToTimeline"
+  wallet-rejected-instrument-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/RejectedInstrumentToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "rejectedInstrumentToTimeline"
+  wallet-iban-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/IbanToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "ibanToTimeline"
 components:
   messages:
     ProcessTransaction:
@@ -176,6 +302,7 @@ components:
       summary: Create document of a wallet
       payload:
         $ref: "#/components/schemas/EvaluationDTO"
+
     EnrollIbanError:
       contentType: application/json
       description: >-
@@ -212,6 +339,7 @@ components:
         $ref: "#/components/schemas/ErrorQueueHeader"
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
+
     IbanQueue:
       contentType: application/json
       description: >-
@@ -221,20 +349,100 @@ components:
         $ref: "#/components/schemas/HeaderProducer"
       payload:
         $ref: "#/components/schemas/IbanQueueDTO"
-    NotificationQueue:
+
+    CheckIbanToNotification:
       contentType: application/json
       description: >-
-        Event produced to inform Notificaion  of a process ended successfully
-      summary: Informs Notificaion  of a process ended successfully
+        Event produced to inform Notificaion of a check iban KO
+      summary: Informs Notificaion of a check iban KO
       payload:
         $ref: "#/components/schemas/NotificationQueueDTO"
-    TimelineQueue:
+    RefundToNotification:
       contentType: application/json
       description: >-
-        Event produced to informa Timeline of a process ended successfully
+        Event produced to inform Notificaion of a refund
+      summary: Informs Notificaion of a refund
+      payload:
+        $ref: "#/components/schemas/NotificationQueueDTO"
+    SuspensionReadmissionToNotification:
+      contentType: application/json
+      description: >-
+        Event produced to inform Notificaion  of a suspension or readmission
+      summary: Informs Notificaion  of a suspension or readmission
+      payload:
+        $ref: "#/components/schemas/NotificationQueueDTO"
+
+    SuspendToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a wallet suspension
+      summary: Informs Timeline of a a wallet suspension
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    ReadmitToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a wallet readmission
+      summary: Informs Timeline of a wallet readmission
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    OnboardingToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of an onboarding
+      summary: Informs Timeline of an onboarding
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    UnsubscribeToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a wallet disabling
+      summary: Informs Timeline of a wallet disabling
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    DeleteInstrumentToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a pay instrument removal
+      summary: Informs Timeline of a pay instrument removal
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    AckToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of an acknowledgement
+      summary: Informs Timeline of an acknowledgement
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    RefundToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a refund
+      summary: Informs Timeline of a refund
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    TransactionToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a transaction
+      summary: Informs Timeline of a transaction
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    RejectedInstrumentToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a rejected instrument
+      summary: Informs Timeline of a rejected instrument
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    IbanToTimeline:
+      contentType: application/json
+      description: >-
+        Event produced to inform Timeline of a process ended successfully
       summary: Informs Timeline of a process ended successfully
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
+
   schemas:
     RewardTransactionDTO:
       allOf:
@@ -243,29 +451,36 @@ components:
       properties:
         status:
           type: string
-          description: Status of the reward transaction
+          description: Status of the transaction
           example: REWARDED
         rejectionReasons:
           type: array
-          description: List of rejection reasons
+          description: 	List of strings containing the codes of any rejects
           items:
             type: string
           example: ["Insufficient balance", "Invalid transaction"]
         initiativeRejectionReasons:
           type: object
-          description: Map of initiative rejection reasons
-          additionalProperties:
-            type: array
-            items:
+          description: Map [Initiative ID - List of codes of any discards for the individual initiative]
+          properties:
+            initiativeId:
               type: string
+            rejectionReasons:
+              type: array
+              additionalProperties:
+                type: string
           example:
             initiative_id_1: ["Insufficient funds", "Expired initiative"]
             initiative_id_2: ["Invalid user", "Expired initiative"]
         rewards:
           type: object
-          description: Map of rewards associated with the transaction
-          additionalProperties:
-            $ref: "#/components/schemas/RewardDTO"
+          description: Map [Initiative ID - Reward]
+          properties:
+            initiativeId:
+              type: string
+            reward:
+              type: object
+              $ref: "#/components/schemas/RewardDTO"
         elaborationDateTime:
           type: string
           format: date-time
@@ -285,11 +500,11 @@ components:
           example: ad300230-3f80-41f5-a5fc-70b1d47312d4_1712727698644
         externalId:
           type: string
-          description: External ID of the refund
+          description: Identifier to be used during exports, created because the original identifier contains the userId
           example: ext_12345
         rewardNotificationId:
           type: string
-          description: ID of the reward notification associated with the refund
+          description: Delivery Identifier
           example: notif_67890
         initiativeId:
           type: string
@@ -303,16 +518,16 @@ components:
           type: string
           description: Type of beneficiary
           enum:
-            - INDIVIDUAL
-            - ORGANIZATION
-          example: ORGANIZATION
+            - CITIZEN
+            - MERCHANT
+          example: CITIZEN
         organizationId:
           type: string
-          description: ID of the organization (if beneficiary type is organization)
+          description: ID of the organization
           example: org_12345
         iban:
           type: string
-          description: IBAN of the beneficiary
+          description: IBAN of the
           example: IT60X0542811101000000123456
         status:
           type: string
@@ -320,12 +535,12 @@ components:
           example: PENDING
         rewardStatus:
           type: string
-          description: Status of the associated reward
+          description: Status of the reward
           example: REWARDED
         refundType:
           type: string
           description: Type of refund
-          example: FULL
+          example: ORDINARY
         rewardCents:
           type: integer
           format: int64
@@ -339,35 +554,35 @@ components:
         startDate:
           type: string
           format: date
-          description: Start date of the refund period
+          description: Start date of the initiative
           example: "2024-04-01"
         endDate:
           type: string
           format: date
-          description: End date of the refund period
+          description: End date of the initiative
           example: "2024-04-30"
         feedbackDate:
           type: string
           format: date-time
-          description: Date of feedback
+          description: Event reception timestamp
           example: "2024-04-15T10:30:00"
         rejectionCode:
           type: string
-          description: Code of rejection (if applicable)
+          description: Code of rejection
           example: ERR_001
         rejectionReason:
           type: string
-          description: Reason for rejection (if applicable)
+          description: Reason for rejection
           example: Insufficient funds
         feedbackProgressive:
           type: integer
           format: int64
-          description: Progressive feedback number
+          description: Progressive number of feedback obtained on the same notification
           example: 1
         executionDate:
           type: string
           format: date
-          description: Date of execution
+          description: Date of execution of the transfer
           example: "2024-05-01"
         transferDate:
           type: string
@@ -381,7 +596,7 @@ components:
           example: "2024-05-03"
         cro:
           type: string
-          description: CRO (Operation Reference Code)
+          description: CRO of Payment Arrangement
           example: CRO1234567890
     TransactionDTO:
       type: object
@@ -397,7 +612,7 @@ components:
         acquirerCode:
           type: string
           description: Acquirer code
-          example: PAGOPA
+          example: acquirerCode
         trxDate:
           type: string
           format: date-time
@@ -406,14 +621,12 @@ components:
         brandLogo:
           type: string
           description: Logo of the brand
-          example: brand_logo.png
         brand:
           type: string
-          description: Brand of the transaction
-          example: Visa
+          description: brand
         maskedPan:
           type: string
-          description: Masked PAN (Primary Account Number)
+          description: Masked PAN
           example: 1234XXXXXXXX5678
         instrumentId:
           type: string
@@ -421,12 +634,12 @@ components:
           example: inst_12345
         operationType:
           type: string
-          description: Operation type code
+          description: Operation typef
           example: "00"
         circuitType:
           type: string
           description: Type of circuit
-          example: Debit
+          example: circuitType
         idTrxIssuer:
           type: string
           description: ID of the transaction issuer
@@ -458,11 +671,11 @@ components:
           example: b0d4c930-3f77-3959-8609-8c1e177966a0
         terminalId:
           type: string
-          description: Terminal ID
+          description: ID of the terminal
           example: term_12345
         bin:
           type: string
-          description: BIN (Bank Identification Number)
+          description: Bank Identification Number
           example: 123456
         senderCode:
           type: string
@@ -474,15 +687,13 @@ components:
           example: "82186210454"
         vat:
           type: string
-          description: VAT (Value Added Tax) code
+          description: vat code of the merchant
           example: "82186210454"
         posType:
           type: string
-          description: Type of point-of-sale
           example: Online
         par:
           type: string
-          description: PAR (Point of Access Region) code
           example: par_12345
         userId:
           type: string
@@ -495,8 +706,8 @@ components:
           example: 9000000
         channel:
           type: string
-          description: Channel from which the transaction takes place
-          example: BARCODE
+          description: Channel of origin
+          example: APP_IO
         businessName:
           type: string
           description: Name of the business associated with the transaction
@@ -504,15 +715,6 @@ components:
     RewardDTO:
       type: object
       properties:
-        organizationId:
-          type: string
-          description: Identifier of the organization associated with the initiative
-          example: c326cac6-a38c-416c-a3c3-f6a407b77950
-        providedRewardCents:
-          type: integer
-          format: int64
-          description: reward calculated by rule engine
-          example: 30000
         accruedRewardCents:
           type: integer
           format: int64
@@ -537,14 +739,6 @@ components:
         weeklyCapped:
           type: boolean
           description: If the premium has been reached due to weekly limit
-          example: false
-        refund:
-          type: boolean
-          description: If the user has been refunded
-          example: false
-        completeRefund:
-          type: boolean
-          description: If the user has been fully refunded
           example: false
         counters:
           $ref: "#/components/schemas/Counter"
@@ -573,7 +767,7 @@ components:
         initiativeBudgetCents:
           type: integer
           format: int64
-          description: Initiative budget
+          description: Initiative budget in cents
           example: 30000
         version:
           type: integer
@@ -606,7 +800,7 @@ components:
           example: bcf3651c-d2d3-4998-81a9-5f24302ab674
         familyId:
           type: string
-          description: ID of the family (if applicable)
+          description: ID of the family
         initiativeId:
           type: string
           description: ID of the initiative
@@ -624,9 +818,9 @@ components:
           description: ID of the organization
         status:
           type: string
-          description: Status of the evaluation
+          description: status
           notEmpty: true
-          example: APPROVED
+          example: status
         admissibilityCheckDate:
           type: string
           format: date-time
@@ -666,7 +860,7 @@ components:
           type: string
           description: Type of rejection reason
           notNull: true
-          example: Financial
+          example: type
         code:
           type: string
           description: Code of the rejection reason
@@ -674,12 +868,12 @@ components:
           example: ERR001
         authority:
           type: string
-          description: Authority responsible for the rejection
-          example: Bank
+          description: authority
+          example: authority
         authorityLabel:
           type: string
-          description: Label for the authority responsible
-          example: Bank System
+          description: Label for the authority
+          example: authorityLabel
         detail:
           type: string
           description: Additional detail about the rejection reason
@@ -689,11 +883,11 @@ components:
       properties:
         userId:
           type: string
-          description: ID dell'utente
+          description: ID of the user
           example: bcf3651c-d2d3-4998-81a9-5f24302ab674
         initiativeId:
           type: string
-          description: ID dell'iniziativa
+          description: ID of the initiative
           example: 661626073785876cb5aa7601
         iban:
           type: string
@@ -701,17 +895,17 @@ components:
           example: IT60X0542811101000000123456
         description:
           type: string
-          description: Descrizione
-          example: Descrizione dell'IBAN
-        channel:
-          type: string
-          description: Canale
-          example: WEB
+          description: description
+          example: description
         queueDate:
           type: string
+          description: Date of queuing
           format: date-time
-          description: Data di inserimento in coda
           example: "2024-04-10T09:15:30Z"
+        channel:
+          type: string
+          description: Channel of origin
+          example: APP_IO
     ErrorQueueHeader:
       type: object
       properties:
@@ -745,7 +939,7 @@ components:
           example: "InternalServerErrorException -> Something gone wrong while Confirm Payment notify"
         rootCauseClass:
           type: string
-          description: Cause of the error.
+          description: Cause class of the error.
           example: "java.lang.InternalServerErrorException"
         rootCauseMessage:
           type: string
@@ -765,11 +959,11 @@ components:
         operationType:
           type: string
           description: Type of operation
-          example: ACQUIRE
+          example: operationType
         rewardNotificationId:
           type: string
-          description: Reward notification ID
-          example: ad300230-3f80-41f5-a5fc-70b1d47312d4_1712727698644
+          description: Delivery Identifier
+          example: notif_67890
         eventId:
           type: string
           description: Event ID
@@ -777,11 +971,9 @@ components:
         brandLogo:
           type: string
           description: Brand logo
-          example: https://example.com/logo.png
         brand:
           type: string
           description: Brand
-          example: Visa
         maskedPan:
           type: string
           description: Masked PAN (Primary Account Number)
@@ -796,19 +988,19 @@ components:
           example: IT60X0542811101000000123456
         channel:
           type: string
-          description: Channel
-          example: WEB
+          description: Channel of origin
+          example: APP_IO
         instrumentType:
           type: string
           description: Instrument type
-          example: Credit Card
+          example: instrumentType
         circuitType:
           type: string
-          description: Circuit type
-          example: Visa
+          description: Type of circuit
+          example: circuitType
         cro:
           type: string
-          description: CRO (Operation Reference Code)
+          description: CRO of Payment Arrangement
           example: CRO1234567890
         operationDate:
           type: string
@@ -818,7 +1010,7 @@ components:
         rewardFeedbackProgressive:
           type: integer
           format: int64
-          description: Reward feedback progressive
+          description: Reward progressive number of feedback obtained on the same notification
           example: 12345
         amountCents:
           type: integer
@@ -845,21 +1037,21 @@ components:
           example: "198937549309371755007410777179935955803"
         status:
           type: string
-          description: Operation status
+          description: Status of transaction
           example: PENDING
         refundType:
           type: string
           description: Refund type
-          example: FULL
+          example: refundType
         startDate:
           type: string
           format: date
-          description: Start date
+          description: Initiative start date
           example: "2024-04-10"
         endDate:
           type: string
           format: date
-          description: End date
+          description: Initiative end date
           example: "2024-04-15"
         transferDate:
           type: string
@@ -869,11 +1061,11 @@ components:
         userNotificationDate:
           type: string
           format: date
-          description: User notification date
+          description: Date of user notification
           example: "2024-04-16"
         businessName:
           type: string
-          description: Business name
+          description: Name of the business associated with the transaction
           example: Merchant
     NotificationQueueDTO:
       type: object
@@ -896,16 +1088,15 @@ components:
           example: "IT60X0542811101000000123456"
         status:
           type: string
-          description: Status
-          example: "PENDING"
+          description: Status of refund
         rewardNotificationId:
           type: string
-          description: Reward notification ID
-          example: "ad300230-3f80-41f5-a5fc-70b1d47312d4_1712727698644"
+          description: Delivery Identifier
+          example: notif_67890
         refundCro:
           type: string
-          description: Refund CRO (Operation Reference Code)
-          example: "CRO1234567890"
+          description: CRO of refund
+          example: CRO1234567890
         refundDate:
           type: string
           format: date
@@ -957,8 +1148,8 @@ components:
           example: IT60X0542811101000000123456
         status:
           type: string
-          description: Status of the IBAN queue wallet
-          example: QUEUED
+          description: Iban status
+          example: OK
         queueDate:
           type: string
           description: Date of queuing
@@ -966,5 +1157,5 @@ components:
           example: "2024-04-10T09:15:30Z"
         channel:
           type: string
-          description: Channel used for queuing
-          example: WEB
+          description: Channel of origin
+          example: APP_IO
