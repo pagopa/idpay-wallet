@@ -270,44 +270,45 @@ components:
     ProcessTransaction:
       contentType: application/json
       description: >-
-        Event sent to the application when a transaction is rewarded
-      summary: Informs the application of a rewarded transaction and to update the user's wallet
+        This event is sent to the application when a transaction is rewarded. It includes necessary information to update the user's wallet.
+      summary: Notifies the application of a rewarded transaction to update the user's wallet
       payload:
         $ref: "#/components/schemas/RewardTransactionDTO"
     ProcessRefund:
       contentType: application/json
       description: >-
-        Event sent to the application when a transaction is refunded
-      summary: Informs the application of a refunded transaction and to update the user's wallet
+        This event is sent to the application when a transaction is refunded. It includes necessary information to update the user's wallet.
+      summary: Notifies the application of a refunded transaction to update the user's wallet
       payload:
         $ref: "#/components/schemas/RefundDTO"
     DeleteInitiative:
       contentType: application/json
       description: >-
-        Event consumed from application when a delete initiative command has published
-      summary: Delete documents of the initiative
+        This event is consumed by the application when a delete initiative command is published. It triggers the deletion of documents related to the initiative.
+      summary: Deletes documents associated with the initiative.
       payload:
         $ref: "#/components/schemas/QueueCommandOperationDTO"
     DeleteIban:
       contentType: application/json
       description: >-
-        Event consumed from application when a delete iban command has published
-      summary: Delete documents of the iban
+        This event is consumed by the application when a delete IBAN command is published. It triggers the deletion of documents related to the IBAN.
+      summary: Deletes documents associated with the IBAN.
       payload:
         $ref: "#/components/schemas/IbanQueueWalletDTO"
     CreateWallet:
       contentType: application/json
       description: >-
-        Event consumed from application when a create wallet command has published
-      summary: Create document of a wallet
+        This event is consumed by the application when a create wallet command is published. It triggers the creation of a wallet document.
+      summary: Creates a wallet document.
       payload:
         $ref: "#/components/schemas/EvaluationDTO"
+
 
     EnrollIbanError:
       contentType: application/json
       description: >-
-        Event sent when an error occurred while sending message to IBAN
-      summary:  Informs of an error occured while sending message to IBAN
+        This event is sent when an error occurs while sending a message to the IBAN service. It includes details about the error and the message that failed.
+      summary: Informs about an error that occurred while sending a message to the IBAN service.
       headers:
         $ref: "#/components/schemas/ErrorQueueHeader"
       payload:
@@ -315,8 +316,8 @@ components:
     RewardTransactionError:
       contentType: application/json
       description: >-
-        Event sent when an error occurred while update wallet from transaction
-      summary: Informs of an error occurred while update wallet from transaction
+        This event is sent when an exception occurs while updating the wallet from a transaction. It includes details about the exception and the transaction that caused it.
+      summary: Informs about an exception that occurred while updating the wallet from a transaction.
       headers:
         $ref: "#/components/schemas/ErrorQueueHeader"
       payload:
@@ -324,8 +325,8 @@ components:
     NotificationError:
       contentType: application/json
       description: >-
-        Event sent when an error occurred while sending message to Notification
-      summary: Informs of an error occured while sending message to Notification
+        This event is sent when an error occurs while sending a message to the Notification service. It includes details about the error and the message that failed.
+      summary: Informs about an error that occurred while sending a message to the Notification service.
       headers:
         $ref: "#/components/schemas/ErrorQueueHeader"
       payload:
@@ -333,113 +334,121 @@ components:
     TimelineError:
       contentType: application/json
       description: >-
-        Event sent when an error occurred while sending message to Timeline
-      summary: Informs of an error occured while sending message to Timeline
+        This event is sent when an error occurs while sending a message to the Timeline service. It includes details about the error and the message that failed.
+      summary: Informs about an error that occurred while sending a message to the Timeline service.
       headers:
         $ref: "#/components/schemas/ErrorQueueHeader"
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
 
+
     IbanQueue:
       contentType: application/json
       description: >-
-        Event produced to inform IBAN of the enrollment
-      summary:  Informs of IBAN of the enrollment
+        This event is produced to inform the IBAN service about an enrollment. 
+        It includes necessary details about the enrollment process.
+      summary: Informs the IBAN service about the enrollment.
       headers:
         $ref: "#/components/schemas/HeaderProducer"
       payload:
         $ref: "#/components/schemas/IbanQueueDTO"
 
+
+
     CheckIbanToNotification:
       contentType: application/json
       description: >-
-        Event produced to inform Notificaion of a check iban KO
-      summary: Informs Notificaion of a check iban KO
+        This event is produced to inform the Notification service when a IBAN is removed from a wallet
+      summary: Notifies the Notification service of a IBAN removal from a wallet.
       payload:
         $ref: "#/components/schemas/NotificationQueueDTO"
+
     RefundToNotification:
       contentType: application/json
       description: >-
-        Event produced to inform Notificaion of a refund
-      summary: Informs Notificaion of a refund
+        This event is produced to inform the Notification service about a refund.
+        It notifies about the refund process.
+      summary: Notifies the Notification service about a refund.
       payload:
         $ref: "#/components/schemas/NotificationQueueDTO"
+
     SuspensionReadmissionToNotification:
       contentType: application/json
       description: >-
-        Event produced to inform Notificaion  of a suspension or readmission
-      summary: Informs Notificaion  of a suspension or readmission
+        This event is produced to inform the Notification service about a suspension or readmission.
+      summary: Notifies the Notification service about a suspension or readmission event.
       payload:
         $ref: "#/components/schemas/NotificationQueueDTO"
+
 
     SuspendToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a wallet suspension
-      summary: Informs Timeline of a a wallet suspension
+        This event is produced to inform the Timeline service about the suspension of a wallet.
+      summary: Notifies the Timeline service of a wallet suspension.
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     ReadmitToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a wallet readmission
-      summary: Informs Timeline of a wallet readmission
+        This event is produced to inform the Timeline service about the readmission of a wallet
+      summary: Notifies the Timeline service of a wallet readmission.
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     OnboardingToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of an onboarding
-      summary: Informs Timeline of an onboarding
+        This event is produced to inform the Timeline service about an onboarding.
+      summary: Notifies the Timeline service of a wallet creation
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     UnsubscribeToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a wallet disabling
-      summary: Informs Timeline of a wallet disabling
+        This event is produced to inform the Timeline service about a wallet disabling.
+      summary: Notifies the Timeline service of a wallet disabling
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     DeleteInstrumentToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a pay instrument removal
-      summary: Informs Timeline of a pay instrument removal
+        This event is produced to inform the Timeline service about a pay instrument removal.
+      summary: Notifies the Timeline service of a pay instrument removal
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     AckToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of an acknowledgement
-      summary: Informs Timeline of an acknowledgement
+        This event is produced to inform the Timeline service about a acknowledgement.
+      summary: Notifies the Timeline service of an acknowledgement
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     RefundToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a refund
-      summary: Informs Timeline of a refund
+        This event is produced to inform the Timeline service about  a refund.
+      summary: Notifies the Timeline service of a refund
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     TransactionToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a transaction
-      summary: Informs Timeline of a transaction
+        This event is produced to inform the Timeline service about a refund.
+      summary: Notifies the Timeline service of a transaction
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     RejectedInstrumentToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a rejected instrument
-      summary: Informs Timeline of a rejected instrument
+        This event is produced to inform the Timeline service about a rejected instrument.
+      summary: Notifies the Timeline service of a rejected instrument
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
     IbanToTimeline:
       contentType: application/json
       description: >-
-        Event produced to inform Timeline of a process ended successfully
-      summary: Informs Timeline of a process ended successfully
+        This event is produced to inform the Timeline service about a iban check ended successfully
+      summary:  Notifies the Timeline service  a iban check process ended successfully
       payload:
         $ref: "#/components/schemas/QueueOperationDTO"
 
