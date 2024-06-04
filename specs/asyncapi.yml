@@ -283,7 +283,7 @@ components:
         This event is sent to the application when a transaction is refunded. It includes necessary information to update the user's wallet.
       summary: Notifies the application of a refunded transaction to update the user's wallet
       payload:
-        $ref: "#/components/schemas/RefundDTO"
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-reward-notification/main/specs/asyncapi.yaml#/components/schemas/RewardFeedbackDTO"
     DeleteInitiative:
       contentType: application/json
       description: >-
@@ -462,114 +462,6 @@ components:
         $ref: "#/components/schemas/QueueOperationDTO"
 
   schemas:
-    RefundDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID of the refund transaction
-          example: ad300230-3f80-41f5-a5fc-70b1d47312d4_1712727698644
-        externalId:
-          type: string
-          description: Identifier to be used during exports, created because the original identifier contains the userId
-          example: ext_12345
-        rewardNotificationId:
-          type: string
-          description: Delivery Identifier
-          example: notif_67890
-        initiativeId:
-          type: string
-          description: ID of the initiative associated with the refund
-          example: 661626073785876cb5aa7601
-        beneficiaryId:
-          type: string
-          description: ID of the beneficiary
-          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
-        beneficiaryType:
-          type: string
-          description: Type of beneficiary
-          enum:
-            - CITIZEN
-            - MERCHANT
-          example: CITIZEN
-        organizationId:
-          type: string
-          description: ID of the organization
-          example: org_12345
-        iban:
-          type: string
-          description: IBAN of the
-          example: IT60X0542811101000000123456
-        status:
-          type: string
-          description: Status of the refund
-          example: PENDING
-        rewardStatus:
-          type: string
-          description: Status of the reward
-          example: REWARDED
-        refundType:
-          type: string
-          description: Type of refund
-          example: ORDINARY
-        rewardCents:
-          type: integer
-          format: int64
-          description: Amount of the reward in cents
-          example: 30000
-        effectiveRewardCents:
-          type: integer
-          format: int64
-          description: Effective amount of the reward in cents
-          example: 27000
-        startDate:
-          type: string
-          format: date
-          description: Start date of the initiative
-          example: "2024-04-01"
-        endDate:
-          type: string
-          format: date
-          description: End date of the initiative
-          example: "2024-04-30"
-        feedbackDate:
-          type: string
-          format: date-time
-          description: Event reception timestamp
-          example: "2024-04-15T10:30:00"
-        rejectionCode:
-          type: string
-          description: Code of rejection
-          example: ERR_001
-        rejectionReason:
-          type: string
-          description: Reason for rejection
-          example: Insufficient funds
-        feedbackProgressive:
-          type: integer
-          format: int64
-          description: Progressive number of feedback obtained on the same notification
-          example: 1
-        executionDate:
-          type: string
-          format: date
-          description: Date of execution of the transfer
-          example: "2024-05-01"
-        transferDate:
-          type: string
-          format: date
-          description: Date of transfer
-          example: "2024-05-02"
-        userNotificationDate:
-          type: string
-          format: date
-          description: Date of user notification
-          example: "2024-05-03"
-        cro:
-          type: string
-          description: CRO of Payment Arrangement
-          example: CRO1234567890
-
     IbanQueueDTO:
       type: object
       properties:
