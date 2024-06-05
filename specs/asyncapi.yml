@@ -12,8 +12,8 @@ tags:
     description: " Processing new refund"
   - name: "deleteInitiative"
     description: "Delete initiative process"
-  - name: "deleteIban"
-    description: "Delete iban process"
+  - name: "handleIban"
+    description: "Handle iban operations"
   - name: "createWallet"
     description: "Create wallet process"
 
@@ -58,13 +58,13 @@ tags:
     description: "Send rejected instrument event to timeline"
 
 channels:
-  wallet-process-transacion:
+  wallet-process-transaction:
     subscribe:
       message:
         $ref: '#/components/messages/ProcessTransaction'
       bindings:
         kafka:
-          topic: idpay_transaction_topic
+          topic: idpay_transaction
       tags:
         - name: "processTransaction"
   wallet-process-refund:
@@ -85,22 +85,22 @@ channels:
           topic: idpay-commands
       tags:
         - name: "deleteInitiative"
-  wallet-detete-iban:
+  wallet-handle-iban:
     subscribe:
       message:
-        $ref: '#/components/messages/DeleteIban'
-    bindings:
-      kafka:
-        topic: Idpay_checkiban_outcome_topic
+        $ref: '#/components/messages/HandleIban'
+      bindings:
+        kafka:
+          topic: Idpay_checkiban_outcome_topic
       tags:
-        - name: "deleteIban"
+        - name: "handleIban"
   wallet-create:
     subscribe:
       message:
         $ref: '#/components/messages/CreateWallet'
-    bindings:
-      kafka:
-        topic: idpay_onboarding_outcome_topic
+      bindings:
+        kafka:
+          topic: idpay_onboarding_outcome_topic
       tags:
         - name: "createWallet"
   wallet-enroll-iban-error:
@@ -112,7 +112,7 @@ channels:
         topic: idpay_error_topic
       tags:
         - name: "enrollIbanError"
-  wallet-process-transacion-error:
+  wallet-process-transaction-error:
     publish:
       message:
         $ref: '#/components/messages/RewardTransactionError'
@@ -273,35 +273,41 @@ components:
         This event is sent to the application when a transaction is rewarded. It includes necessary information to update the user's wallet.
       summary: Notifies the application of a rewarded transaction to update the user's wallet
       payload:
-        $ref: "#/components/schemas/RewardTransactionDTO"
+        oneOf:
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-payment/main/specs/asyncapi.yml#/components/schemas/TransactionInProgress'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-calculator/main/specs/asyncapi.yaml#/components/schemas/TransactionProcessed'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-user-id-splitter/main/specs/asyncapi.yaml#/components/schemas/TransactionRejectedDTO'
     ProcessRefund:
       contentType: application/json
       description: >-
         This event is sent to the application when a transaction is refunded. It includes necessary information to update the user's wallet.
       summary: Notifies the application of a refunded transaction to update the user's wallet
       payload:
-        $ref: "#/components/schemas/RefundDTO"
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-reward-notification/main/specs/asyncapi.yaml#/components/schemas/RewardFeedbackDTO"
     DeleteInitiative:
       contentType: application/json
       description: >-
         This event is consumed by the application when a delete initiative command is published. It triggers the deletion of documents related to the initiative.
       summary: Deletes documents associated with the initiative.
       payload:
-        $ref: "#/components/schemas/QueueCommandOperationDTO"
-    DeleteIban:
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-portal-welfare-backend-initiative/main/specs/asyncapi.yml#/components/schemas/QueueCommandOperationDTO"
+    HandleIban:
       contentType: application/json
       description: >-
-        This event is consumed by the application when a delete IBAN command is published. It triggers the deletion of documents related to the IBAN.
-      summary: Deletes documents associated with the IBAN.
+        If the iban status is KO and the wallet iban matches then delete the IBAN from the wallet.
+      summary: Handle IBAN operation
       payload:
-        $ref: "#/components/schemas/IbanQueueWalletDTO"
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-iban/main/specs/asyncapi.yml#/components/schemas/IbanQueueWalletDTO"
     CreateWallet:
       contentType: application/json
       description: >-
         This event is consumed by the application when a create wallet command is published. It triggers the creation of a wallet document.
       summary: Creates a wallet document.
       payload:
-        $ref: "#/components/schemas/EvaluationDTO"
+        oneOf:
+          - $ref: "https://raw.githubusercontent.com/pagopa/idpay-admissibility-assessor/main/specs/asyncapi.yml#/components/schemas/EvaluationCompletedDTO"
+          - $ref: "https://raw.githubusercontent.com/pagopa/idpay-ranking/main/specs/asyncapi.yml#/components/schemas/EvaluationRankingDTO"
+          - $ref: "https://raw.githubusercontent.com/pagopa/idpay-onboarding-workflow/main/specs/asyncapi.yaml#/components/schemas/EvaluationDTO"
 
 
     EnrollIbanError:
@@ -321,7 +327,10 @@ components:
       headers:
         $ref: "#/components/schemas/ErrorQueueHeader"
       payload:
-        $ref: "#/components/schemas/RewardTransactionDTO"
+        oneOf:
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-payment/main/specs/asyncapi.yml#/components/schemas/TransactionInProgress'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-calculator/main/specs/asyncapi.yaml#/components/schemas/TransactionProcessed'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-user-id-splitter/main/specs/asyncapi.yaml#/components/schemas/TransactionRejectedDTO'
     NotificationError:
       contentType: application/json
       description: >-
@@ -453,440 +462,6 @@ components:
         $ref: "#/components/schemas/QueueOperationDTO"
 
   schemas:
-    RewardTransactionDTO:
-      allOf:
-        - $ref: "#/components/schemas/TransactionDTO"
-      type: object
-      properties:
-        status:
-          type: string
-          description: Status of the transaction
-          example: REWARDED
-        rejectionReasons:
-          type: array
-          description: 	List of strings containing the codes of any rejects
-          items:
-            type: string
-          example: ["Insufficient balance", "Invalid transaction"]
-        initiativeRejectionReasons:
-          type: object
-          description: Map [Initiative ID - List of codes of any discards for the individual initiative]
-          properties:
-            initiativeId:
-              type: string
-            rejectionReasons:
-              type: array
-              additionalProperties:
-                type: string
-          example:
-            initiative_id_1: ["Insufficient funds", "Expired initiative"]
-            initiative_id_2: ["Invalid user", "Expired initiative"]
-        rewards:
-          type: object
-          description: Map [Initiative ID - Reward]
-          properties:
-            initiativeId:
-              type: string
-            reward:
-              type: object
-              $ref: "#/components/schemas/RewardDTO"
-        elaborationDateTime:
-          type: string
-          format: date-time
-          description: Date and time of elaboration
-          example: "2024-04-10T07:41:46.773672195"
-        trxChargeDate:
-          type: string
-          format: date-time
-          description: Transaction charge date
-          example: "2024-04-10T07:41:39.22+02:00"
-    RefundDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID of the refund transaction
-          example: ad300230-3f80-41f5-a5fc-70b1d47312d4_1712727698644
-        externalId:
-          type: string
-          description: Identifier to be used during exports, created because the original identifier contains the userId
-          example: ext_12345
-        rewardNotificationId:
-          type: string
-          description: Delivery Identifier
-          example: notif_67890
-        initiativeId:
-          type: string
-          description: ID of the initiative associated with the refund
-          example: 661626073785876cb5aa7601
-        beneficiaryId:
-          type: string
-          description: ID of the beneficiary
-          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
-        beneficiaryType:
-          type: string
-          description: Type of beneficiary
-          enum:
-            - CITIZEN
-            - MERCHANT
-          example: CITIZEN
-        organizationId:
-          type: string
-          description: ID of the organization
-          example: org_12345
-        iban:
-          type: string
-          description: IBAN of the
-          example: IT60X0542811101000000123456
-        status:
-          type: string
-          description: Status of the refund
-          example: PENDING
-        rewardStatus:
-          type: string
-          description: Status of the reward
-          example: REWARDED
-        refundType:
-          type: string
-          description: Type of refund
-          example: ORDINARY
-        rewardCents:
-          type: integer
-          format: int64
-          description: Amount of the reward in cents
-          example: 30000
-        effectiveRewardCents:
-          type: integer
-          format: int64
-          description: Effective amount of the reward in cents
-          example: 27000
-        startDate:
-          type: string
-          format: date
-          description: Start date of the initiative
-          example: "2024-04-01"
-        endDate:
-          type: string
-          format: date
-          description: End date of the initiative
-          example: "2024-04-30"
-        feedbackDate:
-          type: string
-          format: date-time
-          description: Event reception timestamp
-          example: "2024-04-15T10:30:00"
-        rejectionCode:
-          type: string
-          description: Code of rejection
-          example: ERR_001
-        rejectionReason:
-          type: string
-          description: Reason for rejection
-          example: Insufficient funds
-        feedbackProgressive:
-          type: integer
-          format: int64
-          description: Progressive number of feedback obtained on the same notification
-          example: 1
-        executionDate:
-          type: string
-          format: date
-          description: Date of execution of the transfer
-          example: "2024-05-01"
-        transferDate:
-          type: string
-          format: date
-          description: Date of transfer
-          example: "2024-05-02"
-        userNotificationDate:
-          type: string
-          format: date
-          description: Date of user notification
-          example: "2024-05-03"
-        cro:
-          type: string
-          description: CRO of Payment Arrangement
-          example: CRO1234567890
-    TransactionDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID of the transaction
-          example: ad300230-3f80-41f5-a5fc-70b1d47312d4
-        idTrxAcquirer:
-          type: string
-          description: ID of the acquiring transaction
-          example: "198937549309371755007410777179935955803"
-        acquirerCode:
-          type: string
-          description: Acquirer code
-          example: acquirerCode
-        trxDate:
-          type: string
-          format: date-time
-          description: Transaction date
-          example: "2024-04-10T07:41:38.644+02:00"
-        brandLogo:
-          type: string
-          description: Logo of the brand
-        brand:
-          type: string
-          description: brand
-        maskedPan:
-          type: string
-          description: Masked PAN
-          example: 1234XXXXXXXX5678
-        instrumentId:
-          type: string
-          description: ID of the instrument used in the transaction
-          example: inst_12345
-        operationType:
-          type: string
-          description: Operation typef
-          example: "00"
-        circuitType:
-          type: string
-          description: Type of circuit
-          example: circuitType
-        idTrxIssuer:
-          type: string
-          description: ID of the transaction issuer
-          example: APIMREQUESTID
-        correlationId:
-          type: string
-          description: Correlation ID
-          example: ad300230-3f80-41f5-a5fc-70b1d47312d4_1712727698644
-        amountCents:
-          type: integer
-          format: int64
-          description: Amount of the transaction in cents
-          example: 900000000
-        amountCurrency:
-          type: string
-          description: Currency of the transaction amount
-          example: EUR
-        mcc:
-          type: string
-          description: Merchant category code
-          example: "1234"
-        acquirerId:
-          type: string
-          description: ID of the acquirer
-          example: PAGOPA
-        merchantId:
-          type: string
-          description: ID of the merchant
-          example: b0d4c930-3f77-3959-8609-8c1e177966a0
-        terminalId:
-          type: string
-          description: ID of the terminal
-          example: term_12345
-        bin:
-          type: string
-          description: Bank Identification Number
-          example: 123456
-        senderCode:
-          type: string
-          description: Sender code
-          example: user123
-        fiscalCode:
-          type: string
-          description: Fiscal code
-          example: "82186210454"
-        vat:
-          type: string
-          description: vat code of the merchant
-          example: "82186210454"
-        posType:
-          type: string
-          example: Online
-        par:
-          type: string
-          example: par_12345
-        userId:
-          type: string
-          description: ID of the user associated with the transaction
-          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
-        effectiveAmountCents:
-          type: integer
-          format: int64
-          description: Effective amount of the transaction in cents
-          example: 9000000
-        channel:
-          type: string
-          description: Channel of origin
-          example: APP_IO
-        businessName:
-          type: string
-          description: Name of the business associated with the transaction
-          example: Merchant
-    RewardDTO:
-      type: object
-      properties:
-        accruedRewardCents:
-          type: integer
-          format: int64
-          description: Reward updated after evaluation of any limits (budget, ecc...)
-          example: 30000
-        capped:
-          type: boolean
-          description: If the premium has been limited due to the beneficiary's budget
-          example: false
-        dailyCapped:
-          type: boolean
-          description: If the premium has been reached, it causes a daily limit
-          example: false
-        monthlyCapped:
-          type: boolean
-          description: If the premium has been reached, it causes a monthly limit
-          example: false
-        yearlyCapped:
-          type: boolean
-          description: If the premium has been reached, it causes an annual limit
-          example: false
-        weeklyCapped:
-          type: boolean
-          description: If the premium has been reached due to weekly limit
-          example: false
-        counters:
-          $ref: "#/components/schemas/Counter"
-    Counter:
-      type: object
-      properties:
-        trxNumber:
-          type: integer
-          format: int64
-          description: transaction number
-          example: 1
-        totalRewardCents:
-          type: integer
-          format: int64
-          description: Total reward in cents
-          example: 30000
-        totalAmountCents:
-          type: integer
-          format: int64
-          description: Total amount in cents
-          example: 900000
-        exhaustedBudget:
-          type: boolean
-          description: If the budget is exhausted
-          example: true
-        initiativeBudgetCents:
-          type: integer
-          format: int64
-          description: Initiative budget in cents
-          example: 30000
-        version:
-          type: integer
-          format: int64
-          description: Sequence operation number
-          example: 1
-    QueueCommandOperationDTO:
-      type: object
-      properties:
-        operationType:
-          type: string
-          description: Constant that define operation type
-          example: DELETE_INITIATIVE
-        entityId:
-          type: string
-          description: familyId if the initiative is family-based or userId otherwise
-          example: 66176f4e3785876cb5aa764d
-        operationTime:
-          type: string
-          format: date-time
-          description: operation time
-          example: "2024-04-11T07:23:08.874869466"
-    EvaluationDTO:
-      type: object
-      properties:
-        userId:
-          type: string
-          description: ID of the user
-          notEmpty: true
-          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
-        familyId:
-          type: string
-          description: ID of the family
-        initiativeId:
-          type: string
-          description: ID of the initiative
-          notEmpty: true
-          example: 661626073785876cb5aa7601
-        initiativeName:
-          type: string
-          description: Name of the initiative
-        initiativeEndDate:
-          type: string
-          format: date
-          description: End date of the initiative
-        organizationId:
-          type: string
-          description: ID of the organization
-        status:
-          type: string
-          description: status
-          notEmpty: true
-          example: status
-        admissibilityCheckDate:
-          type: string
-          format: date-time
-          description: Date of admissibility check
-          notNull: true
-        criteriaConsensusTimestamp:
-          type: string
-          format: date-time
-          description: Timestamp of criteria consensus
-        onboardingRejectionReasons:
-          type: array
-          description: List of onboarding rejection reasons
-          items:
-            $ref: "#/components/schemas/OnboardingRejectionReason"
-          notNull: true
-        beneficiaryBudgetCents:
-          type: integer
-          format: int64
-          description: Budget for beneficiaries in cents
-        initiativeRewardType:
-          type: string
-          description: Type of reward for the initiative
-        organizationName:
-          type: string
-          description: Name of the organization
-        isLogoPresent:
-          type: boolean
-          description: Indicates if the organization's logo is present
-        maxTrx:
-          type: integer
-          format: int64
-          description: Maximum number of transactions
-    OnboardingRejectionReason:
-      type: object
-      properties:
-        type:
-          type: string
-          description: Type of rejection reason
-          notNull: true
-          example: type
-        code:
-          type: string
-          description: Code of the rejection reason
-          notNull: true
-          example: ERR001
-        authority:
-          type: string
-          description: authority
-          example: authority
-        authorityLabel:
-          type: string
-          description: Label for the authority
-          example: authorityLabel
-        detail:
-          type: string
-          description: Additional detail about the rejection reason
-          example: Insufficient funds in the account
     IbanQueueDTO:
       type: object
       properties:
@@ -1140,31 +715,3 @@ components:
           type: string
           description: "Key of the Kafka message"
           example: "661626073785876cb5aa7601"
-    IbanQueueWalletDTO:
-      type: object
-      properties:
-        userId:
-          type: string
-          description: ID of the user
-          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
-        initiativeId:
-          type: string
-          description: ID of the initiative
-          example: 661626073785876cb5aa7601
-        iban:
-          type: string
-          description: IBAN (International Bank Account Number)
-          example: IT60X0542811101000000123456
-        status:
-          type: string
-          description: Iban status
-          example: OK
-        queueDate:
-          type: string
-          description: Date of queuing
-          format: date-time
-          example: "2024-04-10T09:15:30Z"
-        channel:
-          type: string
-          description: Channel of origin
-          example: APP_IO
