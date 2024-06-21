@@ -27,8 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -46,7 +44,6 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_UNSUBSCRIBE = "UNSUBSCRIBE";
   public static final String SERVICE_CHECK_IBAN_OUTCOME = "CHECK_IBAN_OUTCOME";
   public static final String SERVICE_ENROLL_INSTRUMENT_ISSUER = "ENROLL_INSTRUMENT_ISSUER";
-  private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
   public static final String SERVICE_PROCESS_REFUND = "PROCESS_REFUND";
   public static final String SERVICE_PROCESS_TRANSACTION = "PROCESS_TRANSACTION";
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
@@ -406,7 +403,7 @@ public class WalletServiceImpl implements WalletService {
             walletRepository.findByInitiativeIdAndFamilyId(
                 evaluationDTO.getInitiativeId(), evaluationDTO.getFamilyId());
         if (!familyWallets.isEmpty()) {
-          wallet.setAmount(familyWallets.get(0).getAmount());
+          wallet.setAmountCents(familyWallets.get(0).getAmountCents());
         }
       }
 
@@ -522,7 +519,7 @@ public class WalletServiceImpl implements WalletService {
                     initiativeId,
                     rewardTransactionDTO,
                     reward.getCounters(),
-                    reward.getAccruedReward());
+                    reward.getAccruedRewardCents());
               } catch (WalletUpdateException e) {
                 log.error(
                     "[PROCESS_TRANSACTION] An error has occurred. Sending message to Error queue",
@@ -644,9 +641,7 @@ public class WalletServiceImpl implements WalletService {
       return;
     }
 
-    BigDecimal refunded =
-        BigDecimal.valueOf(refundDTO.getRewardCents())
-            .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN);
+    Long refunded = refundDTO.getRewardCents();
 
     history.put(
         refundDTO.getRewardNotificationId(), new RefundHistory(refundDTO.getFeedbackProgressive()));
@@ -654,7 +649,7 @@ public class WalletServiceImpl implements WalletService {
     walletUpdatesRepository.processRefund(
         refundDTO.getInitiativeId(),
         refundDTO.getBeneficiaryId(),
-        wallet.getRefunded().add(refunded),
+        wallet.getRefundedCents() - refunded,
         history);
 
     QueueOperationDTO queueOperationDTO = timelineMapper.refundToTimeline(refundDTO);
@@ -796,7 +791,7 @@ public class WalletServiceImpl implements WalletService {
       String initiativeId,
       RewardTransactionDTO rewardTransactionDTO,
       Counters counters,
-      BigDecimal accruedReward) {
+      Long accruedRewardCents) {
 
     if (!(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
@@ -818,7 +813,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     log.info("[UPDATE_WALLET_FROM_TRANSACTION] Sending transaction to Timeline");
-    sendToTimeline(timelineMapper.transactionToTimeline(initiativeId, rewardTransactionDTO, accruedReward));
+    sendToTimeline(timelineMapper.transactionToTimeline(initiativeId, rewardTransactionDTO, accruedRewardCents));
   }
 
   private void rewardFamilyUserTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, Wallet userWallet) {
@@ -826,17 +821,14 @@ public class WalletServiceImpl implements WalletService {
       log.info(
               "[UPDATE_WALLET_FROM_TRANSACTION][FAMILY_WALLET] Family {} total reward: {}",
               userWallet.getFamilyId(),
-              counters.getTotalReward());
+              counters.getTotalRewardCents());
 
       boolean updateResult =
               walletUpdatesRepository.rewardFamilyTransaction(
                       initiativeId,
                       userWallet.getFamilyId(),
                       rewardTransactionDTO.getElaborationDateTime(),
-                      counters
-                              .getInitiativeBudget()
-                              .subtract(counters.getTotalReward())
-                              .setScale(2, RoundingMode.HALF_DOWN),
+                      counters.getInitiativeBudgetCents() - counters.getTotalRewardCents(),
                       counters.getVersion());
 
       if (!updateResult) {
@@ -852,12 +844,11 @@ public class WalletServiceImpl implements WalletService {
               rewardTransactionDTO.getUserId(),
               rewardTransactionDTO.getElaborationDateTime(),
               userWallet.getCounterHistory(),
-              userWallet.getAccrued()
-                      .add(rewardTransactionDTO
+              userWallet.getAccruedCents() +
+                      rewardTransactionDTO
                       .getRewards()
                       .get(initiativeId)
-                      .getAccruedReward()
-                      .setScale(2, RoundingMode.HALF_DOWN))
+                      .getAccruedRewardCents()
               );
     }
   }
@@ -867,11 +858,8 @@ public class WalletServiceImpl implements WalletService {
       walletUpdatesRepository.rewardTransaction(initiativeId,
               rewardTransactionDTO.getUserId(),
               rewardTransactionDTO.getElaborationDateTime(),
-              counters
-                      .getInitiativeBudget()
-                      .subtract(counters.getTotalReward())
-                      .setScale(2, RoundingMode.HALF_DOWN),
-              counters.getTotalReward(),
+              counters.getInitiativeBudgetCents()- counters.getTotalRewardCents(),
+              counters.getTotalRewardCents(),
               counters.getVersion());
     }
   }

@@ -26,7 +26,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -85,9 +84,9 @@ class WalletServiceNoIbanFormalControlTest {
     private static final String ID_WALLET = "TEST_USER_ID_TEST_INITIATIVE_ID";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
-    private static final BigDecimal TEST_AMOUNT = BigDecimal.valueOf(2.00);
-    private static final BigDecimal TEST_ACCRUED = BigDecimal.valueOf(40.00);
-    private static final BigDecimal TEST_REFUNDED = BigDecimal.valueOf(0.00);
+    private static final Long TEST_AMOUNT = 200L;
+    private static final Long TEST_ACCRUED = 4000L;
+    private static final Long TEST_REFUNDED = 0L;
 
     private static final String INITIATIE_REWARD_TYPE_REFUND = "REFUND";
 
@@ -99,9 +98,9 @@ class WalletServiceNoIbanFormalControlTest {
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .endDate(TEST_DATE_ONLY_DATE)
-                    .amount(TEST_AMOUNT)
-                    .accrued(TEST_ACCRUED)
-                    .refunded(TEST_REFUNDED)
+                    .amountCents(TEST_AMOUNT)
+                    .accruedCents(TEST_ACCRUED)
+                    .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                     .build();

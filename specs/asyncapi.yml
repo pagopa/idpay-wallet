@@ -1,0 +1,717 @@
+asyncapi: 2.0.0
+info:
+  title: Wallet Service
+  version: 1.0.0
+  description: >-
+    Its purpose is to manage the user initiatives budget info
+tags:
+
+  - name: "processTransaction"
+    description: " Processing new transaction"
+  - name: "processRefund"
+    description: " Processing new refund"
+  - name: "deleteInitiative"
+    description: "Delete initiative process"
+  - name: "handleIban"
+    description: "Handle iban operations"
+  - name: "createWallet"
+    description: "Create wallet process"
+
+  - name: "enrollIbanError"
+    description: "Enroll iban error"
+  - name: "rewardTransactionError"
+    description: "Processing new transaction error"
+  - name: "notificationError"
+    description: "Send event to notification error"
+  - name: "timelineError"
+    description: "Send event to timeline error"
+
+  - name: "ibanEnrollment"
+    description: "Send iban enrollment event to idpay-iban"
+
+  - name: "checkIbanToNotification"
+    description: "Send check iban ko event to notification "
+  - name: "refundToNotification"
+    description: "Send refund event to notification "
+  - name: "suspensionReadmissionToNotification"
+    description: "Send suspension readmission event to notification "
+
+  - name: "suspendToTimeline"
+    description: "Send suspended wallet event to timeline"
+  - name: "readmitToTimeline"
+    description: "Send readmitted event to timeline"
+  - name: "onboardingToTimeline"
+    description: "Send onboarded event to timeline"
+  - name: "unsubscribeToTimeline"
+    description: "Send unsubscribed event to timeline"
+  - name: "deleteInstrumentToTimeline"
+    description: "Send deleted instrument event to timeline"
+  - name: "ackToTimeline"
+    description: "Send acknowldged event to timeline"
+  - name: "refundToTimeline"
+    description: "Send refunded event to timeline"
+  - name: "transactionToTimeline"
+    description: "Send transaction event to timeline"
+  - name: "ibanToTimeline"
+    description: "Send iban outcome event to timeline"
+  - name: "rejectedInstrumentToTimeline"
+    description: "Send rejected instrument event to timeline"
+
+channels:
+  wallet-process-transaction:
+    subscribe:
+      message:
+        $ref: '#/components/messages/ProcessTransaction'
+      bindings:
+        kafka:
+          topic: idpay_transaction
+      tags:
+        - name: "processTransaction"
+  wallet-process-refund:
+    subscribe:
+      message:
+        $ref: '#/components/messages/ProcessRefund'
+      bindings:
+        kafka:
+          topic: idpay_reward_notification_response_topic
+      tags:
+        - name: "processRefund"
+  wallet-delete-initiative:
+    subscribe:
+      message:
+        $ref: '#/components/messages/DeleteInitiative'
+      bindings:
+        kafka:
+          topic: idpay-commands
+      tags:
+        - name: "deleteInitiative"
+  wallet-handle-iban:
+    subscribe:
+      message:
+        $ref: '#/components/messages/HandleIban'
+      bindings:
+        kafka:
+          topic: Idpay_checkiban_outcome_topic
+      tags:
+        - name: "handleIban"
+  wallet-create:
+    subscribe:
+      message:
+        $ref: '#/components/messages/CreateWallet'
+      bindings:
+        kafka:
+          topic: idpay_onboarding_outcome_topic
+      tags:
+        - name: "createWallet"
+  wallet-enroll-iban-error:
+    publish:
+      message:
+        $ref: '#/components/messages/EnrollIbanError'
+    bindings:
+      kafka:
+        topic: idpay_error_topic
+      tags:
+        - name: "enrollIbanError"
+  wallet-process-transaction-error:
+    publish:
+      message:
+        $ref: '#/components/messages/RewardTransactionError'
+    bindings:
+      kafka:
+        topic: idpay_error_topic
+      tags:
+        - name: "rewardTransactionError"
+  wallet-send-to-notification-error:
+    publish:
+      message:
+        $ref: '#/components/messages/NotificationError'
+    bindings:
+      kafka:
+        topic: idpay_error_topic
+      tags:
+        - name: "notificationError"
+  wallet-send-to-timeline-error:
+    publish:
+      message:
+        $ref: '#/components/messages/TimelineError'
+    bindings:
+      kafka:
+        topic: idpay_error_topic
+      tags:
+        - name: "timelineError"
+  wallet-send-enrollment-iban-to-iban:
+    publish:
+      message:
+        $ref: '#/components/messages/IbanQueue'
+    bindings:
+      kafka:
+        topic: idpay_checkiban_evaluation_topic
+      tags:
+        - name: "ibanEnrollment"
+  wallet-send-check-iban-to-notification:
+    publish:
+      message:
+        $ref: '#/components/messages/CheckIbanToNotification'
+    bindings:
+      kafka:
+        topic: idpay_notification_request_topic
+      tags:
+        - name: "checkIbanToNotification"
+  wallet-send-refund-to-notification:
+    publish:
+      message:
+        $ref: '#/components/messages/RefundToNotification'
+    bindings:
+      kafka:
+        topic: idpay_notification_request_topic
+      tags:
+        - name: "refundToNotification"
+  wallet-send-suspension-readmission-to-notification:
+    publish:
+      message:
+        $ref: '#/components/messages/SuspensionReadmissionToNotification'
+    bindings:
+      kafka:
+        topic: idpay_notification_request_topic
+      tags:
+        - name: "suspensionReadmissionToNotification"
+  wallet-suspend-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/SuspendToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "suspendToTimeline"
+  wallet-readmit-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/ReadmitToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "readmitToTimeline"
+  wallet-onboarding-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/OnboardingToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "onboardingToTimeline"
+  wallet-unsubscribe-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/UnsubscribeToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "unsubscribeToTimeline"
+  wallet-delete-instrument-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/DeleteInstrumentToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "deleteInstrumentToTimeline"
+  wallet-ack-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/AckToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "ackToTimeline"
+  wallet-refund-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/RefundToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "refundToTimeline"
+  wallet-transaction-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/TransactionToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "transactionToTimeline"
+  wallet-rejected-instrument-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/RejectedInstrumentToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "rejectedInstrumentToTimeline"
+  wallet-iban-to-timeline:
+    publish:
+      message:
+        $ref: '#/components/messages/IbanToTimeline'
+    bindings:
+      kafka:
+        topic: idpay_timeline_topic
+      tags:
+        - name: "ibanToTimeline"
+components:
+  messages:
+    ProcessTransaction:
+      contentType: application/json
+      description: >-
+        This event is sent to the application when a transaction is rewarded. It includes necessary information to update the user's wallet.
+      summary: Notifies the application of a rewarded transaction to update the user's wallet
+      payload:
+        oneOf:
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-payment/main/specs/asyncapi.yml#/components/schemas/TransactionInProgress'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-calculator/main/specs/asyncapi.yaml#/components/schemas/TransactionProcessed'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-user-id-splitter/main/specs/asyncapi.yaml#/components/schemas/TransactionRejectedDTO'
+    ProcessRefund:
+      contentType: application/json
+      description: >-
+        This event is sent to the application when a transaction is refunded. It includes necessary information to update the user's wallet.
+      summary: Notifies the application of a refunded transaction to update the user's wallet
+      payload:
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-reward-notification/main/specs/asyncapi.yaml#/components/schemas/RewardFeedbackDTO"
+    DeleteInitiative:
+      contentType: application/json
+      description: >-
+        This event is consumed by the application when a delete initiative command is published. It triggers the deletion of documents related to the initiative.
+      summary: Deletes documents associated with the initiative.
+      payload:
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-portal-welfare-backend-initiative/main/specs/asyncapi.yml#/components/schemas/QueueCommandOperationDTO"
+    HandleIban:
+      contentType: application/json
+      description: >-
+        If the iban status is KO and the wallet iban matches then delete the IBAN from the wallet.
+      summary: Handle IBAN operation
+      payload:
+        $ref: "https://raw.githubusercontent.com/pagopa/idpay-iban/main/specs/asyncapi.yml#/components/schemas/IbanQueueWalletDTO"
+    CreateWallet:
+      contentType: application/json
+      description: >-
+        This event is consumed by the application when a create wallet command is published. It triggers the creation of a wallet document.
+      summary: Creates a wallet document.
+      payload:
+        oneOf:
+          - $ref: "https://raw.githubusercontent.com/pagopa/idpay-admissibility-assessor/main/specs/asyncapi.yml#/components/schemas/EvaluationCompletedDTO"
+          - $ref: "https://raw.githubusercontent.com/pagopa/idpay-ranking/main/specs/asyncapi.yml#/components/schemas/EvaluationRankingDTO"
+          - $ref: "https://raw.githubusercontent.com/pagopa/idpay-onboarding-workflow/main/specs/asyncapi.yaml#/components/schemas/EvaluationDTO"
+
+
+    EnrollIbanError:
+      contentType: application/json
+      description: >-
+        This event is sent when an error occurs while sending a message to the IBAN service. It includes details about the error and the message that failed.
+      summary: Informs about an error that occurred while sending a message to the IBAN service.
+      headers:
+        $ref: "#/components/schemas/ErrorQueueHeader"
+      payload:
+        $ref: "#/components/schemas/IbanQueueDTO"
+    RewardTransactionError:
+      contentType: application/json
+      description: >-
+        This event is sent when an exception occurs while updating the wallet from a transaction. It includes details about the exception and the transaction that caused it.
+      summary: Informs about an exception that occurred while updating the wallet from a transaction.
+      headers:
+        $ref: "#/components/schemas/ErrorQueueHeader"
+      payload:
+        oneOf:
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-payment/main/specs/asyncapi.yml#/components/schemas/TransactionInProgress'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-calculator/main/specs/asyncapi.yaml#/components/schemas/TransactionProcessed'
+          - $ref: 'https://raw.githubusercontent.com/pagopa/idpay-reward-user-id-splitter/main/specs/asyncapi.yaml#/components/schemas/TransactionRejectedDTO'
+    NotificationError:
+      contentType: application/json
+      description: >-
+        This event is sent when an error occurs while sending a message to the Notification service. It includes details about the error and the message that failed.
+      summary: Informs about an error that occurred while sending a message to the Notification service.
+      headers:
+        $ref: "#/components/schemas/ErrorQueueHeader"
+      payload:
+        $ref: "#/components/schemas/NotificationQueueDTO"
+    TimelineError:
+      contentType: application/json
+      description: >-
+        This event is sent when an error occurs while sending a message to the Timeline service. It includes details about the error and the message that failed.
+      summary: Informs about an error that occurred while sending a message to the Timeline service.
+      headers:
+        $ref: "#/components/schemas/ErrorQueueHeader"
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+
+
+    IbanQueue:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the IBAN service about an enrollment. 
+        It includes necessary details about the enrollment process.
+      summary: Informs the IBAN service about the enrollment.
+      headers:
+        $ref: "#/components/schemas/HeaderProducer"
+      payload:
+        $ref: "#/components/schemas/IbanQueueDTO"
+
+
+
+    CheckIbanToNotification:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Notification service when a IBAN is removed from a wallet
+      summary: Notifies the Notification service of a IBAN removal from a wallet.
+      payload:
+        $ref: "#/components/schemas/NotificationQueueDTO"
+
+    RefundToNotification:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Notification service about a refund.
+        It notifies about the refund process.
+      summary: Notifies the Notification service about a refund.
+      payload:
+        $ref: "#/components/schemas/NotificationQueueDTO"
+
+    SuspensionReadmissionToNotification:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Notification service about a suspension or readmission.
+      summary: Notifies the Notification service about a suspension or readmission event.
+      payload:
+        $ref: "#/components/schemas/NotificationQueueDTO"
+
+
+    SuspendToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about the suspension of a wallet.
+      summary: Notifies the Timeline service of a wallet suspension.
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    ReadmitToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about the readmission of a wallet
+      summary: Notifies the Timeline service of a wallet readmission.
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    OnboardingToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about an onboarding.
+      summary: Notifies the Timeline service of a wallet creation
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    UnsubscribeToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about a wallet disabling.
+      summary: Notifies the Timeline service of a wallet disabling
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    DeleteInstrumentToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about a pay instrument removal.
+      summary: Notifies the Timeline service of a pay instrument removal
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    AckToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about a acknowledgement.
+      summary: Notifies the Timeline service of an acknowledgement
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    RefundToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about  a refund.
+      summary: Notifies the Timeline service of a refund
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    TransactionToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about a refund.
+      summary: Notifies the Timeline service of a transaction
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    RejectedInstrumentToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about a rejected instrument.
+      summary: Notifies the Timeline service of a rejected instrument
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+    IbanToTimeline:
+      contentType: application/json
+      description: >-
+        This event is produced to inform the Timeline service about a iban check ended successfully
+      summary:  Notifies the Timeline service  a iban check process ended successfully
+      payload:
+        $ref: "#/components/schemas/QueueOperationDTO"
+
+  schemas:
+    IbanQueueDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ID of the user
+          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
+        initiativeId:
+          type: string
+          description: ID of the initiative
+          example: 661626073785876cb5aa7601
+        iban:
+          type: string
+          description: IBAN (International Bank Account Number)
+          example: IT60X0542811101000000123456
+        description:
+          type: string
+          description: description
+          example: description
+        queueDate:
+          type: string
+          description: Date of queuing
+          format: date-time
+          example: "2024-04-10T09:15:30Z"
+        channel:
+          type: string
+          description: Channel of origin
+          example: APP_IO
+    ErrorQueueHeader:
+      type: object
+      properties:
+        group:
+          type: string
+          description: The Kafka group to which the error message belongs.
+          example: "group"
+        srcType:
+          type: string
+          description: The type of the source of the error message.
+          example: "kafka"
+        srcServer:
+          type: string
+          description: The source server of the error message.
+          example: cstar-u-idpay-evh-ns-00.servicebus.windows.net:9093
+        srcTopic:
+          type: string
+          description: The Kafka topic of the source of the error message.
+          example: idpay-transaction
+        description:
+          type: string
+          description: Description of the error.
+          example: "[CONFIRM_PAYMENT] An error occurred while publishing the 
+                    confirmation Payment result"
+        retryable:
+          type: boolean
+          description: Indicates whether the error is retryable or not.
+        stacktrace:
+          type: string
+          description: The stack trace of the error.
+          example: "InternalServerErrorException -> Something gone wrong while Confirm Payment notify"
+        rootCauseClass:
+          type: string
+          description: Cause class of the error.
+          example: "java.lang.InternalServerErrorException"
+        rootCauseMessage:
+          type: string
+          description: Message of the error.
+          example: "Something gone wrong while Confirm Payment notify"
+    QueueOperationDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: User ID
+          example: bcf3651c-d2d3-4998-81a9-5f24302ab674
+        initiativeId:
+          type: string
+          description: Initiative ID
+          example: 661626073785876cb5aa7601
+        operationType:
+          type: string
+          description: Type of operation
+          example: operationType
+        rewardNotificationId:
+          type: string
+          description: Delivery Identifier
+          example: notif_67890
+        eventId:
+          type: string
+          description: Event ID
+          example: EVT1234567890
+        brandLogo:
+          type: string
+          description: Brand logo
+        brand:
+          type: string
+          description: Brand
+        maskedPan:
+          type: string
+          description: Masked PAN (Primary Account Number)
+          example: 1234********5678
+        instrumentId:
+          type: string
+          description: Instrument ID
+          example: INSTR1234567890
+        iban:
+          type: string
+          description: IBAN (International Bank Account Number)
+          example: IT60X0542811101000000123456
+        channel:
+          type: string
+          description: Channel of origin
+          example: APP_IO
+        instrumentType:
+          type: string
+          description: Instrument type
+          example: instrumentType
+        circuitType:
+          type: string
+          description: Type of circuit
+          example: circuitType
+        cro:
+          type: string
+          description: CRO of Payment Arrangement
+          example: CRO1234567890
+        operationDate:
+          type: string
+          format: date-time
+          description: Operation date
+          example: "2024-04-10T07:41:38.644+02:00"
+        rewardFeedbackProgressive:
+          type: integer
+          format: int64
+          description: Reward progressive number of feedback obtained on the same notification
+          example: 12345
+        amountCents:
+          type: integer
+          format: int64
+          description: Amount in cents
+          example: 9000000
+        effectiveAmountCents:
+          type: integer
+          format: int64
+          description: Effective amount in cents
+          example: 9000000
+        accruedCents:
+          type: integer
+          format: int64
+          description: Accrued amount in cents
+          example: 0
+        idTrxIssuer:
+          type: string
+          description: Transaction issuer ID
+          example: APIMREQUESTID
+        idTrxAcquirer:
+          type: string
+          description: Transaction acquirer ID
+          example: "198937549309371755007410777179935955803"
+        status:
+          type: string
+          description: Status of transaction
+          example: PENDING
+        refundType:
+          type: string
+          description: Refund type
+          example: refundType
+        startDate:
+          type: string
+          format: date
+          description: Initiative start date
+          example: "2024-04-10"
+        endDate:
+          type: string
+          format: date
+          description: Initiative end date
+          example: "2024-04-15"
+        transferDate:
+          type: string
+          format: date
+          description: Transfer date
+          example: "2024-04-15"
+        userNotificationDate:
+          type: string
+          format: date
+          description: Date of user notification
+          example: "2024-04-16"
+        businessName:
+          type: string
+          description: Name of the business associated with the transaction
+          example: Merchant
+    NotificationQueueDTO:
+      type: object
+      properties:
+        operationType:
+          type: string
+          description: Type of operation
+          example: "REFUND"
+        userId:
+          type: string
+          description: User ID
+          example: "bcf3651c-d2d3-4998-81a9-5f24302ab674"
+        initiativeId:
+          type: string
+          description: Initiative ID
+          example: "661626073785876cb5aa7601"
+        iban:
+          type: string
+          description: IBAN (International Bank Account Number)
+          example: "IT60X0542811101000000123456"
+        status:
+          type: string
+          description: Status of refund
+        rewardNotificationId:
+          type: string
+          description: Delivery Identifier
+          example: notif_67890
+        refundCro:
+          type: string
+          description: CRO of refund
+          example: CRO1234567890
+        refundDate:
+          type: string
+          format: date
+          description: Refund date
+          example: "2024-04-15"
+        refundReward:
+          type: integer
+          format: int64
+          description: Refund reward
+          example: 30000
+        rejectionCode:
+          type: string
+          description: Rejection code
+          example: "ERR001"
+        rejectionReason:
+          type: string
+          description: Rejection reason
+          example: "Insufficient funds"
+        refundFeedbackProgressive:
+          type: integer
+          format: int64
+          description: Refund feedback progressive
+          example: 12345
+        initiativeName:
+          type: string
+          description: Initiative name
+          example: "Initiative name"
+    HeaderProducer:
+      type: object
+      properties:
+        kafka_messageKey:
+          type: string
+          description: "Key of the Kafka message"
+          example: "661626073785876cb5aa7601"

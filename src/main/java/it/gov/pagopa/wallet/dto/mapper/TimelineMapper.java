@@ -1,27 +1,19 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.QueueOperationDTO;
-import it.gov.pagopa.wallet.dto.RefundDTO;
-import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
-
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.ChannelTransaction;
 import it.gov.pagopa.wallet.enums.WalletStatus;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-
-import java.time.ZoneId;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Service
 public class TimelineMapper {
-    private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100L);
 
     public QueueOperationDTO transactionToTimeline(
-            String initiativeId, RewardTransactionDTO rewardTransaction, BigDecimal accruedReward) {
+            String initiativeId, RewardTransactionDTO rewardTransaction, Long accruedRewardCents) {
     return QueueOperationDTO.builder()
         .eventId(rewardTransaction.getId())
         .initiativeId(initiativeId)
@@ -34,9 +26,9 @@ public class TimelineMapper {
         .brandLogo(rewardTransaction.getBrandLogo())
         .brand(rewardTransaction.getBrand())
         .circuitType(rewardTransaction.getCircuitType())
-        .amount(rewardTransaction.getAmount())
-        .effectiveAmount(rewardTransaction.getEffectiveAmount())
-        .accrued(accruedReward)
+        .amountCents(rewardTransaction.getAmountCents())
+        .effectiveAmountCents(rewardTransaction.getEffectiveAmountCents())
+        .accruedCents(accruedRewardCents)
         .idTrxIssuer(rewardTransaction.getIdTrxIssuer())
         .idTrxAcquirer(rewardTransaction.getIdTrxAcquirer())
         .channel(rewardTransaction.getChannel())
@@ -140,10 +132,8 @@ public class TimelineMapper {
                 .refundType(dto.getRefundType())
                 .operationType(operationType)
                 .operationDate(dto.getFeedbackDate())
-                .amount(BigDecimal.valueOf(dto.getRewardCents())
-                        .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN))
-                .effectiveAmount(BigDecimal.valueOf(dto.getEffectiveRewardCents())
-                        .divide(ONE_HUNDRED, 2, RoundingMode.HALF_DOWN))
+                .amountCents(dto.getRewardCents())
+                .effectiveAmountCents(dto.getEffectiveRewardCents())
                 .rewardNotificationId(dto.getRewardNotificationId())
                 .cro(dto.getCro())
                 .startDate(dto.getStartDate())
