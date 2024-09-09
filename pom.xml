@@ -133,6 +133,40 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongodb-driver-sync</artifactId>
+        <version>4.9.1</version>
+      </dependency>
+
+      <!-- MongoDB BSON -->
+      <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>bson</artifactId>
+        <version>4.9.1</version>
+      </dependency>
+
+      <!-- MongoDB Driver Core -->
+      <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongodb-driver-core</artifactId>
+        <version>4.9.1</version>
+      </dependency>
+
+      <!-- MongoDB BSON Record Codec -->
+      <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>bson-record-codec</artifactId>
+        <version>4.9.1</version>
+        <scope>runtime</scope>
+      </dependency>
+
+      <!-- Spring Data MongoDB -->
+      <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-mongodb</artifactId>
+        <version>4.1.8</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
