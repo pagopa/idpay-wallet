@@ -1,3 +1,0 @@
-ignore:
-  - vulnerability: CVE-2024-34750 # solved in tomcat-embed-core 10.1.25
-  - vulnerability: GHSA-j4r7-p9fp-w3f3  # solved in spring-cloud-function-context 4.1.2
