@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.8</version>
+    <version>3.2.3</version>
   </parent>
 
   <groupId>it.gov.pagopa.wallet</groupId>
@@ -49,6 +49,7 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-openfeign</artifactId>
+      <version>4.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.iban4j</groupId>
@@ -117,6 +118,11 @@
       <version>4.11.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.9.22</version>
+    </dependency>
   </dependencies>
 
   <dependencyManagement>
@@ -124,19 +130,14 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-dependencies</artifactId>
-        <version>2022.0.4</version>
+        <version>2023.0.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.apache.tomcat.embed</groupId>
-        <artifactId>tomcat-embed-core</artifactId>
-        <version>10.1.25</version>
-      </dependency>
-      <dependency>
         <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-function-context</artifactId>
-        <version>4.1.2</version>
+        <artifactId>spring-cloud-stream</artifactId>
+        <version>4.1.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
