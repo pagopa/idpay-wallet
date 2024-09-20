@@ -62,7 +62,7 @@ microservice-chart:
     IS_IBAN_FORMAL_CONTROL_ACTIVE: "false"
     DELETE_PAGINATION_SIZE: "100"
     DELETE_DELAY_TIME: "1000"
-    HEALTH_MONGO_ENABLED: false
+    HEALTH_MONGO_ENABLED: "false"
 
   externalConfigMapValues:
     idpay-common:
