@@ -418,6 +418,18 @@ public class WalletServiceImpl implements WalletService {
                 .build());
       }
 
+      if (evaluationDTO.getInitiativeName().toLowerCase().contains("bonus") &&
+              evaluationDTO.getOrganizationName().equalsIgnoreCase("comune di guidonia montecelio")){
+        wallet.setStatus(WalletStatus.REFUNDABLE.name());
+        wallet.setNInstr(1);
+        paymentInstrumentRestConnector.enrollDiscountInitiative(
+                InstrumentFromDiscountDTO.builder()
+                        .initiativeId(evaluationDTO.getInitiativeId())
+                        .userId(evaluationDTO.getUserId())
+                        .build());
+      }
+
+
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
     }
