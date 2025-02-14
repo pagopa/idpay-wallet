@@ -420,7 +420,7 @@ public class WalletServiceImpl implements WalletService {
 
       if (evaluationDTO.getInitiativeName().toLowerCase().contains("bonus") &&
               evaluationDTO.getOrganizationName().equalsIgnoreCase("comune di guidonia montecelio")){
-        wallet.setStatus(WalletStatus.REFUNDABLE.name());
+        wallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         wallet.setNInstr(1);
         paymentInstrumentRestConnector.enrollDiscountInitiative(
                 InstrumentFromDiscountDTO.builder()
