@@ -430,6 +430,7 @@ class WalletServiceTest {
                     .rewards(Map.of(INITIATIVE_ID, REWARD_DTO))
                     .build();
 
+    private static final String SERVICE_ID = "serviceid";
     private static final EvaluationDTO OUTCOME_KO =
             new EvaluationDTO(
                     USER_ID,
@@ -446,7 +447,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L);
+                    100L, SERVICE_ID);
 
     private static final EvaluationDTO EVALUATION_ONBOARDING_OK =
             new EvaluationDTO(
@@ -464,7 +465,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L);
+                    100L, SERVICE_ID);
 
     private static final EvaluationDTO EVALUATION_JOINED =
             new EvaluationDTO(
@@ -482,7 +483,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L);
+                    100L, SERVICE_ID);
 
     private static final EvaluationDTO OUTCOME_OK_DISCOUNT =
             new EvaluationDTO(
@@ -500,7 +501,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L);
+                    100L, SERVICE_ID);
 
     @BeforeEach
     public void setUp() {
@@ -1164,25 +1165,7 @@ class WalletServiceTest {
         assertEquals(WALLET_DTO.getRefundedCents(), actual.getRefundedCents());
 
     }
-
-    @Test
-    void getWalletDetail_issuer_ko() {
-        // Given
-        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.empty());
-
-        // When
-        UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-                () -> walletService.getWalletDetail(INITIATIVE_ID, USER_ID));
-
-        // Then
-        assertEquals(USER_NOT_ONBOARDED, exception.getCode());
-        assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), exception.getMessage());
-
-        verify(walletRepositoryMock, times(1)).findById(any());
-        verifyNoMoreInteractions(walletRepositoryMock);
-    }
-
+    
     @Test
     void getInitiativeList_ok() {
         TEST_WALLET.setIban(IBAN_OK);

@@ -44,6 +44,7 @@ public class Wallet {
   private Long maxTrx;
   private Long counterVersion;
   private List<Long> counterHistory;
+  private String serviceId;
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
