@@ -504,7 +504,7 @@ class WalletServiceTest {
                     100L, SERVICE_ID);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
         TEST_WALLET = Wallet.builder()
                 .userId(USER_ID)
