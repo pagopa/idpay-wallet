@@ -422,6 +422,7 @@ public class WalletServiceImpl implements WalletService {
               evaluationDTO.getOrganizationName().equalsIgnoreCase("comune di guidonia montecelio")){
         wallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         wallet.setNInstr(1);
+        wallet.setServiceId(evaluationDTO.getServiceId());
         paymentInstrumentRestConnector.enrollDiscountInitiative(
                 InstrumentFromDiscountDTO.builder()
                         .initiativeId(evaluationDTO.getInitiativeId())

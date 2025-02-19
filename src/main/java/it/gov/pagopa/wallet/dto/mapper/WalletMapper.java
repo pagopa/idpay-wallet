@@ -40,7 +40,6 @@ public class WalletMapper {
                 .maxTrx(evaluationDTO.getMaxTrx())
                 .counterVersion(0L)
                 .counterHistory(new ArrayList<>())
-                .serviceId(evaluationDTO.getServiceId())
                 .build();
     }
 
