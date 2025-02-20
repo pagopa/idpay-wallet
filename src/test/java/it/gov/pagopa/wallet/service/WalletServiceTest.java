@@ -164,7 +164,7 @@ class WalletServiceTest {
     private static final List<Long> COUNTER_HISTORY = new ArrayList<>();
     private static final Long TEST_VERSION = 1L;
     private static final String SERVICE_ID = "serviceid";
-    private static Wallet TEST_WALLET =
+    private static Wallet testWallet =
             Wallet.builder()
                     .build();
 
@@ -524,7 +524,7 @@ class WalletServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        TEST_WALLET = Wallet.builder()
+        testWallet = Wallet.builder()
                 .userId(USER_ID)
                 .initiativeId(INITIATIVE_ID)
                 .initiativeName(INITIATIVE_NAME)
@@ -546,12 +546,12 @@ class WalletServiceTest {
     @Test
     void enrollInstrument_ok() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        testWallet.setNInstr(0);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -560,16 +560,16 @@ class WalletServiceTest {
 
         walletService.enrollInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
-        assertEquals(0, TEST_WALLET.getNInstr());
+        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), testWallet.getStatus());
+        assertEquals(0, testWallet.getNInstr());
     }
 
     @Test
     void enrollInstrument_ko_paymentInstrumentConnectorException() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setEndDate(LocalDate.MAX);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.when(timelineMapper.ackToTimeline(INSTRUMENT_ACK_DTO_REJECTED_INSTRUMENT)).thenReturn(TEST_OPERATION_DTO);
 
@@ -607,12 +607,12 @@ class WalletServiceTest {
     @ValueSource(strings = {"DISCOUNT", "REFUND"})
     void processAck(String initiativeRewardType) {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setInitiativeRewardType(initiativeRewardType);
-        TEST_WALLET.setStatus(WalletStatus.SUSPENDED);
+        testWallet.setNInstr(0);
+        testWallet.setIban(null);
+        testWallet.setInitiativeRewardType(initiativeRewardType);
+        testWallet.setStatus(WalletStatus.SUSPENDED);
 
         Mockito.doNothing().when(timelineProducer).sendEvent(any(QueueOperationDTO.class));
         Mockito.doNothing().when(errorProducer).sendEvent(any());
@@ -650,7 +650,7 @@ class WalletServiceTest {
 
     @Test
     void processAck_ko() {
-        Mockito.when(walletRepositoryMock.findById(Mockito.anyString())).thenReturn(Optional.of(TEST_WALLET));
+        Mockito.when(walletRepositoryMock.findById(Mockito.anyString())).thenReturn(Optional.of(testWallet));
         Mockito.doNothing().when(timelineProducer).sendEvent(any(QueueOperationDTO.class));
         Mockito.doNothing().when(errorProducer).sendEvent(any());
         Mockito.when(timelineMapper.ackToTimeline(INSTRUMENT_ACK_DTO_REJECTED_INSTRUMENT)).thenReturn(TEST_OPERATION_DTO);
@@ -665,7 +665,7 @@ class WalletServiceTest {
     @Test
     void processAck_queue_error() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         doThrow(new WalletUpdateException(""))
                 .when(timelineProducer)
@@ -683,9 +683,9 @@ class WalletServiceTest {
     @Test
     void enrollInstrument_ko_initiative_ended() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MIN);
+        testWallet.setEndDate(LocalDate.MIN);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         // When
         InitiativeInvalidException exception = assertThrows(InitiativeInvalidException.class,
@@ -744,12 +744,12 @@ class WalletServiceTest {
     @Test
     void deleteInstrument_ok() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setNInstr(1);
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setNInstr(1);
+        testWallet.setIban(null);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -759,16 +759,16 @@ class WalletServiceTest {
 
         walletService.deleteInstrument(INITIATIVE_ID, USER_ID, ID_WALLET, CHANNEL_APP_IO);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), TEST_WALLET.getStatus());
-        assertEquals(1, TEST_WALLET.getNInstr());
+        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name(), testWallet.getStatus());
+        assertEquals(1, testWallet.getNInstr());
     }
 
     @Test
     void deleteInstrument_ko_initiative_ended() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MIN);
+        testWallet.setEndDate(LocalDate.MIN);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         // When
         InitiativeInvalidException exception = assertThrows(InitiativeInvalidException.class,
@@ -788,9 +788,9 @@ class WalletServiceTest {
     @Test
     void deleteInstrument_ko_feignexception() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setEndDate(LocalDate.MAX);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         doThrow(new PaymentInstrumentNotFoundException(PAYMENT_INSTRUMENT_NOT_FOUND_MSG))
                 .when(paymentInstrumentRestConnector)
@@ -835,10 +835,10 @@ class WalletServiceTest {
     @Test
     void getEnrollmentStatus_ok() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         EnrollmentStatusDTO actual = walletService.getEnrollmentStatus(INITIATIVE_ID, USER_ID);
-        assertEquals(TEST_WALLET.getStatus(), actual.getStatus());
+        assertEquals(testWallet.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -865,18 +865,18 @@ class WalletServiceTest {
 
     @Test
     void enrollIban_ok_only_iban() {
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        testWallet.setNInstr(0);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setIban(IBAN_OK);
-                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
+                            testWallet.setIban(IBAN_OK);
+                            testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -884,23 +884,23 @@ class WalletServiceTest {
 
         walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
+        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), testWallet.getStatus());
     }
 
     @Test
     void enrollIban_ok_error_queue() {
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        testWallet.setNInstr(0);
+        testWallet.setIban(null);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setIban(IBAN_OK);
-                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
+                            testWallet.setIban(IBAN_OK);
+                            testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -912,26 +912,26 @@ class WalletServiceTest {
 
         walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
+        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), testWallet.getStatus());
         Mockito.verify(errorProducer, Mockito.times(1)).sendEvent(any());
     }
 
     @Test
     void enrollIban_ok_with_instrument() {
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setNInstr(1);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setNInstr(1);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.doNothing().when(ibanProducer).sendIban(any(IbanQueueDTO.class));
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setIban(IBAN_OK);
-                            TEST_WALLET.setStatus(WalletStatus.REFUNDABLE.name());
+                            testWallet.setIban(IBAN_OK);
+                            testWallet.setStatus(WalletStatus.REFUNDABLE.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -940,22 +940,22 @@ class WalletServiceTest {
 
         walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
-        assertEquals(INITIATIVE_ID, TEST_WALLET.getInitiativeId());
-        assertEquals(USER_ID, TEST_WALLET.getUserId());
+        assertEquals(INITIATIVE_ID, testWallet.getInitiativeId());
+        assertEquals(USER_ID, testWallet.getUserId());
 
-        assertEquals(WalletStatus.REFUNDABLE.name(), TEST_WALLET.getStatus());
+        assertEquals(WalletStatus.REFUNDABLE.name(), testWallet.getStatus());
     }
 
     @Test
     void enrollIban_ok_idemp() {
         Mockito.doNothing().when(ibanProducer).sendIban(any(IbanQueueDTO.class));
-        TEST_WALLET.setIban(IBAN_OK);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(IBAN_OK);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
+        testWallet.setNInstr(0);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
 
         walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
@@ -967,12 +967,12 @@ class WalletServiceTest {
     @Test
     void enrollIban_ko_iban_not_italian() {
         // Given
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         // When
         InvalidIbanException exception = assertThrows(InvalidIbanException.class,
@@ -989,12 +989,12 @@ class WalletServiceTest {
 
     @Test
     void enrollIban_ko_iban_wrong() {
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         try {
             walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG, CHANNEL, DESCRIPTION_OK);
@@ -1006,12 +1006,12 @@ class WalletServiceTest {
 
     @Test
     void enrollIban_ko_iban_digit_control() {
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         try {
             walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_WRONG_DIGIT, CHANNEL, DESCRIPTION_OK);
@@ -1043,7 +1043,7 @@ class WalletServiceTest {
     @Test
     void enrollIban_ko_unsubscribe() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET_UNSUBSCRIBED));
@@ -1064,10 +1064,10 @@ class WalletServiceTest {
     @Test
     void enrollIban_ko_initiative_ended() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MIN);
+        testWallet.setEndDate(LocalDate.MIN);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         // When
         InitiativeInvalidException exception = assertThrows(InitiativeInvalidException.class,
@@ -1086,18 +1086,18 @@ class WalletServiceTest {
     @Test
     void enrollIban_update_ok() {
         Mockito.doNothing().when(ibanProducer).sendIban(any(IbanQueueDTO.class));
-        TEST_WALLET.setIban(IBAN_OK_OTHER);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(IBAN_OK_OTHER);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
+        testWallet.setNInstr(0);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setIban(IBAN_OK);
+                            testWallet.setIban(IBAN_OK);
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -1105,7 +1105,7 @@ class WalletServiceTest {
 
         walletService.enrollIban(INITIATIVE_ID, USER_ID, IBAN_OK, CHANNEL, DESCRIPTION_OK);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), TEST_WALLET.getStatus());
+        assertEquals(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(), testWallet.getStatus());
     }
 
     @Test
@@ -1131,8 +1131,8 @@ class WalletServiceTest {
     @Test
     void getWalletDetail_ok() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
-        TEST_WALLET.setIban(IBAN_OK);
+                .thenReturn(Optional.of(testWallet));
+        testWallet.setIban(IBAN_OK);
 
         Mockito.when(walletMapper.toInitiativeDTO(any(Wallet.class))).thenReturn(WALLET_DTO);
 
@@ -1186,9 +1186,9 @@ class WalletServiceTest {
     
     @Test
     void getInitiativeList_ok() {
-        TEST_WALLET.setIban(IBAN_OK);
+        testWallet.setIban(IBAN_OK);
         List<Wallet> walletList = new ArrayList<>();
-        walletList.add(TEST_WALLET);
+        walletList.add(testWallet);
         walletList.add(TEST_WALLET_DISCOUNT);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
@@ -1207,7 +1207,7 @@ class WalletServiceTest {
 
     @Test
     void createWalletOnbOk() {
-        Mockito.when(walletMapper.map(any())).thenReturn(TEST_WALLET);
+        Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
         walletService.createWallet(EVALUATION_ONBOARDING_OK);
         Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
@@ -1229,7 +1229,7 @@ class WalletServiceTest {
 
     @Test
     void createWalletJoined() {
-        Mockito.when(walletMapper.map(any())).thenReturn(TEST_WALLET);
+        Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
         walletService.createWallet(EVALUATION_JOINED);
         Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
@@ -1244,30 +1244,30 @@ class WalletServiceTest {
 
     @Test
     void createWallet_initiativeDiscount() {
-        Mockito.when(walletMapper.map(any())).thenReturn(TEST_WALLET);
+        Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
         walletService.createWallet(OUTCOME_OK_DISCOUNT);
         Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
-        assertEquals(TEST_WALLET.getStatus(), WalletStatus.REFUNDABLE.name());
+        assertEquals(testWallet.getStatus(), WalletStatus.REFUNDABLE.name());
     }
 
     @Test
     void createWallet_guidonia() {
-        Mockito.when(walletMapper.map(any())).thenReturn(TEST_WALLET);
+        Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
         walletService.createWallet(OUTCOME_OK_DISCOUNT_GUIDONIA);
         Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
-        assertEquals(TEST_WALLET.getStatus(), WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        assertEquals(testWallet.getStatus(), WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
     }
 
     @Test
     void processIbanOutcome_error_queue() {
-        TEST_WALLET.setIban(IBAN_OK);
+        testWallet.setIban(IBAN_OK);
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
                         USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         doThrow(new WalletUpdateException(""))
                 .when(notificationProducer)
@@ -1284,12 +1284,12 @@ class WalletServiceTest {
 
     @Test
     void processIbanOutcome_statusKO_ok() {
-        TEST_WALLET.setIban(IBAN_OK);
+        testWallet.setIban(IBAN_OK);
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
                         USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doNothing()
                 .when(notificationProducer)
@@ -1321,7 +1321,7 @@ class WalletServiceTest {
                 new IbanQueueWalletDTO(
                         USER_ID, INITIATIVE_ID, IBAN_OK_OTHER, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
 
         walletService.processIbanOutcome(iban);
@@ -1347,33 +1347,33 @@ class WalletServiceTest {
     @Test
     void unsubscribe_ok() {
 
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setRequestUnsubscribeDate(LocalDateTime.now());
-                            TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
+                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
                             return null;
                         })
                 .when(walletRepositoryMock)
                 .save(any(Wallet.class));
 
         walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
-        assertNotNull(TEST_WALLET.getRequestUnsubscribeDate());
-        assertEquals(WalletStatus.UNSUBSCRIBED, TEST_WALLET.getStatus());
+        assertNotNull(testWallet.getRequestUnsubscribeDate());
+        assertEquals(WalletStatus.UNSUBSCRIBED, testWallet.getStatus());
 
     }
 
     @Test
     void unsubscribe_ko_unsubscribed() {
 
-        TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
+        testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
 
         walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
@@ -1403,7 +1403,7 @@ class WalletServiceTest {
     @Test
     void processTransaction_ok_counter_valid() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.when(
                         walletUpdatesRepositoryMock.rewardTransaction(
@@ -1414,7 +1414,7 @@ class WalletServiceTest {
                                 any(),
                                 any())
                 )
-                .thenReturn(TEST_WALLET);
+                .thenReturn(testWallet);
 
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
 
@@ -1424,10 +1424,10 @@ class WalletServiceTest {
     @Test
     void processTransaction_ko_counter_not_valid() {
 
-        TEST_WALLET.setCounterVersion(REWARD_TRX_DTO_REWARDED.getRewards().get(INITIATIVE_ID).getCounters().getVersion());
+        testWallet.setCounterVersion(REWARD_TRX_DTO_REWARDED.getRewards().get(INITIATIVE_ID).getCounters().getVersion());
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         walletService.processTransaction(REWARD_TRX_DTO_REWARDED);
 
@@ -1455,7 +1455,7 @@ class WalletServiceTest {
                                 any(),
                                 any())
                 )
-                .thenReturn(TEST_WALLET);
+                .thenReturn(testWallet);
         walletService.processTransaction(REWARD_TRX_DTO_SYNC_REWARDED);
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
     }
@@ -1463,7 +1463,7 @@ class WalletServiceTest {
     @Test
     void processTransaction_sync_ok_auth() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.when(
                         walletUpdatesRepositoryMock.rewardTransaction(
@@ -1474,7 +1474,7 @@ class WalletServiceTest {
                                 any(),
                                 any())
         )
-                .thenReturn(TEST_WALLET);
+                .thenReturn(testWallet);
 
         walletService.processTransaction(REWARD_TRX_DTO_SYNC_AUTHORIZED);
 
@@ -1620,7 +1620,7 @@ class WalletServiceTest {
     void unsubscribe_rollback_payment_instrument() {
         // Given
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         doThrow(new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG))
                 .when(onboardingRestConnector)
@@ -1714,17 +1714,17 @@ class WalletServiceTest {
     @Test
     void update_wallet_ok() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setNInstr(1);
-        TEST_WALLET.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setNInstr(1);
+        testWallet.setIban(null);
 
         Mockito.doNothing().when(timelineProducer).sendEvent(any(QueueOperationDTO.class));
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setNInstr(0);
-                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+                            testWallet.setNInstr(0);
+                            testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -1736,7 +1736,7 @@ class WalletServiceTest {
         WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
         walletService.updateWallet(walletPIBodyDTO);
 
-        assertEquals(0, TEST_WALLET.getNInstr());
+        assertEquals(0, testWallet.getNInstr());
     }
 
     @Test
@@ -1758,12 +1758,12 @@ class WalletServiceTest {
     @Test
     void update_wallet_ok_queue_error() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setNInstr(0);
-                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+                            testWallet.setNInstr(0);
+                            testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -1780,16 +1780,16 @@ class WalletServiceTest {
 
         Mockito.doNothing().when(errorProducer).sendEvent(any());
 
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setNInstr(1);
-        TEST_WALLET.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
+        testWallet.setNInstr(1);
+        testWallet.setIban(null);
 
         List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
         walletPIDTOList.add(new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO));
         WalletPIBodyDTO walletPIBodyDTO = new WalletPIBodyDTO(walletPIDTOList);
         walletService.updateWallet(walletPIBodyDTO);
 
-        assertEquals(0, TEST_WALLET.getNInstr());
+        assertEquals(0, testWallet.getNInstr());
     }
 
     @Test
@@ -1821,13 +1821,13 @@ class WalletServiceTest {
                         NOTIFICATION_DATE,
                         "CRO");
 
-        TEST_WALLET.setRefundHistory(null);
-        TEST_WALLET.setRefundedCents(TEST_REFUNDED);
+        testWallet.setRefundHistory(null);
+        testWallet.setRefundedCents(TEST_REFUNDED);
 
         Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         walletService.processRefund(dto);
 
@@ -1867,13 +1867,13 @@ class WalletServiceTest {
                         NOTIFICATION_DATE,
                         "CRO");
 
-        TEST_WALLET.setRefundHistory(null);
-        TEST_WALLET.setRefundedCents(TEST_REFUNDED);
+        testWallet.setRefundHistory(null);
+        testWallet.setRefundedCents(TEST_REFUNDED);
 
         Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         doThrow(new WalletUpdateException(""))
                 .when(timelineProducer)
@@ -1919,11 +1919,11 @@ class WalletServiceTest {
         Map<String, RefundHistory> map = new HashMap<>();
         map.put("NOT_ID", new RefundHistory(1L));
 
-        TEST_WALLET.setRefundHistory(map);
-        TEST_WALLET.setRefundedCents(TEST_ACCRUED);
+        testWallet.setRefundHistory(map);
+        testWallet.setRefundedCents(TEST_ACCRUED);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.when(timelineMapper.refundToTimeline(dto)).thenReturn(TEST_OPERATION_DTO);
 
@@ -1968,11 +1968,11 @@ class WalletServiceTest {
         Map<String, RefundHistory> map = new HashMap<>();
         map.put("NOT_ID", new RefundHistory(2L));
 
-        TEST_WALLET.setRefundHistory(map);
-        TEST_WALLET.setRefundedCents(TEST_ACCRUED);
+        testWallet.setRefundHistory(map);
+        testWallet.setRefundedCents(TEST_ACCRUED);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         walletService.processRefund(dto);
 
@@ -2051,11 +2051,11 @@ class WalletServiceTest {
                         NOTIFICATION_DATE,
                         "CRO");
 
-        TEST_WALLET.setRefundHistory(null);
-        TEST_WALLET.setRefundedCents(0L);
+        testWallet.setRefundHistory(null);
+        testWallet.setRefundedCents(0L);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         walletService.processRefund(dto);
 
@@ -2116,12 +2116,12 @@ class WalletServiceTest {
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(null);
+        testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+        testWallet.setNInstr(0);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -2130,8 +2130,8 @@ class WalletServiceTest {
 
         walletService.enrollInstrumentIssuer(INITIATIVE_ID, USER_ID, instrument);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
-        assertEquals(0, TEST_WALLET.getNInstr());
+        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), testWallet.getStatus());
+        assertEquals(0, testWallet.getNInstr());
     }
 
     @Test
@@ -2185,7 +2185,7 @@ class WalletServiceTest {
     @Test
     void enrollInstrumentIssuer_ko_exception() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setEndDate(LocalDate.MAX);
 
         final InstrumentIssuerDTO instrument =
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
@@ -2217,12 +2217,12 @@ class WalletServiceTest {
     @Test
     void getInitiativesWithInstrument_ok() {
         List<Wallet> walletList = new ArrayList<>();
-        walletList.add(TEST_WALLET);
+        walletList.add(testWallet);
         walletList.add(TEST_WALLET_REFUNDABLE);
         walletList.add(TEST_WALLET_UNSUBSCRIBED);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
-        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(testWallet)).thenReturn(WALLET_DTO);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(WALLET_REFUNDABLE_DTO);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_UNSUBSCRIBED)).thenReturn(WALLET_UNSUBSCRIBED_DTO);
 
@@ -2240,8 +2240,8 @@ class WalletServiceTest {
                 Mockito.anyList())).thenReturn(new InstrumentDetailDTO(MASKED_PAN, BRAND, initiativeList));
 
         List<InitiativesStatusDTO> instrStatusOnInitiative = new ArrayList<>();
-        instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET.getInitiativeId(),
-                TEST_WALLET.getInitiativeName(), INSTRUMENT_ID, STATUS_ACTIVE));
+        instrStatusOnInitiative.add(new InitiativesStatusDTO(testWallet.getInitiativeId(),
+                testWallet.getInitiativeName(), INSTRUMENT_ID, STATUS_ACTIVE));
         instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET_REFUNDABLE.getInitiativeId(),
                 TEST_WALLET_REFUNDABLE.getInitiativeName(), INSTRUMENT_ID, STATUS_PENDING_ENROLLMENT));
         InitiativesWithInstrumentDTO initiativesWithInstrumentDTO =
@@ -2276,7 +2276,7 @@ class WalletServiceTest {
     @Test
     void getInitiativesWithInstrument_emptyListFromPI() {
         List<Wallet> walletList = new ArrayList<>();
-        walletList.add(TEST_WALLET);
+        walletList.add(testWallet);
         walletList.add(TEST_WALLET_REFUNDABLE);
         walletList.add(TEST_WALLET_UNSUBSCRIBED);
 
@@ -2292,7 +2292,7 @@ class WalletServiceTest {
                 List.of(),SERVICE_ID);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
-        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(testWallet)).thenReturn(WALLET_DTO);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(walletDtoRef);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_UNSUBSCRIBED)).thenReturn(walletDtoUnsub);
 
@@ -2305,8 +2305,8 @@ class WalletServiceTest {
                 Mockito.anyList())).thenReturn(instrDetailDTO);
 
         List<InitiativesStatusDTO> instrStatusOnInitiative = new ArrayList<>();
-        instrStatusOnInitiative.add(new InitiativesStatusDTO(TEST_WALLET.getInitiativeId(),
-                TEST_WALLET.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT));
+        instrStatusOnInitiative.add(new InitiativesStatusDTO(testWallet.getInitiativeId(),
+                testWallet.getInitiativeName(), INSTRUMENT_ID, WalletConstants.INSTRUMENT_STATUS_DEFAULT));
         InitiativesWithInstrumentDTO initiativesWithInstrumentDTO =
                 new InitiativesWithInstrumentDTO(ID_WALLET, MASKED_PAN, BRAND, instrStatusOnInitiative);
 
@@ -2324,11 +2324,11 @@ class WalletServiceTest {
     void getInitiativesWithInstrument_payment_instrument_exception() {
         // Given
         List<Wallet> walletList = new ArrayList<>();
-        walletList.add(TEST_WALLET);
+        walletList.add(testWallet);
         walletList.add(TEST_WALLET_REFUNDABLE);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
-        Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET)).thenReturn(WALLET_DTO);
+        Mockito.when(walletMapper.toInitiativeDTO(testWallet)).thenReturn(WALLET_DTO);
         Mockito.when(walletMapper.toInitiativeDTO(TEST_WALLET_REFUNDABLE)).thenReturn(WALLET_REFUNDABLE_DTO);
 
         doThrow(new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG))
@@ -2349,11 +2349,11 @@ class WalletServiceTest {
     @Test
     void suspend_ok() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setStatus(WalletStatus.SUSPENDED);
+                            testWallet.setStatus(WalletStatus.SUSPENDED);
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -2371,7 +2371,7 @@ class WalletServiceTest {
                 .suspendOnboarding(INITIATIVE_ID, USER_ID);
         Mockito.verify(notificationProducer, Mockito.times(1))
                 .sendNotification(any());
-        assertEquals(WalletStatus.SUSPENDED, TEST_WALLET.getStatus());
+        assertEquals(WalletStatus.SUSPENDED, testWallet.getStatus());
     }
 
     @Test
@@ -2401,11 +2401,11 @@ class WalletServiceTest {
     void suspend_ko() {
         // Given
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setStatus(WalletStatus.SUSPENDED);
+                            testWallet.setStatus(WalletStatus.SUSPENDED);
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -2500,11 +2500,11 @@ class WalletServiceTest {
     void readmit_ko() {
         // Given
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
+                            testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -2536,7 +2536,7 @@ class WalletServiceTest {
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            TEST_WALLET.setStatus(WalletStatus.REFUNDABLE.name());
+                            testWallet.setStatus(WalletStatus.REFUNDABLE.name());
                             return null;
                         })
                 .when(walletUpdatesRepositoryMock)
@@ -2636,13 +2636,13 @@ class WalletServiceTest {
 
     @Test
     void enrollInstrumentCode_ok() {
-        TEST_WALLET.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
+        testWallet.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
-        TEST_WALLET.setIban(null);
-        TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        testWallet.setIban(null);
+        testWallet.setNInstr(0);
+        testWallet.setEndDate(LocalDate.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -2651,17 +2651,17 @@ class WalletServiceTest {
 
         walletService.enrollInstrumentCode(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
 
-        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), TEST_WALLET.getStatus());
-        assertEquals(0, TEST_WALLET.getNInstr());
+        assertEquals(WalletStatus.NOT_REFUNDABLE.name(), testWallet.getStatus());
+        assertEquals(0, testWallet.getNInstr());
     }
 
     @Test
     void enrollInstrumentCode_ko_exception() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MAX);
-        TEST_WALLET.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
+        testWallet.setEndDate(LocalDate.MAX);
+        testWallet.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         Mockito.when(timelineMapper.ackToTimeline(INSTRUMENT_ACK_DTO_ADD_INSTRUMENT)).thenReturn(TEST_OPERATION_DTO);
 
@@ -2689,7 +2689,7 @@ class WalletServiceTest {
     void enrollInstrumentCode_ko_initiative_refund() {
         // Given
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         // When
         EnrollmentNotAllowedException exception = assertThrows(EnrollmentNotAllowedException.class,
@@ -2709,11 +2709,11 @@ class WalletServiceTest {
     @Test
     void enrollInstrumentCode_ko_unsubscribed() {
         // Given
-        TEST_WALLET.setEndDate(LocalDate.MAX);
-        TEST_WALLET.setStatus(WalletStatus.UNSUBSCRIBED);
-        TEST_WALLET.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
+        testWallet.setEndDate(LocalDate.MAX);
+        testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
+        testWallet.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
-                .thenReturn(Optional.of(TEST_WALLET));
+                .thenReturn(Optional.of(testWallet));
 
         // When
         UserUnsubscribedException exception = assertThrows(UserUnsubscribedException.class,
