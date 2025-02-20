@@ -59,7 +59,7 @@ class WalletMapperTest {
                     .maxTrx(100L)
                     .counterVersion(COUNTER_VERSION)
                     .counterHistory(COUNTER_HISTORY)
-                    .serviceId(SERVICE_ID)
+                    //.serviceId(SERVICE_ID)
                     .build();
 
     private static final Wallet WALLET =
