@@ -49,6 +49,7 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
   public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
+  public static final String COMUNE_DI_GUIDONIA_MONTECELIO = "comune di guidonia montecelio";
   private final WalletRepository walletRepository;
   private final WalletUpdatesRepository walletUpdatesRepository;
   private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
@@ -419,7 +420,7 @@ public class WalletServiceImpl implements WalletService {
       }
 
       if (evaluationDTO.getInitiativeName().toLowerCase().contains("bonus") &&
-              evaluationDTO.getOrganizationName().equalsIgnoreCase("comune di guidonia montecelio")){
+              evaluationDTO.getOrganizationName().equalsIgnoreCase(COMUNE_DI_GUIDONIA_MONTECELIO)){
         wallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         wallet.setNInstr(1);
         wallet.setServiceId(evaluationDTO.getServiceId());
