@@ -50,6 +50,7 @@ class TimelineMapperTest {
   private static final LocalDate END_DATE = LocalDate.now().plusDays(2);
   private static final LocalDate TRANSFER_DATE = LocalDate.now();
   private static final LocalDate NOTIFICATION_DATE = LocalDate.now();
+  private static final String SERVICE_ID = "serviceid";
   private static final EvaluationDTO EVALUATION_DTO =
       new EvaluationDTO(
           USER_ID,
@@ -66,7 +67,7 @@ class TimelineMapperTest {
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
           ORGANIZATION_NAME,
           Boolean.FALSE,
-          100L);
+          100L, SERVICE_ID);
   private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
       new InstrumentAckDTO(
           INITIATIVE_ID,

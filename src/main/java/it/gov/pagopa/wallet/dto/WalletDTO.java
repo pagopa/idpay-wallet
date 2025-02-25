@@ -39,4 +39,5 @@ public class WalletDTO {
     private Long maxTrx;
     private Long counterVersion;
     private List<Long> counterHistory;
+    private String serviceId;
 }
