@@ -22,12 +22,14 @@ public class Utilities {
 
     public String exceptionConverter(FeignException e) {
         String error;
+
         try {
             ErrorDTO errorDTO = objectMapper.readValue(e.contentUTF8(), ErrorDTO.class);
             error = errorDTO.getMessage() != null ? errorDTO.getMessage() : e.getMessage();
         } catch (Exception ex) {
             error= e.getMessage();
         }
+
         return error;
     }
 
