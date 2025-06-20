@@ -924,7 +924,7 @@
 														{
 															"key": "file",
 															"type": "file",
-															"src": "/C:/Users/EBALDIVFX/OneDrive - NTT DATA EMEAL/Desktop/IDPAY/idpay-wallet/postman/Esercente di test IdPay.csv"
+															"src": "{{basePath}}/Esercente di test IdPay.csv"
 														}
 													]
 												},
@@ -5299,7 +5299,7 @@
 												{
 													"key": "file",
 													"type": "file",
-													"src": "/C:/Users/EBALDIVFX/OneDrive - NTT DATA EMEAL/Desktop/IDPAY/idpay-wallet/postman/example_fiscal_code_issuer.csv"
+													"src": "{{basePath}}/example_fiscal_code_issuer.csv"
 												}
 											]
 										},
@@ -15895,6 +15895,10 @@
 		{
 			"key": "idpayCode",
 			"value": ""
+		},
+		{
+			"key": "basePath",
+			"value": "./"
 		}
 	]
 }
