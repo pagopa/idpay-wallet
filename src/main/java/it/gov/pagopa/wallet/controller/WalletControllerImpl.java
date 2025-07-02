@@ -108,4 +108,5 @@ public class WalletControllerImpl implements WalletController {
     walletService.enrollInstrumentCode(initiativeId, userId, channel);
     return new ResponseEntity<>(HttpStatus.OK);
   }
+  
 }
