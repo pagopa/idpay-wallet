@@ -67,7 +67,7 @@ class WalletControllerTest {
     private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
     private static final String IBAN_OK = "it99C1234567890123456789012";
     private static final String IBAN_WRONG = "it99C1234567890123456789012222";
-    private static final String CHANNEL = "APP_IO";
+    private static final String CHANNEL = "IO";
     private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
     private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
     private static final String DESCRIPTION_OK = "conto cointestato";

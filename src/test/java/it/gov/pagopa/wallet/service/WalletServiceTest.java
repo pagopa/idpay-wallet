@@ -461,7 +461,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.APP_IO);
+                    100L, SERVICE_ID, Channel.IO);
 
     private static final EvaluationDTO EVALUATION_ONBOARDING_OK =
             new EvaluationDTO(
@@ -479,7 +479,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.APP_IO);
+                    100L, SERVICE_ID, Channel.IO);
 
     private static final EvaluationDTO EVALUATION_JOINED =
             new EvaluationDTO(
@@ -497,7 +497,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.APP_IO);
+                    100L, SERVICE_ID, Channel.IO);
 
     private static final EvaluationDTO OUTCOME_OK_DISCOUNT =
             new EvaluationDTO(
@@ -515,7 +515,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.APP_IO);
+                    100L, SERVICE_ID, Channel.IO);
 
     private static final EvaluationDTO OUTCOME_OK_DISCOUNT_GUIDONIA =
             new EvaluationDTO(
@@ -533,7 +533,7 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
                     COMUNE_DI_GUIDONIA_MONTECELIO,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.APP_IO);
+                    100L, SERVICE_ID, Channel.IO);
 
     @BeforeEach
     void setUp() {
