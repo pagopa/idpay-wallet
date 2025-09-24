@@ -132,7 +132,6 @@ public class WalletServiceImpl implements WalletService {
     long startTime = System.currentTimeMillis();
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
     performanceLog(startTime, "GET_ENROLLMENT_STATUS");
-    //TODO: add voucherStatus
     return new EnrollmentStatusDTO(wallet.getStatus());
   }
 
