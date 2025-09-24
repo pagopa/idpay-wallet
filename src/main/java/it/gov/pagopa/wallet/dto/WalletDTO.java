@@ -24,8 +24,11 @@ public class WalletDTO {
     private String initiativeId;
     private String initiativeName;
     private String status;
+    private String voucherStatus;
     private String iban;
-    private LocalDate endDate;
+    private LocalDate initiativeEndDate;
+    private LocalDate voucherStartDate;
+    private LocalDate voucherEndDate;
     @JsonProperty("nInstr")
     private int nInstr;
     private Long amountCents;

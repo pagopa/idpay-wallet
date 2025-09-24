@@ -10,7 +10,7 @@ public class WalletConstants {
   public static final String STATUS_ONBOARDING_KO = "ONBOARDING_KO";
   public static final String ONBOARDING_OPERATION = "ONBOARDING";
   public static final String TIMELINE_READMITTED = "READMITTED";
-  public static final String CHANNEL_APP_IO = "APP_IO";
+  public static final String CHANNEL_APP_IO = "IO";
   public static final String STATUS_KO = "KO";
   public static final String ERROR_MSG_HEADER_SRC_TYPE = "srcType";
   public static final String ERROR_MSG_HEADER_SRC_SERVER = "srcServer";
@@ -62,6 +62,7 @@ public class WalletConstants {
 
     public static final String ERROR_ONBOARDING_INVOCATION_MSG = "An error occurred in the microservice onboarding";
     public static final String ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG = "An error occurred in the microservice payment instrument";
+    public static final String ERROR_PAYMENT_INVOCATION_MSG = "An error occurred in the microservice payment";
   }
 
   public static final class ExceptionCode {

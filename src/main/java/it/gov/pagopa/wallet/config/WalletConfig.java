@@ -3,6 +3,7 @@ package it.gov.pagopa.wallet.config;
 import it.gov.pagopa.wallet.connector.InitiativeRestClient;
 import it.gov.pagopa.wallet.connector.OnboardingRestClient;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestClient;
+import it.gov.pagopa.wallet.connector.PaymentRestClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableFeignClients(
     clients = {
       PaymentInstrumentRestClient.class,
+      PaymentRestClient.class,
       OnboardingRestClient.class,
       InitiativeRestClient.class
     })

@@ -52,6 +52,9 @@ rest-client:
   payment.instrument:
     serviceCode: idpay-payment-instrument
     baseUrl: ${PAYMENT_INSTRUMENT_URI:}
+  payment:
+    serviceCode: idpay-payment
+    baseUrl: ${PAYMENT_URI:}
   initiative:
     serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
@@ -315,3 +318,5 @@ app:
     delayTime: ${DELETE_DELAY_TIME:1000}
   iban:
     formalControl: ${IS_IBAN_FORMAL_CONTROL_ACTIVE:false}
+  wallet:
+    expiringDay: ${WALLET_EXPIRING_DAY:3}

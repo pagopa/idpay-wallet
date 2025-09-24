@@ -3,8 +3,12 @@ package it.gov.pagopa.wallet.service;
 import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
+import it.gov.pagopa.wallet.connector.PaymentRestConnector;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
+import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
+import it.gov.pagopa.wallet.enums.SyncTrxStatus;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -16,9 +20,11 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,11 +34,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.IBAN_NOT_ITALIAN;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.ERROR_IBAN_NOT_ITALIAN;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @ContextConfiguration(classes = WalletServiceImpl.class)
@@ -73,6 +82,8 @@ class WalletServiceNoIbanFormalControlTest {
     AuditUtilities auditUtilities;
     @MockBean
     Utilities utilities;
+    @MockBean
+    PaymentRestConnector paymentRestConnector;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
@@ -97,19 +108,44 @@ class WalletServiceNoIbanFormalControlTest {
                     .initiativeName(INITIATIVE_NAME)
                     .acceptanceDate(TEST_DATE)
                     .status(WalletStatus.NOT_REFUNDABLE.name())
-                    .endDate(TEST_DATE_ONLY_DATE)
+                    .initiativeEndDate(TEST_DATE_ONLY_DATE)
                     .amountCents(TEST_AMOUNT)
                     .accruedCents(TEST_ACCRUED)
                     .refundedCents(TEST_REFUNDED)
                     .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(INITIATIE_REWARD_TYPE_REFUND)
                     .build();
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        Mockito.when(paymentRestConnector.createExtendedTransaction(
+                any(TransactionBarCodeCreationRequest.class),
+                anyString()
+        )).thenReturn(mockEnrichedResponse());
+    }
+
+
+    private TransactionBarCodeEnrichedResponse mockEnrichedResponse() {
+        TransactionBarCodeEnrichedResponse r = new TransactionBarCodeEnrichedResponse();
+        r.setId("trx-id-1");
+        r.setTrxCode("ABC123");
+        r.setInitiativeId(INITIATIVE_ID);
+        r.setInitiativeName(INITIATIVE_ID);
+        r.setStatus(SyncTrxStatus.CREATED);
+        r.setTrxExpirationSeconds(3600L);
+        r.setResidualBudgetCents(0L);
+
+        // Date fisse per stabilità dei test
+        r.setTrxDate(OffsetDateTime.parse("2025-09-24T10:00:00+00:00"));
+        r.setTrxEndDate(OffsetDateTime.parse("2025-10-24T10:00:00+00:00"));
+        return r;
+    }
 
     @Test
     void enrollIban_ok_only_iban() {
         TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
         TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        TEST_WALLET.setInitiativeEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -133,7 +169,7 @@ class WalletServiceNoIbanFormalControlTest {
         // Given
         TEST_WALLET.setIban(null);
         TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setEndDate(LocalDate.MAX);
+        TEST_WALLET.setInitiativeEndDate(LocalDate.MAX);
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET));

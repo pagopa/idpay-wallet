@@ -9,6 +9,7 @@ import it.gov.pagopa.wallet.dto.QueueOperationDTO;
 import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
+import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ class TimelineMapperTest {
   private static final String IBAN = "test_iban";
   private static final String REWARD_STATUS = "reward_status";
   private static final String REFUND_TYPE = "refund_type";
-  private static final String CHANNEL = "APP_IO";
+  private static final String CHANNEL = "IO";
   private static final String CRO = "cro";
   private static final String MASKED_PAN = "masked_pan";
   private static final String BRAND_LOGO = "brand_logo";
@@ -67,7 +68,7 @@ class TimelineMapperTest {
           WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
           ORGANIZATION_NAME,
           Boolean.FALSE,
-          100L, SERVICE_ID);
+          100L, SERVICE_ID, Channel.IO);
   private static final InstrumentAckDTO INSTRUMENT_ACK_DTO =
       new InstrumentAckDTO(
           INITIATIVE_ID,
