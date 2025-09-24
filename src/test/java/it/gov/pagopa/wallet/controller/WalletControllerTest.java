@@ -88,6 +88,9 @@ class WalletControllerTest {
                     INITIATIVE_ID,
                     WalletStatus.NOT_REFUNDABLE.name(),
                     null,
+                    null,
+                    DATE,
+                    DATE,
                     DATE,
                     0,
                     null,
@@ -113,7 +116,10 @@ class WalletControllerTest {
                     INITIATIVE_ID,
                     INITIATIVE_ID,
                     WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
+                    null,
                     IBAN_OK,
+                    DATE,
+                    DATE,
                     DATE,
                     1,
                     45000L,
@@ -129,6 +135,9 @@ class WalletControllerTest {
                     List.of(),SERVICE_ID);
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
+                    null,
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -561,7 +570,7 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getInitiativeId(), walletDTO.getInitiativeId());
         assertEquals(INITIATIVE_DTO.getInitiativeName(), walletDTO.getInitiativeName());
         assertEquals(INITIATIVE_DTO.getStatus(), walletDTO.getStatus());
-        assertEquals(INITIATIVE_DTO.getEndDate(), walletDTO.getEndDate());
+        assertEquals(INITIATIVE_DTO.getInitiativeEndDate(), walletDTO.getInitiativeEndDate());
         assertEquals(INITIATIVE_DTO.getIban(), walletDTO.getIban());
         assertEquals(INITIATIVE_DTO.getNInstr(), walletDTO.getNInstr());
         assertEquals(INITIATIVE_DTO.getAmountCents(), walletDTO.getAmountCents());

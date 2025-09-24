@@ -62,6 +62,7 @@ public class WalletConstants {
 
     public static final String ERROR_ONBOARDING_INVOCATION_MSG = "An error occurred in the microservice onboarding";
     public static final String ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG = "An error occurred in the microservice payment instrument";
+    public static final String ERROR_PAYMENT_INVOCATION_MSG = "An error occurred in the microservice payment";
   }
 
   public static final class ExceptionCode {
