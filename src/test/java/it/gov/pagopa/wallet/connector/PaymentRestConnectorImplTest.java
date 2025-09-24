@@ -50,7 +50,6 @@ class PaymentRestConnectorImplTest {
         TransactionBarCodeCreationRequest request = new TransactionBarCodeCreationRequest();
         request.setInitiativeId("INIT123");
 
-        // costruiamo un FeignException con status 403
         FeignException forbidden = new FeignException.Forbidden(
                 "forbidden",
                 Request.create(Request.HttpMethod.GET, "/url", Collections.emptyMap(), null,
@@ -76,7 +75,6 @@ class PaymentRestConnectorImplTest {
     void createExtendedTransaction_otherError_throwsPaymentInvocationException() {
         TransactionBarCodeCreationRequest request = new TransactionBarCodeCreationRequest();
 
-        // FeignException con status diverso da 403
         FeignException badRequest = new FeignException.BadRequest(
                 "bad request",
                 Request.create(Request.HttpMethod.GET, "/url", Collections.emptyMap(), null,
