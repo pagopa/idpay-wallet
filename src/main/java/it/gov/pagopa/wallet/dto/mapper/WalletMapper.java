@@ -101,18 +101,14 @@ public class WalletMapper {
     }
 
     private String setVoucherStatus(Wallet wallet) {
-        LocalDate today  = LocalDate.now();
-        LocalDate start  = wallet.getVoucherStartDate();
-        LocalDate end    = wallet.getVoucherEndDate();
-        LocalDate endM3  = end.minusDays(expiringDay);
+        LocalDate today         = LocalDate.now();
+        LocalDate start         = wallet.getVoucherStartDate();
+        LocalDate end           = wallet.getVoucherEndDate();
+        LocalDate expiringFrom  = end.minusDays(expiringDay);
 
-        boolean isAccruedCentsZero = wallet.getAccruedCents() == 0;
-
-        boolean todayIsBetweenInclusive =
-                !today.isBefore(start) && !today.isAfter(end);
-
-        boolean todayInExpiringWindow =
-                today.isAfter(start) && !today.isAfter(endM3);
+        boolean isAccruedCentsZero      = wallet.getAccruedCents() == 0;
+        boolean todayIsBetweenInclusive = (today.isAfter(start) || today.isEqual(start)) && !today.isAfter(end);
+        boolean todayInExpiringWindow   = todayIsBetweenInclusive && (today.isEqual(expiringFrom) || today.isAfter(expiringFrom));
 
         if (wallet.getAccruedCents() > 0) {
             return VoucherStatus.USED.name();

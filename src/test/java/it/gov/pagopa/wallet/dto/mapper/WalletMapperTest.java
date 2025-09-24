@@ -288,8 +288,8 @@ class WalletMapperTest {
         LocalDate today = LocalDate.now();
         // endM3 = end - 3; con end = today + 5 => endM3 = today + 2
         Wallet w = Wallet.builder()
-                .voucherStartDate(today.minusDays(1)) // today > start
-                .voucherEndDate(today.plusDays(5))    // today <= end - 3
+                .voucherStartDate(today.minusDays(6)) // today > start
+                .voucherEndDate(today.plusDays(3))    // today <= end - 3
                 .accruedCents(0L)
                 .build();
 
