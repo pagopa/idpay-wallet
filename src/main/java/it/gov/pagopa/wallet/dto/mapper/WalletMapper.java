@@ -2,17 +2,22 @@ package it.gov.pagopa.wallet.dto.mapper;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.enums.VoucherStatus;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.utils.Utilities;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class WalletMapper {
+    @Value("${app.wallet.expiringDay}")
+    private int expiringDay;
     private final Utilities utilities;
 
     public WalletMapper(Utilities utilities) {
@@ -24,7 +29,7 @@ public class WalletMapper {
                 .id(evaluationDTO.getUserId().concat("_").concat(evaluationDTO.getInitiativeId()))
                 .initiativeId(evaluationDTO.getInitiativeId())
                 .initiativeName(evaluationDTO.getInitiativeName())
-                .endDate(evaluationDTO.getInitiativeEndDate())
+                .initiativeEndDate(evaluationDTO.getInitiativeEndDate())
                 .organizationId(evaluationDTO.getOrganizationId())
                 .organizationName(evaluationDTO.getOrganizationName())
                 .userId(evaluationDTO.getUserId())
@@ -48,8 +53,11 @@ public class WalletMapper {
                 .familyId(wallet.getFamilyId())
                 .initiativeId(wallet.getInitiativeId())
                 .initiativeName(wallet.getInitiativeName())
-                .endDate(wallet.getEndDate())
+                .initiativeEndDate(wallet.getInitiativeEndDate())
+                .voucherStartDate(wallet.getVoucherStartDate())
+                .voucherEndDate(wallet.getVoucherEndDate())
                 .status(wallet.getStatus())
+                .voucherStatus(setVoucherStatus(wallet))
                 .amountCents(wallet.getAmountCents())
                 .accruedCents(wallet.getAccruedCents() - wallet.getRefundedCents())
                 .refundedCents(wallet.getRefundedCents())
@@ -90,5 +98,27 @@ public class WalletMapper {
                 .maskedPan(instrumentDetailDTO.getMaskedPan())
                 .brand(instrumentDetailDTO.getBrand())
                 .initiativeList(initiativesStatusDTO).build();
+    }
+
+    private String setVoucherStatus(Wallet wallet) {
+        LocalDate today         = LocalDate.now();
+        LocalDate start         = wallet.getVoucherStartDate();
+        LocalDate end           = wallet.getVoucherEndDate();
+        LocalDate expiringFrom  = end.minusDays(expiringDay);
+
+        boolean isAccruedCentsZero      = wallet.getAccruedCents() == 0;
+        boolean todayIsBetweenInclusive = (today.isAfter(start) || today.isEqual(start)) && !today.isAfter(end);
+        boolean todayInExpiringWindow   = todayIsBetweenInclusive && (today.isEqual(expiringFrom) || today.isAfter(expiringFrom));
+
+        if (wallet.getAccruedCents() > 0) {
+            return VoucherStatus.USED.name();
+        } else if (today.isAfter(end) && isAccruedCentsZero) {
+            return VoucherStatus.EXPIRED.name();
+        } else if (todayInExpiringWindow && isAccruedCentsZero) {
+            return VoucherStatus.EXPIRING.name();
+        } else if (todayIsBetweenInclusive && isAccruedCentsZero) {
+            return VoucherStatus.ACTIVE.name();
+        }
+        return null;
     }
 }

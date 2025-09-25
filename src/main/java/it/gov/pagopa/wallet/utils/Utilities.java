@@ -3,8 +3,13 @@ package it.gov.pagopa.wallet.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
+import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.TimeZone;
 
 @Component
 public class Utilities {
@@ -37,5 +42,11 @@ public class Utilities {
     }
     public String getPathLogo(String organizationId, String initiativeId){
         return String.format(LOGO_PATH_TEMPLATE, organizationId, initiativeId, LOGO_NAME);
+    }
+
+    public static LocalDate getLocalDate(OffsetDateTime date) {
+        return date.toInstant()
+                .atZone(TimeZone.getDefault().toZoneId())
+                .toLocalDate();
     }
 }

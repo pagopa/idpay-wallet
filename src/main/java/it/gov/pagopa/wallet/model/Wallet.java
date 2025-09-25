@@ -26,8 +26,11 @@ public class Wallet {
   private String organizationId;
   private String organizationName;
   private String status;
+  private String voucherStatus;
   private LocalDateTime acceptanceDate;
-  private LocalDate endDate;
+  private LocalDate initiativeEndDate;
+  private LocalDate voucherStartDate;
+  private LocalDate voucherEndDate;
   private String iban;
   private Long amountCents;
   private Long accruedCents;
