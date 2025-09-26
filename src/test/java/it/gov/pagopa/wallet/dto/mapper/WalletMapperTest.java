@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
@@ -324,5 +325,52 @@ class WalletMapperTest {
         Method m = target.getClass().getDeclaredMethod("setVoucherStatus", Wallet.class);
         m.setAccessible(true);
         return (String) m.invoke(target, wallet);
+    }
+
+    @Test
+    void setVoucherStatus_whenVoucherStartDateIsNull() throws Exception {
+        setExpiringDay(walletMapper, 3);
+        LocalDate today = LocalDate.now();
+
+        Wallet w = Wallet.builder()
+                .voucherStartDate(null)
+                .voucherEndDate(today.plusDays(3))
+                .accruedCents(0L)
+                .build();
+
+        String status = invokeSetVoucherStatus(walletMapper, w);
+
+        assertNull(status);
+    }
+
+    @Test
+    void setVoucherStatus_whenVoucherEndDateIsNull() throws Exception {
+        setExpiringDay(walletMapper, 3);
+        LocalDate today = LocalDate.now();
+
+        Wallet w = Wallet.builder()
+                .voucherStartDate(today)
+                .voucherEndDate(null)
+                .accruedCents(0L)
+                .build();
+
+        String status = invokeSetVoucherStatus(walletMapper, w);
+
+        assertNull(status);
+    }
+
+    @Test
+    void setVoucherStatus_whenVoucherDatesNull() throws Exception {
+        setExpiringDay(walletMapper, 3);
+
+        Wallet w = Wallet.builder()
+                .voucherStartDate(null)
+                .voucherEndDate(null)
+                .accruedCents(0L)
+                .build();
+
+        String status = invokeSetVoucherStatus(walletMapper, w);
+
+        assertNull(status);
     }
 }
