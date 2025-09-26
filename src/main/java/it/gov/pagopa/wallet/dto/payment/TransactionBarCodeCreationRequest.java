@@ -14,4 +14,5 @@ public class TransactionBarCodeCreationRequest {
 
     @NotBlank
     private String initiativeId;
+    private Long voucherAmountCents;
 }
