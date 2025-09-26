@@ -101,6 +101,11 @@ public class WalletMapper {
     }
 
     private String setVoucherStatus(Wallet wallet) {
+
+        if(wallet.getVoucherStartDate() == null || wallet.getVoucherEndDate() == null){
+            return null;
+        }
+
         LocalDate today         = LocalDate.now();
         LocalDate start         = wallet.getVoucherStartDate();
         LocalDate end           = wallet.getVoucherEndDate();
