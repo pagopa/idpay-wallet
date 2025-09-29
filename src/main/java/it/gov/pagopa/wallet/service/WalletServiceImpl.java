@@ -443,6 +443,7 @@ public class WalletServiceImpl implements WalletService {
       TransactionBarCodeEnrichedResponse response = paymentRestConnector.createExtendedTransaction(TransactionBarCodeCreationRequest
               .builder()
               .initiativeId(evaluationDTO.getInitiativeId())
+              .voucherAmountCents(evaluationDTO.getBeneficiaryBudgetCents())
               .build(), evaluationDTO.getUserId());
       wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
       wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
