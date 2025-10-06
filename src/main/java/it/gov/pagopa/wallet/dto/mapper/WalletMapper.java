@@ -63,7 +63,7 @@ public class WalletMapper {
                 .refundedCents(wallet.getRefundedCents())
                 .nInstr(wallet.getNInstr())
                 .iban(wallet.getIban())
-                .lastCounterUpdate(wallet.getLastCounterUpdate())
+     //           .lastCounterUpdate(wallet.getLastCounterUpdate())
                 .initiativeRewardType(wallet.getInitiativeRewardType())
                 .logoURL(Boolean.TRUE.equals(wallet.getIsLogoPresent()) ? utilities.createLogoUrl(wallet.getOrganizationId(), wallet.getInitiativeId()) : null)
                 .organizationName(wallet.getOrganizationName())
