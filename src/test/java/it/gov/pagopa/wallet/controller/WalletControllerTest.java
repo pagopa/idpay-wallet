@@ -81,6 +81,11 @@ class WalletControllerTest {
     private static final LocalDate DATE = LocalDate.now();
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final String SERVICE_ID = "serviceid";
+
+    private static final String USERMAIL = "USERMAIL";
+    private static final String CHANNEL_GENERAL = "CHANNEL";
+    private static final String NAME = "NAME";
+    private static final String SURNAME = "SURNAME";
     private static final WalletDTO INITIATIVE_DTO_TEST =
             new WalletDTO(
                     FAMILY_ID,
@@ -103,7 +108,13 @@ class WalletControllerTest {
                     null,
                     100L,
                     0L,
-                    List.of(),SERVICE_ID);
+                    List.of(),
+                    USERMAIL,
+                    CHANNEL_GENERAL,
+                    NAME,
+                    SURNAME,
+                    SERVICE_ID
+                    );
     private static final IbanBodyDTO IBAN_BODY_DTO =
             new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -132,7 +143,12 @@ class WalletControllerTest {
                     10L,
                     100L,
                     0L,
-                    List.of(),SERVICE_ID);
+                    List.of(),
+                    USERMAIL,
+                    CHANNEL_GENERAL,
+                    NAME,
+                    SURNAME,
+                    SERVICE_ID);
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
                     null,
@@ -155,7 +171,12 @@ class WalletControllerTest {
                     null,
                     100L,
                     0L,
-                    List.of(),SERVICE_ID);
+                    List.of(),
+                    USERMAIL,
+                    CHANNEL_GENERAL,
+                    NAME,
+                    SURNAME,
+                    SERVICE_ID);
 
     @MockBean
     WalletService walletServiceMock;
