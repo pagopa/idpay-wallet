@@ -150,7 +150,6 @@ class WalletMapperTest {
                     .accruedCents(900L)
                     .refundedCents(100L)
                     .nInstr(0)
-                    .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .organizationName(ORGANIZATION_NAME)
                     .nTrx(10L)
@@ -171,7 +170,6 @@ class WalletMapperTest {
                     .accruedCents(900L)
                     .refundedCents(100L)
                     .nInstr(0)
-                    .lastCounterUpdate(TEST_DATE)
                     .initiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_REFUND)
                     .logoURL("https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
                             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME))
