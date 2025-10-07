@@ -43,4 +43,8 @@ public class WalletDTO {
     private Long counterVersion;
     private List<Long> counterHistory;
     private String serviceId;
+    private String userMail;
+    private String channel;
+    private String name;
+    private String surname;
 }

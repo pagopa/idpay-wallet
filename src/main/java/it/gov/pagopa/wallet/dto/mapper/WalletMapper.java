@@ -69,6 +69,10 @@ public class WalletMapper {
                 .nTrx(wallet.getNTrx())
                 .maxTrx(wallet.getMaxTrx())
                 .serviceId(wallet.getServiceId())
+                .userMail(wallet.getUserMail())
+                .channel(wallet.getChannel())
+                .name(wallet.getName())
+                .surname(wallet.getSurname())
                 .build();
     }
 
