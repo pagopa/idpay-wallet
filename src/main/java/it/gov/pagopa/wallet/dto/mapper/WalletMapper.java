@@ -45,6 +45,10 @@ public class WalletMapper {
                 .maxTrx(evaluationDTO.getMaxTrx())
                 .counterVersion(0L)
                 .counterHistory(new ArrayList<>())
+                .channel(evaluationDTO.getChannel().toString())
+                .userMail(evaluationDTO.getUserMail())
+                .name(evaluationDTO.getName())
+                .surname(evaluationDTO.getSurname())
                 .build();
     }
 
