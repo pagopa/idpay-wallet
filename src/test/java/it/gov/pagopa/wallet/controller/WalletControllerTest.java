@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.config.WalletErrorManagerConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.custom.EnrollmentNotAllowedException;
 import it.gov.pagopa.wallet.exception.custom.InitiativeInvalidException;
@@ -109,11 +110,11 @@ class WalletControllerTest {
                     100L,
                     0L,
                     List.of(),
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID
+                    SURNAME
                     );
     private static final IbanBodyDTO IBAN_BODY_DTO =
             new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
@@ -144,11 +145,11 @@ class WalletControllerTest {
                     100L,
                     0L,
                     List.of(),
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID);
+                    SURNAME);
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
                     null,
@@ -172,11 +173,11 @@ class WalletControllerTest {
                     100L,
                     0L,
                     List.of(),
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID);
+                    SURNAME);
 
     @MockBean
     WalletService walletServiceMock;

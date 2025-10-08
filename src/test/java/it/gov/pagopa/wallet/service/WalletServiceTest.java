@@ -326,11 +326,11 @@ class WalletServiceTest {
                     100L,
                     COUNTER_VERSION,
                     COUNTER_HISTORY,
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID);
+                    SURNAME);
 
     private static final WalletDTO WALLET_REFUNDABLE_DTO =
             new WalletDTO(
@@ -355,11 +355,11 @@ class WalletServiceTest {
                     100L,
                     COUNTER_VERSION,
                     COUNTER_HISTORY,
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID);
+                    SURNAME);
 
     private static final WalletDTO WALLET_UNSUBSCRIBED_DTO =
             new WalletDTO(
@@ -384,11 +384,11 @@ class WalletServiceTest {
                     100L,
                     COUNTER_VERSION,
                     COUNTER_HISTORY,
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID);
+                    SURNAME);
 
     private static final WalletDTO WALLET_ISSUER_DTO =
             new WalletDTO(null,
@@ -412,11 +412,11 @@ class WalletServiceTest {
                     null,
                     COUNTER_VERSION,
                     COUNTER_HISTORY,
+                    SERVICE_ID,
                     USERMAIL,
-                    CHANNEL_GENERAL,
+                    Channel.WEB,
                     NAME,
-                    SURNAME,
-                    SERVICE_ID);
+                    SURNAME);
 
     private static final RewardDTO REWARD_DTO =
             RewardDTO.builder()
@@ -485,7 +485,13 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.IO);
+                    100L,
+                    SERVICE_ID,
+                    Channel.IO,
+                    USERMAIL,
+                    NAME,
+                    SURNAME)
+            ;
 
     private static final EvaluationDTO EVALUATION_ONBOARDING_OK =
             new EvaluationDTO(
@@ -503,7 +509,12 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.IO);
+                    100L,
+                    SERVICE_ID,
+                    Channel.IO,
+                    USERMAIL,
+                    NAME,
+                    SURNAME);
 
     private static final EvaluationDTO EVALUATION_JOINED =
             new EvaluationDTO(
@@ -521,7 +532,12 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.IO);
+                    100L,
+                    SERVICE_ID,
+                    Channel.IO,
+                    USERMAIL,
+                    NAME,
+                    SURNAME);
 
     private static final EvaluationDTO OUTCOME_OK_DISCOUNT =
             new EvaluationDTO(
@@ -539,7 +555,12 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.IO);
+                    100L,
+                    SERVICE_ID,
+                    Channel.IO,
+                    USERMAIL,
+                    NAME,
+                    SURNAME);
 
     private static final EvaluationDTO OUTCOME_OK_DISCOUNT_GUIDONIA =
             new EvaluationDTO(
@@ -557,7 +578,12 @@ class WalletServiceTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
                     COMUNE_DI_GUIDONIA_MONTECELIO,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.IO);
+                    100L,
+                    SERVICE_ID,
+                    Channel.IO,
+                    USERMAIL,
+                    NAME,
+                    SURNAME);
 
     @BeforeEach
     void setUp() {
@@ -2342,19 +2368,23 @@ class WalletServiceTest {
                 IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
                 0L,
-                List.of(),                    USERMAIL,
-                CHANNEL_GENERAL,
+                List.of(),
+                SERVICE_ID,
+                USERMAIL,
+                Channel.WEB,
                 NAME,
-                SURNAME,SERVICE_ID);
+                SURNAME);
         WalletDTO walletDtoUnsub = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 VoucherStatus.ACTIVE.name(), IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2),
                 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
                 0L,
-                List.of(),                    USERMAIL,
-                CHANNEL_GENERAL,
+                List.of(),
+                SERVICE_ID,
+                USERMAIL,
+                Channel.WEB,
                 NAME,
-                SURNAME,SERVICE_ID);
+                SURNAME);
 
         Mockito.when(walletRepositoryMock.findByUserId(USER_ID)).thenReturn(walletList);
         Mockito.when(walletMapper.toInitiativeDTO(testWallet)).thenReturn(WALLET_DTO);

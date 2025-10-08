@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import it.gov.pagopa.wallet.enums.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,7 +45,7 @@ public class WalletDTO {
     private List<Long> counterHistory;
     private String serviceId;
     private String userMail;
-    private String channel;
+    private Channel channel;
     private String name;
     private String surname;
 }
