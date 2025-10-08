@@ -47,31 +47,38 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
 
         // Esecuzione manuale tramite controller
         public void runBatchManually(String initiativeId, int daysNumber) {
+            long startTime = System.currentTimeMillis();
             executeBatchLogic(initiativeId, daysNumber);
+            performanceLog(startTime, WalletConstants.REMINDER);
         }
 
         private void executeBatchLogic(String initiativeId, int daysNumber) {
-            // Logica del batch
+
             LocalDate now = LocalDate.now();
             LocalDate expirationDate = now.plusDays(daysNumber);
 
-
-
+            log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", initiativeId, expirationDate);
             List<Wallet> walletList = walletRepository.findByInitiativeIdAndVoucherEndDateBefore(initiativeId, expirationDate);
-            for(Wallet wallet : walletList){
-                NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
-                        .operationType(WalletConstants.REMINDER)
-                        .userId(wallet.getUserId())
-                        .initiativeId(wallet.getInitiativeId())
-                        .serviceId(wallet.getServiceId())
-                        .channel(wallet.getChannel())
-                        .initiativeName(wallet.getInitiativeName())
-                        .name(wallet.getName())
-                        .surname(wallet.getSurname())
-                        .userMail(wallet.getUserMail())
-                        .build();
+            log.info("[REMINDER_BATCH] {} expiring vouchers found", walletList.size());
 
-                sendNotification(notificationQueueDTO);
+            if(!walletList.isEmpty()) {
+                log.info("[REMINDER_BATCH] Start sending notifications for expiring vouchers");
+                for (Wallet wallet : walletList) {
+                    NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
+                            .operationType(WalletConstants.REMINDER)
+                            .userId(wallet.getUserId())
+                            .initiativeId(wallet.getInitiativeId())
+                            .serviceId(wallet.getServiceId())
+                            .channel(wallet.getChannel())
+                            .initiativeName(wallet.getInitiativeName())
+                            .name(wallet.getName())
+                            .surname(wallet.getSurname())
+                            .userMail(wallet.getUserMail())
+                            .build();
+
+                    sendNotification(notificationQueueDTO);
+                }
+                log.info("[REMINDER_BATCH] End sending notifications for expiring vouchers");
             }
 
 
