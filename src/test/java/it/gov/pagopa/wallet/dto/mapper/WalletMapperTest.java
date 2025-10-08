@@ -72,6 +72,10 @@ class WalletMapperTest {
                     .counterVersion(COUNTER_VERSION)
                     .counterHistory(COUNTER_HISTORY)
                     //.serviceId(SERVICE_ID)
+                    .userMail(USERMAIL)
+                    .channel(Channel.WEB)
+                    .name(NAME)
+                    .surname(SURNAME)
                     .build();
 
     private static final Wallet WALLET =
