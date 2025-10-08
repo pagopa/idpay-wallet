@@ -53,11 +53,12 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
         }
 
         private void executeBatchLogic(String initiativeId, int daysNumber) {
+            String sanitizedInitiativeId = sanitizeString(initiativeId);
 
             LocalDate now = LocalDate.now();
             LocalDate expirationDate = now.plusDays(daysNumber);
 
-            log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", initiativeId, expirationDate);
+            log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", sanitizedInitiativeId, expirationDate);
             List<Wallet> walletList = walletRepository.findByInitiativeIdAndVoucherEndDateBefore(initiativeId, expirationDate);
             log.info("[REMINDER_BATCH] {} expiring vouchers found", walletList.size());
 
@@ -114,6 +115,10 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                 "[PERFORMANCE_LOG] [{}] Time occurred to perform business logic: {} ms",
                 service,
                 System.currentTimeMillis() - startTime);
+    }
+
+    public static String sanitizeString(String str){
+        return str == null? null: str.replaceAll("[\\r\\n]", "").replaceAll("[^\\w\\s-]", "");
     }
 
 }
