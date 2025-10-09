@@ -51,7 +51,6 @@ import static it.gov.pagopa.wallet.constants.WalletConstants.CHANNEL_APP_IO;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
-import static it.gov.pagopa.wallet.service.WalletServiceImpl.COMUNE_DI_GUIDONIA_MONTECELIO;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -576,7 +575,7 @@ class WalletServiceTest {
                     List.of(),
                     500L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
-                    COMUNE_DI_GUIDONIA_MONTECELIO,
+                    ORGANIZATION_NAME,
                     Boolean.FALSE,
                     100L,
                     SERVICE_ID,
