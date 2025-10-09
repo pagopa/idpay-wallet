@@ -8,6 +8,9 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,40 +26,52 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     private final WalletRepository walletRepository;
     private final NotificationProducer notificationProducer;
     private final ErrorProducer errorProducer;
+    private final int blockReminderBatch;
     private final String notificationTopic;
     private final String notificationServer;
+
     public VoucherExpirationReminderBatchServiceImpl(WalletRepository walletRepository,
                                                      NotificationProducer notificationProducer,
                                                      ErrorProducer errorProducer,
+                                                     @Value("${app.wallet.blockReminderBatch}") int blockReminderBatch,
                                                      @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
                                                      @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}") String notificationTopic
-                                                        )  {
+    ) {
         this.walletRepository = walletRepository;
         this.notificationProducer = notificationProducer;
         this.errorProducer = errorProducer;
+        this.blockReminderBatch = blockReminderBatch;
         this.notificationTopic = notificationTopic;
         this.notificationServer = notificationServer;
     }
 
 
-        public void runReminderBatch(String initiativeId, int expiringDay) {
-            long startTime = System.currentTimeMillis();
-            executeBatchLogic(initiativeId, expiringDay);
-            performanceLog(startTime, WalletConstants.REMINDER);
-        }
+    public void runReminderBatch(String initiativeId, int expiringDay) {
+        long startTime = System.currentTimeMillis();
+        executeBatchLogic(initiativeId, expiringDay);
+        performanceLog(startTime, WalletConstants.REMINDER);
+    }
 
-        private void executeBatchLogic(String initiativeId, int expiringDay) {
-            String sanitizedInitiativeId = sanitizeString(initiativeId);
+    private void executeBatchLogic(String initiativeId, int expiringDay) {
+        String sanitizedInitiativeId = sanitizeString(initiativeId);
 
-            LocalDate now = LocalDate.now();
-            LocalDate expirationDate = now.plusDays(expiringDay);
+        LocalDate now = LocalDate.now();
+        LocalDate expirationDate = now.plusDays(expiringDay);
 
-            log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", sanitizedInitiativeId, expirationDate);
-            List<Wallet> walletList = walletRepository.findByInitiativeIdAndVoucherEndDateBefore(initiativeId, expirationDate);
-            log.info("[REMINDER_BATCH] {} expiring vouchers found", walletList.size());
 
-            if(!walletList.isEmpty()) {
-                log.info("[REMINDER_BATCH] Start sending notifications for expiring vouchers");
+        int page = 0;
+        Pageable pageable = PageRequest.of(page, blockReminderBatch);
+        Page<Wallet> walletPage;
+
+        log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", sanitizedInitiativeId, expirationDate);
+
+        do {
+            walletPage = walletRepository.findByInitiativeIdAndVoucherEndDateBefore(initiativeId, expirationDate, pageable);
+            List<Wallet> walletList = walletPage.getContent();
+            log.info("[REMINDER_BATCH] Page {} - {} expiring vouchers found", page, walletList.size());
+
+            if (!walletList.isEmpty()) {
+                log.info("[REMINDER_BATCH] Start sending notifications for expiring vouchers - Page {}", page);
                 for (Wallet wallet : walletList) {
                     NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
                             .operationType(WalletConstants.REMINDER)
@@ -72,11 +87,13 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
 
                     sendNotification(notificationQueueDTO);
                 }
-                log.info("[REMINDER_BATCH] End sending notifications for expiring vouchers");
+                log.info("[REMINDER_BATCH] End sending notifications for expiring vouchers - Page {}", page);
             }
+            pageable = walletPage.nextPageable();
+            page++;
+        } while (walletPage.hasNext());
 
-
-        }
+    }
 
     private void sendNotification(NotificationQueueDTO notificationQueueDTO) {
         try {
@@ -110,8 +127,8 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                 System.currentTimeMillis() - startTime);
     }
 
-    public static String sanitizeString(String str){
-        return str == null? null: str.replaceAll("[\\r\\n]", "").replaceAll("[^\\w\\s-]", "");
+    public static String sanitizeString(String str) {
+        return str == null ? null : str.replaceAll("[\\r\\n]", "").replaceAll("[^\\w\\s-]", "");
     }
 
 }
