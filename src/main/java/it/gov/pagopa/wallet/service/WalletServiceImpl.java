@@ -837,12 +837,13 @@ public class WalletServiceImpl implements WalletService {
               userWallet.getFamilyId(),
               counters.getTotalRewardCents());
 
+      Long budgetCents = rewardTransactionDTO.getVoucherAmountCents() != null ? rewardTransactionDTO.getVoucherAmountCents() : counters.getInitiativeBudgetCents();
       boolean updateResult =
               walletUpdatesRepository.rewardFamilyTransaction(
                       initiativeId,
                       userWallet.getFamilyId(),
                       rewardTransactionDTO.getElaborationDateTime(),
-                      counters.getInitiativeBudgetCents() - counters.getTotalRewardCents(),
+                      budgetCents - counters.getTotalRewardCents(),
                       counters.getVersion());
 
       if (!updateResult) {
@@ -869,10 +870,11 @@ public class WalletServiceImpl implements WalletService {
 
   private void rewardUserTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, Wallet userWallet) {
     if(userWallet.getCounterVersion() < counters.getVersion()) {
+      Long budgetCents = rewardTransactionDTO.getVoucherAmountCents() != null ? rewardTransactionDTO.getVoucherAmountCents() : counters.getInitiativeBudgetCents();
       walletUpdatesRepository.rewardTransaction(initiativeId,
               rewardTransactionDTO.getUserId(),
               rewardTransactionDTO.getElaborationDateTime(),
-              counters.getInitiativeBudgetCents()- counters.getTotalRewardCents(),
+              budgetCents - counters.getTotalRewardCents(),
               counters.getTotalRewardCents(),
               counters.getVersion());
     }
