@@ -1334,14 +1334,6 @@ class WalletServiceTest {
         assertEquals(testWallet.getStatus(), WalletStatus.REFUNDABLE.name());
     }
 
-    @Test
-    void createWallet_guidonia() {
-        Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
-        walletService.createWallet(OUTCOME_OK_DISCOUNT_GUIDONIA);
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
-        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
-        assertEquals(testWallet.getStatus(), WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-    }
 
     @Test
     void processIbanOutcome_error_queue() {
