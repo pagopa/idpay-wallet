@@ -45,6 +45,10 @@ public class WalletMapper {
                 .maxTrx(evaluationDTO.getMaxTrx())
                 .counterVersion(0L)
                 .counterHistory(new ArrayList<>())
+                .channel(evaluationDTO.getChannel())
+                .userMail(evaluationDTO.getUserMail())
+                .name(evaluationDTO.getName())
+                .surname(evaluationDTO.getSurname())
                 .build();
     }
 
@@ -69,6 +73,10 @@ public class WalletMapper {
                 .nTrx(wallet.getNTrx())
                 .maxTrx(wallet.getMaxTrx())
                 .serviceId(wallet.getServiceId())
+                .userMail(wallet.getUserMail())
+                .channel(wallet.getChannel())
+                .name(wallet.getName())
+                .surname(wallet.getSurname())
                 .build();
     }
 

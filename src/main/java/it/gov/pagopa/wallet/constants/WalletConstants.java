@@ -32,6 +32,7 @@ public class WalletConstants {
   public static final String REFUND = "REFUND";
   public static final String SUSPENSION = "SUSPENSION";
   public static final String READMISSION = "READMISSION";
+  public static final String REMINDER = "REMINDER";
   public static final List<String> FILTER_INSTRUMENT_STATUS_LIST = List.of("ACTIVE", "PENDING_ENROLL_RTD",
           "PENDING_ENROLL_RE", "PENDING_DEACTIVATION_REQUEST");
   public static final String INITIATIVE_REWARD_TYPE_DISCOUNT = "DISCOUNT";

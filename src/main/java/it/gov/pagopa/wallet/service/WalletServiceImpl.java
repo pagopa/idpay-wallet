@@ -54,7 +54,6 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
   public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
-  public static final String COMUNE_DI_GUIDONIA_MONTECELIO = "comune di guidonia montecelio";
   private final WalletRepository walletRepository;
   private final WalletUpdatesRepository walletUpdatesRepository;
   private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
@@ -425,18 +424,6 @@ public class WalletServiceImpl implements WalletService {
                 .initiativeId(evaluationDTO.getInitiativeId())
                 .userId(evaluationDTO.getUserId())
                 .build());
-      }
-
-      if (evaluationDTO.getInitiativeName().toLowerCase().contains("bonus") &&
-              evaluationDTO.getOrganizationName().equalsIgnoreCase(COMUNE_DI_GUIDONIA_MONTECELIO)){
-        wallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        wallet.setNInstr(1);
-        wallet.setServiceId(evaluationDTO.getServiceId());
-        paymentInstrumentRestConnector.enrollDiscountInitiative(
-                InstrumentFromDiscountDTO.builder()
-                        .initiativeId(evaluationDTO.getInitiativeId())
-                        .userId(evaluationDTO.getUserId())
-                        .build());
       }
 
       log.info("[POST_PAYMENT_BAR_CODE_EXTENDED] Create the vocuher and return his start and end Date");
@@ -853,12 +840,13 @@ public class WalletServiceImpl implements WalletService {
               userWallet.getFamilyId(),
               counters.getTotalRewardCents());
 
+      Long budgetCents = rewardTransactionDTO.getVoucherAmountCents() != null ? rewardTransactionDTO.getVoucherAmountCents() : counters.getInitiativeBudgetCents();
       boolean updateResult =
               walletUpdatesRepository.rewardFamilyTransaction(
                       initiativeId,
                       userWallet.getFamilyId(),
                       rewardTransactionDTO.getElaborationDateTime(),
-                      counters.getInitiativeBudgetCents() - counters.getTotalRewardCents(),
+                      budgetCents - counters.getTotalRewardCents(),
                       counters.getVersion());
 
       if (!updateResult) {
@@ -885,10 +873,11 @@ public class WalletServiceImpl implements WalletService {
 
   private void rewardUserTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, Wallet userWallet) {
     if(userWallet.getCounterVersion() < counters.getVersion()) {
+      Long budgetCents = rewardTransactionDTO.getVoucherAmountCents() != null ? rewardTransactionDTO.getVoucherAmountCents() : counters.getInitiativeBudgetCents();
       walletUpdatesRepository.rewardTransaction(initiativeId,
               rewardTransactionDTO.getUserId(),
               rewardTransactionDTO.getElaborationDateTime(),
-              counters.getInitiativeBudgetCents()- counters.getTotalRewardCents(),
+              budgetCents - counters.getTotalRewardCents(),
               counters.getTotalRewardCents(),
               counters.getVersion());
     }

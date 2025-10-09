@@ -38,4 +38,7 @@ public class EvaluationDTO {
   private Long maxTrx;
   private String serviceId;
   private Channel channel;
+  private String userMail;
+  private String name;
+  private String surname;
 }

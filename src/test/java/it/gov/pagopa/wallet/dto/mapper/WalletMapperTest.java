@@ -45,6 +45,9 @@ class WalletMapperTest {
     private static final Long COUNTER_VERSION = 0L;
     private static final List<Long> COUNTER_HISTORY = new ArrayList<>();
     private static final String SERVICE_ID = "serviceid";
+    private static final String USERMAIL = "USERMAIL";
+    private static final String NAME = "NAME";
+    private static final String SURNAME = "SURNAME";
     private static final Wallet NEW_WALLET =
             Wallet.builder()
                     .id(USER_ID + "_" + INITIATIVE_ID)
@@ -69,6 +72,10 @@ class WalletMapperTest {
                     .counterVersion(COUNTER_VERSION)
                     .counterHistory(COUNTER_HISTORY)
                     //.serviceId(SERVICE_ID)
+                    .userMail(USERMAIL)
+                    .channel(Channel.WEB)
+                    .name(NAME)
+                    .surname(SURNAME)
                     .build();
 
     private static final Wallet WALLET =
@@ -134,7 +141,12 @@ class WalletMapperTest {
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     ORGANIZATION_NAME,
                     Boolean.FALSE,
-                    100L, SERVICE_ID, Channel.WEB);
+                    100L,
+                    SERVICE_ID,
+                    Channel.WEB,
+                    USERMAIL,
+                    NAME,
+                    SURNAME);
 
     private static final WalletDTO INITIATIVE_DTO =
             WalletDTO.builder()
