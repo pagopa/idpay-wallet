@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/idpay/wallet")
 public interface VoucherExpirationReminderBatchController {
 
-    @PostMapping("/batch/run/{initiativeId}/{daysNumber}")
-    ResponseEntity<Void> runBatchManually(
-    @PathVariable("initiativeId") String initiativeId,
-    @PathVariable("daysNumber") int daysNumber
+    @PostMapping("/batch/run/{initiativeId}")
+    ResponseEntity<Void> runReminderBatch(
+    @PathVariable("initiativeId") String initiativeId
             );
 
 

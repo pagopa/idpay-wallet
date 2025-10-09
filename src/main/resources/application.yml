@@ -320,3 +320,4 @@ app:
     formalControl: ${IS_IBAN_FORMAL_CONTROL_ACTIVE:false}
   wallet:
     expiringDay: ${WALLET_EXPIRING_DAY:3}
+    blockReminderBatch: ${BLOCK_REMINDER_BATCH:100}
