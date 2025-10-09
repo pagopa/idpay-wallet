@@ -81,7 +81,7 @@ class VoucherExpirationReminderServiceTest {
     }
 
     @Test
-    void runBatchManually_successWithWallets() {
+    void runReminderBatch_successWithWallets() {
 
         List<Wallet> walletList = new ArrayList<>();
         walletList.add(TEST_WALLET_1);
@@ -95,7 +95,7 @@ class VoucherExpirationReminderServiceTest {
                 .sendNotification(any(NotificationQueueDTO.class));
 
         // Act
-        voucherExpirationReminderBatchService.runBatchManually(INITIATIVE_ID, DAYS_NUMBER);
+        voucherExpirationReminderBatchService.runReminderBatch(INITIATIVE_ID, DAYS_NUMBER);
 
         // Assert
         //Verify that the repository has been called 1 time
@@ -107,13 +107,13 @@ class VoucherExpirationReminderServiceTest {
     }
 
     @Test
-    void runBatchManually_successWithNoWallets() {
+    void runReminderBatch_successWithNoWallets() {
 
         when(walletRepositoryMock.findByInitiativeIdAndVoucherEndDateBefore(INITIATIVE_ID, EXPIRATION_DATE))
                 .thenReturn(Collections.emptyList());
 
         //act
-        voucherExpirationReminderBatchService.runBatchManually(INITIATIVE_ID, DAYS_NUMBER);
+        voucherExpirationReminderBatchService.runReminderBatch(INITIATIVE_ID, DAYS_NUMBER);
 
         //assert
         //Verify that the repository has been called 1 time
@@ -128,7 +128,7 @@ class VoucherExpirationReminderServiceTest {
 
 
     @Test
-    void runBatchManually_errorSendingNotification() {
+    void runReminderBatch_errorSendingNotification() {
         List<Wallet> walletList = new ArrayList<>();
         walletList.add(TEST_WALLET_1);
 
@@ -140,7 +140,7 @@ class VoucherExpirationReminderServiceTest {
                 .sendNotification(any(NotificationQueueDTO.class));
 
         // Act
-        voucherExpirationReminderBatchService.runBatchManually(INITIATIVE_ID, DAYS_NUMBER);
+        voucherExpirationReminderBatchService.runReminderBatch(INITIATIVE_ID, DAYS_NUMBER);
 
         // Assert
         // Verify that the repository has been called 1 time
@@ -155,7 +155,7 @@ class VoucherExpirationReminderServiceTest {
 
 
     @Test
-    void runBatchManually_errorInFirstNotification() {
+    void runReminderBatch_errorInFirstNotification() {
         List<Wallet> walletList = new ArrayList<>();
         walletList.add(TEST_WALLET_1);
         walletList.add(TEST_WALLET_2);
@@ -170,7 +170,7 @@ class VoucherExpirationReminderServiceTest {
                 .when(notificationProducerMock).sendNotification(any(NotificationQueueDTO.class));
 
         // Act
-        voucherExpirationReminderBatchService.runBatchManually(INITIATIVE_ID, DAYS_NUMBER);
+        voucherExpirationReminderBatchService.runReminderBatch(INITIATIVE_ID, DAYS_NUMBER);
 
         // Assert
         // Verify that the NotificationProducer was called 2 time

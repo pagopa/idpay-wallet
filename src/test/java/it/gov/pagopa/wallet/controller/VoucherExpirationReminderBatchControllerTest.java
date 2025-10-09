@@ -1,6 +1,5 @@
 package it.gov.pagopa.wallet.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.config.WalletErrorManagerConfig;
 import it.gov.pagopa.wallet.service.VoucherExpirationReminderBatchService;
@@ -39,13 +38,10 @@ class VoucherExpirationReminderBatchControllerTest {
     @Autowired
     protected MockMvc mvc;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
     @Test
-    void runBatchManually_ok() throws Exception {
+    void runReminderBatch_ok() throws Exception {
 
-        Mockito.doNothing().when(voucherExpirationReminderBatchServiceMock).runBatchManually(INITIATIVE_ID, DAYS_NUMBER);
+        Mockito.doNothing().when(voucherExpirationReminderBatchServiceMock).runReminderBatch(INITIATIVE_ID, DAYS_NUMBER);
 
         mvc.perform(
                         MockMvcRequestBuilders.post(
@@ -54,8 +50,7 @@ class VoucherExpirationReminderBatchControllerTest {
                                                 + REMINDER_BATCH_URL
                                                 + "/"
                                                 + INITIATIVE_ID
-                                                + "/"
-                                                + DAYS_NUMBER)
+                                                )
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isOk())

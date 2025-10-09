@@ -39,24 +39,17 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     }
 
 
-    // Esecuzione automatica ogni giorno alle 00:00 AM
-        //@Scheduled(cron = "0 0 0 * * ?")
-        //public void runScheduledBatch(String initiativeId, int daysNumber) {
-        //    executeBatchLogic(initiativeId, daysNumber);
-        //}
-
-        // Esecuzione manuale tramite controller
-        public void runBatchManually(String initiativeId, int daysNumber) {
+        public void runReminderBatch(String initiativeId, int expiringDay) {
             long startTime = System.currentTimeMillis();
-            executeBatchLogic(initiativeId, daysNumber);
+            executeBatchLogic(initiativeId, expiringDay);
             performanceLog(startTime, WalletConstants.REMINDER);
         }
 
-        private void executeBatchLogic(String initiativeId, int daysNumber) {
+        private void executeBatchLogic(String initiativeId, int expiringDay) {
             String sanitizedInitiativeId = sanitizeString(initiativeId);
 
             LocalDate now = LocalDate.now();
-            LocalDate expirationDate = now.plusDays(daysNumber);
+            LocalDate expirationDate = now.plusDays(expiringDay);
 
             log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", sanitizedInitiativeId, expirationDate);
             List<Wallet> walletList = walletRepository.findByInitiativeIdAndVoucherEndDateBefore(initiativeId, expirationDate);
