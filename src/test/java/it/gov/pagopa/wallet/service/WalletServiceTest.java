@@ -51,7 +51,6 @@ import static it.gov.pagopa.wallet.constants.WalletConstants.CHANNEL_APP_IO;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.STATUS_KO;
-import static it.gov.pagopa.wallet.service.WalletServiceImpl.COMUNE_DI_GUIDONIA_MONTECELIO;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -576,7 +575,7 @@ class WalletServiceTest {
                     List.of(),
                     500L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
-                    COMUNE_DI_GUIDONIA_MONTECELIO,
+                    ORGANIZATION_NAME,
                     Boolean.FALSE,
                     100L,
                     SERVICE_ID,
@@ -1335,14 +1334,6 @@ class WalletServiceTest {
         assertEquals(testWallet.getStatus(), WalletStatus.REFUNDABLE.name());
     }
 
-    @Test
-    void createWallet_guidonia() {
-        Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
-        walletService.createWallet(OUTCOME_OK_DISCOUNT_GUIDONIA);
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
-        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
-        assertEquals(testWallet.getStatus(), WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-    }
 
     @Test
     void processIbanOutcome_error_queue() {
