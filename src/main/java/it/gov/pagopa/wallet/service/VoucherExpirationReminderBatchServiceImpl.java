@@ -55,7 +55,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
         String sanitizedInitiativeId = sanitizeString(initiativeId);
 
         LocalDate now = LocalDate.now();
-        LocalDate expirationDate = now.plusDays(expiringDay);
+        LocalDate expirationDate = now.plusDays((long)expiringDay-1);
         String expirationDateString = expirationDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         int page = 0;
