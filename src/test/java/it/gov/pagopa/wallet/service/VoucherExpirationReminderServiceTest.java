@@ -50,7 +50,7 @@ class VoucherExpirationReminderServiceTest {
 
     @Value("${app.wallet.expiringDay}")
     private int expiringDay;
-    private final LocalDate expirationDate = LocalDate.now().plusDays(expiringDay-1);
+    private final LocalDate expirationDate = LocalDate.now().plusDays((long)expiringDay-1);
     private final String expirationDateString = expirationDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
     private static final Pageable pageable = PageRequest.of(0, 100);
 
