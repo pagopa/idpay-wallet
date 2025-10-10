@@ -12,11 +12,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -57,7 +56,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
 
         LocalDate now = LocalDate.now();
         LocalDate expirationDate = now.plusDays(expiringDay);
-
+        String expirationDateString = expirationDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         int page = 0;
         Pageable pageable = PageRequest.of(page, blockReminderBatch);
@@ -66,7 +65,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
         log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", sanitizedInitiativeId, expirationDate);
 
         do {
-            walletPage = walletRepository.findByInitiativeIdAndVoucherEndDateBefore(initiativeId, expirationDate, pageable);
+            walletPage = walletRepository.findByInitiativeIdAndVoucherEndDateIgnoringTime(initiativeId, expirationDateString, pageable);
             List<Wallet> walletList = walletPage.getContent();
             log.info("[REMINDER_BATCH] Page {} - {} expiring vouchers found", page, walletList.size());
 
