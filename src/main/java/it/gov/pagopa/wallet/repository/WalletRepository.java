@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -20,6 +21,17 @@ public interface WalletRepository extends MongoRepository<Wallet, String> {
 
     List<Wallet> findByInitiativeIdAndFamilyId(String initiativeId, String familyId);
 
-    Page<Wallet> findByInitiativeIdAndVoucherEndDateBefore(String initiativeId, LocalDate voucherEndDate, Pageable pageable);
+        @Query("""
+        {
+          'initiativeId': ?0,
+          '$expr': {
+            '$eq': [
+              { '$dateToString': { 'format': '%Y-%m-%d', 'date': '$voucherEndDate' } },
+              ?1
+            ]
+          }
+        }
+    """)
+        Page<Wallet> findByInitiativeIdAndVoucherEndDateIgnoringTime(String initiativeId, String expirationDateString, Pageable pageable);
 
 }
