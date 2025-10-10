@@ -517,6 +517,14 @@ public class WalletServiceImpl implements WalletService {
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
     long startTime = System.currentTimeMillis();
 
+      if(rewardTransactionDTO.getStatus().equals("CAPTURED")){
+          log.info("[PROCESS_TRANSACTION with status captured]");
+          String initiativeId = rewardTransactionDTO.getRewards().isEmpty() ? null : rewardTransactionDTO.getRewards().keySet().iterator().next();
+          if(initiativeId!=null){
+              updateWalletFromTransactionCaptured(initiativeId,rewardTransactionDTO.getUserId());
+          }
+      }
+
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && (rewardTransactionDTO.getStatus().equals("AUTHORIZED")
@@ -804,6 +812,17 @@ public class WalletServiceImpl implements WalletService {
   }
 
 
+  private void updateWalletFromTransactionCaptured(String initiativeId, String userId ){
+      Wallet userWallet = walletRepository.findById(generateWalletId(userId, initiativeId)).orElse(null);
+      if (userWallet == null) {
+          log.info("[UPDATE_WALLET_FROM_TRANSACTION_CAPTURED] No wallet found for user {} and initiativeId {}",
+                  userId, initiativeId);
+          return;
+      }
+      userWallet.setAmountCents(0L);
+      userWallet.setUpdateDate(LocalDateTime.now());
+      walletRepository.save(userWallet);
+  }
   private void updateWalletFromTransaction(
       String initiativeId,
       RewardTransactionDTO rewardTransactionDTO,
