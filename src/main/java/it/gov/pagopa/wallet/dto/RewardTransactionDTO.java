@@ -16,7 +16,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Getter
 @SuperBuilder
 @AllArgsConstructor
-@With
 public class RewardTransactionDTO extends TransactionDTO {
 
   private String status;
