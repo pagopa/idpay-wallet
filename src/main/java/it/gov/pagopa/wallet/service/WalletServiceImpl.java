@@ -447,7 +447,7 @@ public class WalletServiceImpl implements WalletService {
 
       auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
 
-    } else {
+    } else if (WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
       auditUtilities.logCreateWalletStoppedForJoin(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
     }
 
