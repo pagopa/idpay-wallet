@@ -44,6 +44,13 @@ public class AuditUtilities {
     );
   }
 
+  public void logCreateWalletStoppedForJoin(String userId, String initiativeId) {
+    logAuditString(
+            CEF_PATTERN,
+            "Wallet's citizen not created due to pre-existing onboarded family member on the initative.", userId, initiativeId
+    );
+  }
+
   public void logEnrollmentInstrument(String userId, String initiativeId, String idWallet, String channel) {
     logAuditString(
             CEF_PATTERN_ID_WALLET,

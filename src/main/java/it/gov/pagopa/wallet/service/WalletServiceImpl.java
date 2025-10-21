@@ -402,8 +402,15 @@ public class WalletServiceImpl implements WalletService {
 
     long startTime = System.currentTimeMillis();
 
+    /**
+     * Condizione modificata per impedire che un familiare di un nucleo già partecipante
+     * all'iniziativa generi un wallet separato, questa condizione sarà da rettificare nel caso di gestione
+     * di diverse condizioni per iniziativa con un controllo su proprietà da definire che ne indichi il
+     * tipo di iniziativa, e gestita con, per le diverse tipologie
+     */
     if (WalletConstants.STATUS_ONBOARDING_OK.equals(evaluationDTO.getStatus())
-        || WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
+//        || WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())
+    ) {
       Wallet wallet = walletMapper.map(evaluationDTO);
 
       if (evaluationDTO.getFamilyId() != null) {
@@ -437,10 +444,14 @@ public class WalletServiceImpl implements WalletService {
 
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
+
+      auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
+
+    } else if (WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())) {
+      auditUtilities.logCreateWalletStoppedForJoin(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
     }
 
     performanceLog(startTime, "CREATE_WALLET");
-    auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
 
     @Override
