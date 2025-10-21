@@ -3,10 +3,13 @@ package it.gov.pagopa.wallet.service;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
+import it.gov.pagopa.wallet.connector.PaymentRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
+import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.ChannelTransaction;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -21,6 +24,7 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
+import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.IbanUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,10 +54,10 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
   public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
-  public static final String COMUNE_DI_GUIDONIA_MONTECELIO = "comune di guidonia montecelio";
   private final WalletRepository walletRepository;
   private final WalletUpdatesRepository walletUpdatesRepository;
   private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  private final PaymentRestConnector paymentRestConnector;
   private final OnboardingRestConnector onboardingRestConnector;
   private final IbanProducer ibanProducer;
   private final TimelineProducer timelineProducer;
@@ -73,9 +78,10 @@ public class WalletServiceImpl implements WalletService {
   private final int pageSize;
   private final long delay;
 
-  public WalletServiceImpl(WalletRepository walletRepository,
+    public WalletServiceImpl(WalletRepository walletRepository,
                            WalletUpdatesRepository walletUpdatesRepository,
                            PaymentInstrumentRestConnector paymentInstrumentRestConnector,
+                           PaymentRestConnector  paymentRestConnector,
                            OnboardingRestConnector onboardingRestConnector,
                            IbanProducer ibanProducer,
                            TimelineProducer timelineProducer,
@@ -98,6 +104,7 @@ public class WalletServiceImpl implements WalletService {
     this.walletRepository = walletRepository;
     this.walletUpdatesRepository = walletUpdatesRepository;
     this.paymentInstrumentRestConnector = paymentInstrumentRestConnector;
+    this.paymentRestConnector = paymentRestConnector;
     this.onboardingRestConnector = onboardingRestConnector;
     this.ibanProducer = ibanProducer;
     this.timelineProducer = timelineProducer;
@@ -149,7 +156,7 @@ public class WalletServiceImpl implements WalletService {
             .orElseThrow(() -> new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId)));
   }
 
-  @Override
+    @Override
   public void enrollInstrument(String initiativeId, String userId, String idWallet, String channel) {
     long startTime = System.currentTimeMillis();
 
@@ -167,7 +174,7 @@ public class WalletServiceImpl implements WalletService {
               ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG);
     }
 
-    checkEndDate(wallet.getEndDate(), initiativeId);
+    checkEndDate(wallet.getInitiativeEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       auditUtilities.logEnrollmentInstrumentKO(
@@ -203,7 +210,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
 
-    checkEndDate(wallet.getEndDate(), initiativeId);
+    checkEndDate(wallet.getInitiativeEndDate(), initiativeId);
 
     DeactivationBodyDTO dto = new DeactivationBodyDTO(userId, initiativeId, instrumentId, channel);
 
@@ -237,7 +244,7 @@ public class WalletServiceImpl implements WalletService {
               ENROLL_IBAN_DISCOUNT_INITIATIVE, String.format(IBAN_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, initiativeId));
     }
 
-    checkEndDate(wallet.getEndDate(), initiativeId);
+    checkEndDate(wallet.getInitiativeEndDate(), initiativeId);
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
       auditUtilities.logEnrollmentIbanKO(
@@ -419,18 +426,14 @@ public class WalletServiceImpl implements WalletService {
                 .build());
       }
 
-      if (evaluationDTO.getInitiativeName().toLowerCase().contains("bonus") &&
-              evaluationDTO.getOrganizationName().equalsIgnoreCase(COMUNE_DI_GUIDONIA_MONTECELIO)){
-        wallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        wallet.setNInstr(1);
-        wallet.setServiceId(evaluationDTO.getServiceId());
-        paymentInstrumentRestConnector.enrollDiscountInitiative(
-                InstrumentFromDiscountDTO.builder()
-                        .initiativeId(evaluationDTO.getInitiativeId())
-                        .userId(evaluationDTO.getUserId())
-                        .build());
-      }
-
+      log.info("[POST_PAYMENT_BAR_CODE_EXTENDED] Create the vocuher and return his start and end Date");
+      TransactionBarCodeEnrichedResponse response = paymentRestConnector.createExtendedTransaction(TransactionBarCodeCreationRequest
+              .builder()
+              .initiativeId(evaluationDTO.getInitiativeId())
+              .voucherAmountCents(evaluationDTO.getBeneficiaryBudgetCents())
+              .build(), evaluationDTO.getUserId());
+      wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
+      wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
 
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
@@ -440,7 +443,7 @@ public class WalletServiceImpl implements WalletService {
     auditUtilities.logCreatedWallet(evaluationDTO.getUserId(), evaluationDTO.getInitiativeId());
   }
 
-  @Override
+    @Override
   public void unsubscribe(String initiativeId, String userId, String channel) {
     long startTime = System.currentTimeMillis();
 
@@ -513,6 +516,14 @@ public class WalletServiceImpl implements WalletService {
   @Override
   public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
     long startTime = System.currentTimeMillis();
+
+      if(rewardTransactionDTO.getStatus().equals("CAPTURED")){
+          log.info("[PROCESS_TRANSACTION with status captured]");
+          String initiativeId = rewardTransactionDTO.getRewards().isEmpty() ? null : rewardTransactionDTO.getRewards().keySet().iterator().next();
+          if(initiativeId!=null){
+              updateWalletFromTransactionCaptured(initiativeId,rewardTransactionDTO.getUserId());
+          }
+      }
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
@@ -690,7 +701,7 @@ public class WalletServiceImpl implements WalletService {
               ENROLL_INSTRUMENT_DISCOUNT_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_DISCOUNT_MSG, initiativeId));
     }
 
-    checkEndDate(wallet.getEndDate(), initiativeId);
+    checkEndDate(wallet.getInitiativeEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_ISSUER);
@@ -766,7 +777,7 @@ public class WalletServiceImpl implements WalletService {
               ENROLL_INSTRUMENT_REFUND_INITIATIVE, String.format(PAYMENT_INSTRUMENT_ENROLL_NOT_ALLOWED_REFUND_MSG, initiativeId));
     }
 
-    checkEndDate(wallet.getEndDate(), initiativeId);
+    checkEndDate(wallet.getInitiativeEndDate(), initiativeId);
 
     if (wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
       performanceLog(startTime, SERVICE_ENROLL_INSTRUMENT_CODE);
@@ -801,6 +812,17 @@ public class WalletServiceImpl implements WalletService {
   }
 
 
+  private void updateWalletFromTransactionCaptured(String initiativeId, String userId ){
+      Wallet userWallet = walletRepository.findById(generateWalletId(userId, initiativeId)).orElse(null);
+      if (userWallet == null) {
+          log.info("[UPDATE_WALLET_FROM_TRANSACTION_CAPTURED] No wallet found for user {} and initiativeId {}",
+                  userId, initiativeId);
+          return;
+      }
+      userWallet.setAmountCents(0L);
+      userWallet.setUpdateDate(LocalDateTime.now());
+      walletRepository.save(userWallet);
+  }
   private void updateWalletFromTransaction(
       String initiativeId,
       RewardTransactionDTO rewardTransactionDTO,
@@ -837,12 +859,13 @@ public class WalletServiceImpl implements WalletService {
               userWallet.getFamilyId(),
               counters.getTotalRewardCents());
 
+      Long budgetCents = rewardTransactionDTO.getVoucherAmountCents() != null ? rewardTransactionDTO.getVoucherAmountCents() : counters.getInitiativeBudgetCents();
       boolean updateResult =
               walletUpdatesRepository.rewardFamilyTransaction(
                       initiativeId,
                       userWallet.getFamilyId(),
                       rewardTransactionDTO.getElaborationDateTime(),
-                      counters.getInitiativeBudgetCents() - counters.getTotalRewardCents(),
+                      budgetCents - counters.getTotalRewardCents(),
                       counters.getVersion());
 
       if (!updateResult) {
@@ -869,10 +892,11 @@ public class WalletServiceImpl implements WalletService {
 
   private void rewardUserTransaction(String initiativeId, RewardTransactionDTO rewardTransactionDTO, Counters counters, Wallet userWallet) {
     if(userWallet.getCounterVersion() < counters.getVersion()) {
+      Long budgetCents = rewardTransactionDTO.getVoucherAmountCents() != null ? rewardTransactionDTO.getVoucherAmountCents() : counters.getInitiativeBudgetCents();
       walletUpdatesRepository.rewardTransaction(initiativeId,
               rewardTransactionDTO.getUserId(),
               rewardTransactionDTO.getElaborationDateTime(),
-              counters.getInitiativeBudgetCents()- counters.getTotalRewardCents(),
+              budgetCents - counters.getTotalRewardCents(),
               counters.getTotalRewardCents(),
               counters.getVersion());
     }
@@ -1093,7 +1117,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
       for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
         if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)
-            && !wallet.getEndDate().isBefore(LocalDate.now())
+            && !wallet.getInitiativeEndDate().isBefore(LocalDate.now())
             && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(
             wallet.getInitiativeRewardType())) {
           initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));

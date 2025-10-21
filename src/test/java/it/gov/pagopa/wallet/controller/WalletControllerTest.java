@@ -7,6 +7,7 @@ import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.config.WalletErrorManagerConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.custom.EnrollmentNotAllowedException;
 import it.gov.pagopa.wallet.exception.custom.InitiativeInvalidException;
@@ -67,7 +68,7 @@ class WalletControllerTest {
     private static final String INSTRUMENT_ID = "TEST_INSTRUMENT_ID";
     private static final String IBAN_OK = "it99C1234567890123456789012";
     private static final String IBAN_WRONG = "it99C1234567890123456789012222";
-    private static final String CHANNEL = "APP_IO";
+    private static final String CHANNEL = "IO";
     private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
     private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
     private static final String DESCRIPTION_OK = "conto cointestato";
@@ -81,6 +82,11 @@ class WalletControllerTest {
     private static final LocalDate DATE = LocalDate.now();
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final String SERVICE_ID = "serviceid";
+
+    private static final String USERMAIL = "USERMAIL";
+    private static final String CHANNEL_GENERAL = "CHANNEL";
+    private static final String NAME = "NAME";
+    private static final String SURNAME = "SURNAME";
     private static final WalletDTO INITIATIVE_DTO_TEST =
             new WalletDTO(
                     FAMILY_ID,
@@ -88,6 +94,9 @@ class WalletControllerTest {
                     INITIATIVE_ID,
                     WalletStatus.NOT_REFUNDABLE.name(),
                     null,
+                    null,
+                    DATE,
+                    DATE,
                     DATE,
                     0,
                     null,
@@ -100,7 +109,13 @@ class WalletControllerTest {
                     null,
                     100L,
                     0L,
-                    List.of(),SERVICE_ID);
+                    List.of(),
+                    SERVICE_ID,
+                    USERMAIL,
+                    Channel.WEB,
+                    NAME,
+                    SURNAME
+                    );
     private static final IbanBodyDTO IBAN_BODY_DTO =
             new IbanBodyDTO(IBAN_OK, DESCRIPTION_OK, CHANNEL);
 
@@ -113,7 +128,10 @@ class WalletControllerTest {
                     INITIATIVE_ID,
                     INITIATIVE_ID,
                     WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name(),
+                    null,
                     IBAN_OK,
+                    DATE,
+                    DATE,
                     DATE,
                     1,
                     45000L,
@@ -126,9 +144,17 @@ class WalletControllerTest {
                     10L,
                     100L,
                     0L,
-                    List.of(),SERVICE_ID);
+                    List.of(),
+                    SERVICE_ID,
+                    USERMAIL,
+                    Channel.WEB,
+                    NAME,
+                    SURNAME);
     private static final WalletDTO INITIATIVE_ISSUER_DTO =
             new WalletDTO(
+                    null,
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -146,7 +172,12 @@ class WalletControllerTest {
                     null,
                     100L,
                     0L,
-                    List.of(),SERVICE_ID);
+                    List.of(),
+                    SERVICE_ID,
+                    USERMAIL,
+                    Channel.WEB,
+                    NAME,
+                    SURNAME);
 
     @MockBean
     WalletService walletServiceMock;
@@ -561,7 +592,7 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getInitiativeId(), walletDTO.getInitiativeId());
         assertEquals(INITIATIVE_DTO.getInitiativeName(), walletDTO.getInitiativeName());
         assertEquals(INITIATIVE_DTO.getStatus(), walletDTO.getStatus());
-        assertEquals(INITIATIVE_DTO.getEndDate(), walletDTO.getEndDate());
+        assertEquals(INITIATIVE_DTO.getInitiativeEndDate(), walletDTO.getInitiativeEndDate());
         assertEquals(INITIATIVE_DTO.getIban(), walletDTO.getIban());
         assertEquals(INITIATIVE_DTO.getNInstr(), walletDTO.getNInstr());
         assertEquals(INITIATIVE_DTO.getAmountCents(), walletDTO.getAmountCents());

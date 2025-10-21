@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.dto;
 
+import it.gov.pagopa.wallet.enums.Channel;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -36,4 +37,8 @@ public class EvaluationDTO {
   private Boolean isLogoPresent;
   private Long maxTrx;
   private String serviceId;
+  private Channel channel;
+  private String userMail;
+  private String name;
+  private String surname;
 }

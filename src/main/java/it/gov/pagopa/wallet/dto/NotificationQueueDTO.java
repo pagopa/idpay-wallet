@@ -3,6 +3,8 @@ package it.gov.pagopa.wallet.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.LocalDate;
+
+import it.gov.pagopa.wallet.enums.Channel;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,4 +25,9 @@ public class NotificationQueueDTO {
   private String rejectionReason;
   private Long refundFeedbackProgressive;
   private String initiativeName;
+  private String name;
+  private String surname;
+  private String userMail;
+  private Channel channel;
+  private String serviceId;
 }

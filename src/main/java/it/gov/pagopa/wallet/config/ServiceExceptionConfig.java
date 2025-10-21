@@ -35,6 +35,7 @@ public class ServiceExceptionConfig {
         // InternalServerError
         exceptionMap.put(OnboardingInvocationException.class, HttpStatus.INTERNAL_SERVER_ERROR);
         exceptionMap.put(PaymentInstrumentInvocationException.class, HttpStatus.INTERNAL_SERVER_ERROR);
+        exceptionMap.put(PaymentInvocationException.class, HttpStatus.INTERNAL_SERVER_ERROR);
 
         return exceptionMap;
     }

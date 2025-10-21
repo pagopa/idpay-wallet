@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import it.gov.pagopa.wallet.enums.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,8 +27,11 @@ public class Wallet {
   private String organizationId;
   private String organizationName;
   private String status;
+  private String voucherStatus;
   private LocalDateTime acceptanceDate;
-  private LocalDate endDate;
+  private LocalDate initiativeEndDate;
+  private LocalDate voucherStartDate;
+  private LocalDate voucherEndDate;
   private String iban;
   private Long amountCents;
   private Long accruedCents;
@@ -45,6 +49,10 @@ public class Wallet {
   private Long counterVersion;
   private List<Long> counterHistory;
   private String serviceId;
+  private String userMail;
+  private Channel channel;
+  private String name;
+  private String surname;
   @Data
   @NoArgsConstructor
   @AllArgsConstructor

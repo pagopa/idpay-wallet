@@ -14,7 +14,7 @@ logging:
     root: ${LOG_LEVEL_ROOT:INFO}
     it.gov.pagopa: ${LOG_LEVEL_PAGOPA:INFO}
     it.gov.pagopa.wallet: ${LOG_LEVEL_WALLET:INFO}
-    org.springframework.integration: ${LOG_LEVEL_SPRING_INTEGRATION:INFO}
+    org.springframework.integration: ${LOG_LEVEL_SPRING_INTEGRATION:WARN}
     org.springframework.security: ${LOG_LEVEL_SPRING_SECURITY:INFO}
     org.springframework.ws: ${LOG_LEVEL_SPRING_WS:INFO}
     org.springframework.cloud: ${LOG_LEVEL_SPRING_CLOUD:WARN}
@@ -22,12 +22,14 @@ logging:
     org.springframework.hateoas: ${LOG_LEVEL_SPRING_HATEOAS:INFO}
     org.springframework.boot: ${LOG_LEVEL_SPRING_BOOT:INFO}
     org.springframework.boot.availability: ${LOG_LEVEL_SPRING_BOOT_AVAILABILITY:DEBUG}
-    org.springframework.kafka: ${LOG_LEVEL_SPRING_KAFKA:INFO}
+    org.springframework.kafka: ${LOG_LEVEL_SPRING_KAFKA:WARN}
     org.springframework.batch: ${LOG_LEVEL_SPRING_BATCH:INFO}
     io.swagger: ${LOG_LEVEL_IO_SWAGGER:WARN}
     javax.persistence: ${LOG_LEVEL_JAVAX_PERSISTENCE:INFO}
     org.hibernate: ${LOG_LEVEL_ORG_HIBERNATE:INFO}
     org.mongodb.driver: ${LOG_LEVEL_MONGODB_DRIVER:WARN}
+    org.apache.kafka: WARN
+    org.springframework.boot.autoconfigure: WARN
 
 management:
   health:
@@ -52,6 +54,9 @@ rest-client:
   payment.instrument:
     serviceCode: idpay-payment-instrument
     baseUrl: ${PAYMENT_INSTRUMENT_URI:}
+  payment:
+    serviceCode: idpay-payment
+    baseUrl: ${PAYMENT_URI:}
   initiative:
     serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
@@ -315,3 +320,6 @@ app:
     delayTime: ${DELETE_DELAY_TIME:1000}
   iban:
     formalControl: ${IS_IBAN_FORMAL_CONTROL_ACTIVE:false}
+  wallet:
+    expiringDay: ${WALLET_EXPIRING_DAY:3}
+    blockReminderBatch: ${BLOCK_REMINDER_BATCH:100}

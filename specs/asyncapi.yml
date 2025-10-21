@@ -489,7 +489,7 @@ components:
         channel:
           type: string
           description: Channel of origin
-          example: APP_IO
+          example: IO
     ErrorQueueHeader:
       type: object
       properties:
@@ -573,7 +573,7 @@ components:
         channel:
           type: string
           description: Channel of origin
-          example: APP_IO
+          example: IO
         instrumentType:
           type: string
           description: Instrument type

@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import it.gov.pagopa.wallet.enums.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,8 +25,11 @@ public class WalletDTO {
     private String initiativeId;
     private String initiativeName;
     private String status;
+    private String voucherStatus;
     private String iban;
-    private LocalDate endDate;
+    private LocalDate initiativeEndDate;
+    private LocalDate voucherStartDate;
+    private LocalDate voucherEndDate;
     @JsonProperty("nInstr")
     private int nInstr;
     private Long amountCents;
@@ -40,4 +44,8 @@ public class WalletDTO {
     private Long counterVersion;
     private List<Long> counterHistory;
     private String serviceId;
+    private String userMail;
+    private Channel channel;
+    private String name;
+    private String surname;
 }
