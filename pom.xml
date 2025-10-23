@@ -77,14 +77,6 @@
       <artifactId>janino</artifactId>
     </dependency>
 
-    <!-- Security fixes -->
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <!-- Forced to > 4.11.0 in order to update dependency of okio -->
-      <version>4.12.0</version>
-    </dependency>
-
     <!--TEST-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -137,11 +129,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.17.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.tomcat.embed</groupId>
-        <artifactId>tomcat-embed-core</artifactId>
-        <version>10.1.42</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
