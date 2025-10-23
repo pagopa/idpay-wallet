@@ -77,14 +77,6 @@
       <artifactId>janino</artifactId>
     </dependency>
 
-    <!-- Security fixes -->
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <!-- Forced to > 4.11.0 in order to update dependency of okio -->
-      <version>4.12.0</version>
-    </dependency>
-
     <!--TEST-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -146,7 +138,7 @@
       <dependency>
         <groupId>net.minidev</groupId>
         <artifactId>json-smart</artifactId>
-        <version>20230227</version>
+        <version>2.5.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
