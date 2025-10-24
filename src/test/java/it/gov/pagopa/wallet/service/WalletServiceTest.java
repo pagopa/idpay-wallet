@@ -1330,8 +1330,13 @@ class WalletServiceTest {
     void createWalletJoined() {
         Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
         walletService.createWallet(EVALUATION_JOINED);
-        Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
-        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
+        /**
+         * Vedi commento per gestione Joined in metodo
+         */
+//        Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
+//        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
+        Mockito.verifyNoInteractions(walletRepositoryMock);
+        Mockito.verifyNoInteractions(timelineProducer);
     }
 
     @Test
