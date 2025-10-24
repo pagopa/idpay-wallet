@@ -11,17 +11,16 @@ RUN mvn clean package -DskipTests
 #
 # Docker RUNTIME
 #
-FROM amazoncorretto:21-alpine3.20@sha256:ca05e809506b30f75a5b90f766b177e3ae996ac606b63499b4bd75b1b7890451 AS runtime
+FROM amazoncorretto:21-alpine3.22@sha256:fda60fd7965970ce7ed7ce789b18418647b56ac6112fc17df006337bdc6355c4 AS runtime
 
-RUN apk --no-cache add shadow
-RUN useradd --uid 10000 runner
+RUN apk --no-cache add shadow \
+&& useradd --uid 10000 runner
 
 VOLUME /tmp
 WORKDIR /app
 
 COPY --from=buildtime /build/target/*.jar /app/app.jar
 # The agent is enabled at runtime via JAVA_TOOL_OPTIONS.
-
 ADD https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.7.1/applicationinsights-agent-3.7.1.jar /app/applicationinsights-agent.jar
 
 RUN chown -R runner:runner /app
