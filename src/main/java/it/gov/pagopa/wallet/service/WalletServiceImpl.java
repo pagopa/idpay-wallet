@@ -12,6 +12,7 @@ import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.ChannelTransaction;
+import it.gov.pagopa.wallet.enums.SyncTrxStatus;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -28,6 +29,7 @@ import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.IbanUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
@@ -454,7 +456,7 @@ public class WalletServiceImpl implements WalletService {
     performanceLog(startTime, "CREATE_WALLET");
   }
 
-    @Override
+  @Override
   public void unsubscribe(String initiativeId, String userId, String channel) {
     long startTime = System.currentTimeMillis();
 
@@ -525,16 +527,36 @@ public class WalletServiceImpl implements WalletService {
 
 
   @Override
-  public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
+  public void processTransaction(Message<RewardTransactionDTO> rewardTransactionDTOMessage) {
+    RewardTransactionDTO rewardTransactionDTO = rewardTransactionDTOMessage.getPayload();
     long startTime = System.currentTimeMillis();
+    String trxStatus = rewardTransactionDTO.getStatus();
 
-      if(rewardTransactionDTO.getStatus().equals("CAPTURED")){
-          log.info("[PROCESS_TRANSACTION with status captured]");
-          String initiativeId = rewardTransactionDTO.getRewards().isEmpty() ? null : rewardTransactionDTO.getRewards().keySet().iterator().next();
-          if(initiativeId!=null){
-              updateWalletFromTransactionCaptured(initiativeId,rewardTransactionDTO.getUserId());
-          }
+    if(trxStatus.equals("CAPTURED")){
+        log.info("[PROCESS_TRANSACTION with status captured]");
+        String initiativeId = rewardTransactionDTO.getRewards().isEmpty() ? null :
+                rewardTransactionDTO.getRewards().keySet().iterator().next();
+        if(initiativeId!=null){
+            updateWalletFromTransactionCaptured(initiativeId,rewardTransactionDTO.getUserId());
+        }
+    }
+
+    if (SyncTrxStatus.EXPIRED.name().equals(trxStatus) ||
+        SyncTrxStatus.REFUNDED.name().equals(trxStatus)) {
+      log.info("[PROCESS_TRANSACTION] Encountered transaction with id {} with status {}, " +
+                      "unsubscribing from the initiative {}",
+              rewardTransactionDTO.getId(), trxStatus, rewardTransactionDTO.getInitiativeId());
+      try {
+        unsubscribe(rewardTransactionDTO.getInitiativeId(),
+                rewardTransactionDTO.getUserId(), rewardTransactionDTO.getChannel());
+      } catch (Exception e) {
+        log.error("[PROCESS_TRANSACTION] Encountered error while processing initiative " +
+                "unsubscribe due to transaction {} in status {}",
+                rewardTransactionDTO.getId(), rewardTransactionDTO.getStatus());
+        final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(rewardTransactionDTO);
+        sendToQueueError(e, rewardTransactionDTOMessage, errorMessage, transactionServer, transactionTopic);
       }
+    }
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
@@ -1078,6 +1100,13 @@ public class WalletServiceImpl implements WalletService {
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(queueOperationDTO);
       this.sendToQueueError(exception, errorMessage, timelineServer, timelineTopic);
     }
+  }
+
+  private void sendToQueueError(
+          Exception e, Message oldMessage, MessageBuilder<?> errorMessage, String server, String topic) {
+      errorMessage.setHeader(WalletConstants.ERROR_MSG_HEADER_RETRY,
+              oldMessage.getHeaders().get(WalletConstants.ERROR_MSG_HEADER_RETRY));
+      sendToQueueError(e, errorMessage, server, topic);
   }
 
   private void sendToQueueError(
