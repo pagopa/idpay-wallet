@@ -541,8 +541,9 @@ public class WalletServiceImpl implements WalletService {
         }
     }
 
-    if (SyncTrxStatus.EXPIRED.name().equals(trxStatus) ||
-        SyncTrxStatus.REFUNDED.name().equals(trxStatus)) {
+    if (rewardTransactionDTO.getExtendedAuthorization() && (
+            SyncTrxStatus.EXPIRED.name().equals(trxStatus) ||
+        SyncTrxStatus.REFUNDED.name().equals(trxStatus))) {
       log.info("[PROCESS_TRANSACTION] Encountered transaction with id {} with status {}, " +
                       "unsubscribing from the initiative {}",
               rewardTransactionDTO.getId(), trxStatus, rewardTransactionDTO.getInitiativeId());

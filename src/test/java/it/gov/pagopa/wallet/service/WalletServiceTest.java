@@ -439,6 +439,7 @@ class WalletServiceTest {
                     .initiativeId(INITIATIVE_ID)
                     .channel("BARCODE")
                     .status("EXPIRED")
+                    .extendedAuthorization(true)
                     .rewards(Collections.emptyMap())
                     .build();
 
@@ -448,6 +449,7 @@ class WalletServiceTest {
                     .initiativeId(INITIATIVE_ID)
                     .channel("BARCODE")
                     .status("REFUNDED")
+                    .extendedAuthorization(true)
                     .rewards(Collections.emptyMap())
                     .build();
 
@@ -2979,8 +2981,5 @@ class WalletServiceTest {
         verify(errorProducer).sendEvent(any());
 
     }
-
-
-
 
 }
