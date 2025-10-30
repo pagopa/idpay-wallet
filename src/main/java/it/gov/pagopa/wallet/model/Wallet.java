@@ -12,11 +12,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Sharded;
 
 @Data
 @Builder(toBuilder = true)
 @Document(collection = "wallet")
 @FieldNameConstants
+@Sharded(shardKey = { Wallet.Fields.userId }, immutableKey = true)
 public class Wallet {
 
   @Id private String id;
