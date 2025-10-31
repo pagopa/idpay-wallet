@@ -8,5 +8,7 @@ public enum SyncTrxStatus {
     CAPTURED,
     REWARDED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+    EXPIRED,
+    REFUNDED
 }

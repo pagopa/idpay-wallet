@@ -20,6 +20,10 @@ public class RewardTransactionDTO extends TransactionDTO {
 
   private String status;
 
+  private String initiativeId;
+
+  private String initiativeName;
+
   @Builder.Default
   private List<String> rejectionReasons = new ArrayList<>();
 
@@ -31,4 +35,7 @@ public class RewardTransactionDTO extends TransactionDTO {
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private OffsetDateTime trxChargeDate;
+
+  private Boolean extendedAuthorization;
+
 }

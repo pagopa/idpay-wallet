@@ -12,6 +12,7 @@ import it.gov.pagopa.wallet.dto.RefundDTO;
 import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
 import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import org.springframework.messaging.Message;
 
 public interface WalletService {
   EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId);
@@ -26,7 +27,7 @@ public interface WalletService {
   void createWallet(EvaluationDTO evaluationDTO);
   void processIbanOutcome(IbanQueueWalletDTO ibanQueueWalletDTO);
   void unsubscribe(String initiativeId, String userId, String channel);
-  void processTransaction(RewardTransactionDTO rewardTransactionDTO);
+  void processTransaction(Message<RewardTransactionDTO> rewardTransactionDTO);
   void updateWallet(WalletPIBodyDTO walletPIBodyDTO);
   void processAck(InstrumentAckDTO instrumentAckDTO);
   void processRefund(RefundDTO refundDTO);
