@@ -6,16 +6,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.With;
+
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 @SuperBuilder
 @AllArgsConstructor
+@NoArgsConstructor
 public class RewardTransactionDTO extends TransactionDTO {
 
   private String status;
