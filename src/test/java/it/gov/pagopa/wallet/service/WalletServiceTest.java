@@ -1251,7 +1251,7 @@ class WalletServiceTest {
 
     @Test
     void getWalletDetail_ok() {
-        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
+        Mockito.when(walletRepositoryMock.findByIdAndUserId(ID_WALLET, USER_ID))
                 .thenReturn(Optional.of(testWallet));
         testWallet.setIban(IBAN_OK);
 
@@ -1286,13 +1286,13 @@ class WalletServiceTest {
         assertEquals(USER_NOT_ONBOARDED, exception.getCode());
         assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), exception.getMessage());
 
-        verify(walletRepositoryMock, times(1)).findById(any());
+        verify(walletRepositoryMock, times(1)).findByIdAndUserId(any(), any());
         verifyNoMoreInteractions(walletRepositoryMock);
     }
 
     @Test
     void getWalletDetail_issuer_ok() {
-        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
+        Mockito.when(walletRepositoryMock.findByIdAndUserId(ID_WALLET, USER_ID))
                 .thenReturn(Optional.of(TEST_WALLET_ISSUER));
 
         Mockito.when(walletMapper.toIssuerInitiativeDTO(any(Wallet.class)))

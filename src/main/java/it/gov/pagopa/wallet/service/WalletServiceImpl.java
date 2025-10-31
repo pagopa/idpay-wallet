@@ -154,7 +154,7 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet getWallet(String initiativeId, String userId) {
     return walletRepository
-            .findById(generateWalletId(userId, initiativeId))
+            .findByIdAndUserId(generateWalletId(userId, initiativeId), userId)
             .orElseThrow(() -> new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId)));
   }
 
