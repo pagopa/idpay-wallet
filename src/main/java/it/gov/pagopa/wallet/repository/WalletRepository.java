@@ -15,6 +15,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WalletRepository extends MongoRepository<Wallet, String> {
 
+    Optional<Wallet> findByIdAndUserId(String id, String userId);
+
     List<Wallet> findByUserId(String userId);
 
     Optional<Wallet> findByUserIdAndIban(String userId, String iban);
