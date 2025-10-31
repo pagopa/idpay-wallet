@@ -541,7 +541,7 @@ public class WalletServiceImpl implements WalletService {
         }
     }
 
-    if (rewardTransactionDTO.getExtendedAuthorization() && (
+    if (Boolean.TRUE.equals(rewardTransactionDTO.getExtendedAuthorization()) && (
             SyncTrxStatus.EXPIRED.name().equals(trxStatus) ||
         SyncTrxStatus.REFUNDED.name().equals(trxStatus))) {
       log.info("[PROCESS_TRANSACTION] Encountered transaction with id {} with status {}, " +
