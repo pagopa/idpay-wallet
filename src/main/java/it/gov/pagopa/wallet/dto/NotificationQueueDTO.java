@@ -31,4 +31,5 @@ public class NotificationQueueDTO {
   private Channel channel;
   private String serviceId;
   private LocalDate voucherEndDate;
+  private int expiringDay;
 }
