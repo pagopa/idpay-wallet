@@ -30,4 +30,6 @@ public class NotificationQueueDTO {
   private String userMail;
   private Channel channel;
   private String serviceId;
+  private LocalDate voucherEndDate;
+  private int expiringDay;
 }

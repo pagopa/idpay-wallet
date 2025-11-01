@@ -300,7 +300,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017}
-      database: ${MONGODB_DBNAME:idpay}
+      database: ${MONGODB_DBNAME:idpay-beneficiari}
       # custom configured properties
       config:
         connectionPool:
@@ -321,5 +321,5 @@ app:
   iban:
     formalControl: ${IS_IBAN_FORMAL_CONTROL_ACTIVE:false}
   wallet:
-    expiringDay: ${WALLET_EXPIRING_DAY:3}
+    expiringDay: ${WALLET_EXPIRING_DAY:5}
     blockReminderBatch: ${BLOCK_REMINDER_BATCH:100}
