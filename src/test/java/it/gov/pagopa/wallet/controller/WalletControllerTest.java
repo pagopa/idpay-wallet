@@ -1034,11 +1034,8 @@ class WalletControllerTest {
 
     @Test
     void createWallet_Success() throws Exception {
-        // 1. Configurazione del Mock:
-        // Quando viene chiamato createWallet sul servizio con qualsiasi EvaluationDTO, non fare nulla (Void)
-        doNothing().when(walletServiceMock).createWallet(any(EvaluationDTO.class));
+    doNothing().when(walletServiceMock).createWallet(any(EvaluationDTO.class));
 
-        // 2. Esecuzione della Richiesta simulata:
         mvc.perform(MockMvcRequestBuilders.put(
                         BASE_URL
                                 + "/createWallet")
