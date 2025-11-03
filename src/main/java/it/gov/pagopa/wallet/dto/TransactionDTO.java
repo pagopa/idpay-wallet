@@ -72,5 +72,6 @@ public class TransactionDTO {
   private String channel;
 
   private String businessName;
+
   private Long voucherAmountCents;
 }
