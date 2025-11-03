@@ -82,6 +82,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                             .name(wallet.getName())
                             .surname(wallet.getSurname())
                             .userMail(wallet.getUserMail())
+                            .voucherEndDate(wallet.getVoucherEndDate())
                             .build();
 
                     sendNotification(notificationQueueDTO);

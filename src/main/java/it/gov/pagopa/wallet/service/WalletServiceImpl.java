@@ -399,11 +399,14 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
+    String sanitizedUserId = sanitizeString(evaluationDTO.getUserId());
+    String sanitizedInitiativeId = sanitizeString(evaluationDTO.getInitiativeId());
+    String sanitizedStatus = sanitizeString(evaluationDTO.getStatus());
     log.info(
         "[CREATE_WALLET] EvaluationDTO received. userId: {}; initiativeId: {}; status: {}",
-        evaluationDTO.getUserId(),
-        evaluationDTO.getInitiativeId(),
-        evaluationDTO.getStatus());
+        sanitizedUserId,
+        sanitizedInitiativeId,
+        sanitizedStatus);
 
     long startTime = System.currentTimeMillis();
 
@@ -1216,5 +1219,9 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
       throw e;
     }
+  }
+
+  public static String sanitizeString(String str) {
+    return str == null ? null : str.replaceAll("[\\r\\n]", "").replaceAll("[^\\w\\s-]", "");
   }
 }
