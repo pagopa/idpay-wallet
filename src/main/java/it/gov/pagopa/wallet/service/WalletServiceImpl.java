@@ -415,6 +415,7 @@ public class WalletServiceImpl implements WalletService {
     ) {
       Wallet wallet = walletMapper.map(evaluationDTO);
 
+      /**  commened to avoid rewrite due o he re-onboarding
       if (evaluationDTO.getFamilyId() != null) {
         List<Wallet> familyWallets =
             walletRepository.findByInitiativeIdAndFamilyId(
@@ -423,6 +424,7 @@ public class WalletServiceImpl implements WalletService {
           wallet.setAmountCents(familyWallets.get(0).getAmountCents());
         }
       }
+      */
 
       if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(
           evaluationDTO.getInitiativeRewardType())) {
@@ -541,9 +543,9 @@ public class WalletServiceImpl implements WalletService {
         }
     }
 
-    if (Boolean.TRUE.equals(rewardTransactionDTO.getExtendedAuthorization()) && (
-            SyncTrxStatus.EXPIRED.name().equals(trxStatus) ||
-        SyncTrxStatus.REFUNDED.name().equals(trxStatus))) {
+    if ((Boolean.TRUE.equals(rewardTransactionDTO.getExtendedAuthorization()) &&
+            SyncTrxStatus.EXPIRED.name().equals(trxStatus)) ||
+        SyncTrxStatus.REFUNDED.name().equals(trxStatus)) {
       log.info("[PROCESS_TRANSACTION] Encountered transaction with id {} with status {}, " +
                       "unsubscribing from the initiative {}",
               rewardTransactionDTO.getId(), trxStatus, rewardTransactionDTO.getInitiativeId());
