@@ -1,6 +1,8 @@
 package it.gov.pagopa.wallet.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClientException;
+import it.gov.pagopa.common.config.ObjectMapperConfig;
 import it.gov.pagopa.wallet.connector.*;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
@@ -21,6 +23,7 @@ import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
 import it.gov.pagopa.wallet.utils.Utilities;
+import lombok.SneakyThrows;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
 import org.junit.jupiter.api.Assertions;
@@ -36,11 +39,11 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
@@ -59,7 +62,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = WalletServiceImpl.class)
+@ContextConfiguration(classes = {WalletServiceImpl.class, ObjectMapperConfig.class})
 @TestPropertySource(
         locations = "classpath:application.yml",
         properties = {
@@ -96,6 +99,8 @@ class WalletServiceTest {
     AuditUtilities auditUtilities;
     @MockitoBean
     PaymentRestConnector paymentRestConnector;
+    @Autowired
+    ObjectMapper objectMapper;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String FAMILY_ID = "TEST_FAMILY_ID";
@@ -624,6 +629,7 @@ class WalletServiceTest {
 
     @BeforeEach
     void setUp() {
+        objectMapper = new ObjectMapper();
         MockitoAnnotations.openMocks(this);
         testWallet = Wallet.builder()
                 .userId(USER_ID)
@@ -1518,6 +1524,7 @@ class WalletServiceTest {
         verifyNoInteractions(onboardingRestConnector);
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_ok_counter_valid() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
@@ -1534,11 +1541,13 @@ class WalletServiceTest {
                 )
                 .thenReturn(testWallet);
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
 
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_ko_counter_not_valid() {
 
@@ -1547,7 +1556,8 @@ class WalletServiceTest {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(testWallet));
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
 
         Mockito.verify(walletUpdatesRepositoryMock, Mockito.times(0))
                 .rewardTransaction(
@@ -1562,6 +1572,7 @@ class WalletServiceTest {
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_sync_ok() {
         Mockito.when(
@@ -1574,10 +1585,12 @@ class WalletServiceTest {
                                 any())
                 )
                 .thenReturn(testWallet);
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_SYNC_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(objectMapper.writeValueAsString(
+                REWARD_TRX_DTO_SYNC_REWARDED)).build());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_captured_reward_empty() {
         Mockito.when(
@@ -1590,9 +1603,11 @@ class WalletServiceTest {
                                 any())
                 )
                 .thenReturn(testWallet);
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_SYNC_CAPTURED_NOREWARDS).build());
+        walletService.processTransaction(MessageBuilder.withPayload(objectMapper.writeValueAsString(
+                REWARD_TRX_DTO_SYNC_CAPTURED_NOREWARDS)).build());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_captured_reward_populated() {
         Mockito.when(
@@ -1605,9 +1620,11 @@ class WalletServiceTest {
                                 any())
                 )
                 .thenReturn(testWallet);
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_SYNC_CAPTURED_REWARDS).build());
+        walletService.processTransaction(MessageBuilder.withPayload(objectMapper
+                .writeValueAsString(REWARD_TRX_DTO_SYNC_CAPTURED_REWARDS)).build());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_captured_reward_populated_with_wallet() {
         Mockito.when(
@@ -1622,10 +1639,12 @@ class WalletServiceTest {
                 .thenReturn(testWallet);
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(testWallet));
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_SYNC_CAPTURED_REWARDS).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_SYNC_CAPTURED_REWARDS)).build());
         verify(walletRepositoryMock).save(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_sync_ok_auth() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
@@ -1642,11 +1661,13 @@ class WalletServiceTest {
         )
                 .thenReturn(testWallet);
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_SYNC_AUTHORIZED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(objectMapper.writeValueAsString(
+                REWARD_TRX_DTO_SYNC_AUTHORIZED)).build());
 
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_family_both_counters_valid() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
@@ -1670,11 +1691,13 @@ class WalletServiceTest {
                 )
                 .thenReturn(true);
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
 
         Mockito.verify(timelineProducer).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_family_old_counter_not_in_history() {
 
@@ -1691,7 +1714,8 @@ class WalletServiceTest {
                 )
                 .thenReturn(TEST_WALLET_FAMILY);
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
 
         Mockito.verify(walletUpdatesRepositoryMock,Mockito.times(0))
                 .rewardFamilyTransaction(
@@ -1706,13 +1730,15 @@ class WalletServiceTest {
         Mockito.verify(timelineProducer).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_family_counters_not_valid() {
 
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET_FAMILY_COUNTERS_NOT_VALID));
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
 
         Mockito.verify(walletUpdatesRepositoryMock,Mockito.times(0))
                 .rewardFamilyTransaction(
@@ -1737,6 +1763,7 @@ class WalletServiceTest {
     }
 
 
+    @SneakyThrows
     @Test
     void processTransaction_family_ko() {
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
@@ -1760,12 +1787,14 @@ class WalletServiceTest {
                 )
                 .thenReturn(false);
 
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
 
         Mockito.verify(timelineProducer, Mockito.never()).sendEvent(any());
         Mockito.verify(errorProducer).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_ko() {
         Mockito.when(
@@ -1778,7 +1807,8 @@ class WalletServiceTest {
                                 any())
         )
                 .thenReturn(null);
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_REWARDED).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_REWARDED)).build());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(any());
     }
 
@@ -1856,23 +1886,29 @@ class WalletServiceTest {
         verify(paymentInstrumentRestConnector, times(1)).rollback(any(), any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_not_rewarded() {
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO)).build());
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_sync_not_authorized() {
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_SYNC_NOT_AUTH).build());
+        walletService.processTransaction(MessageBuilder.withPayload(objectMapper.writeValueAsString(
+                REWARD_TRX_DTO_SYNC_NOT_AUTH)).build());
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(any());
     }
 
+    @SneakyThrows
     @Test
     void processTransaction_not_sync_authorized() {
-        walletService.processTransaction(MessageBuilder.withPayload(REWARD_TRX_DTO_AUTH).build());
+        walletService.processTransaction(MessageBuilder.withPayload(
+                objectMapper.writeValueAsString(REWARD_TRX_DTO_AUTH)).build());
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(any());
     }
@@ -2924,7 +2960,7 @@ class WalletServiceTest {
 
         Assertions.assertDoesNotThrow(() ->
                 walletService.processTransaction(
-                        MessageBuilder.withPayload(REWARD_TRX_DTO_EXPIRED).build()));
+                        MessageBuilder.withPayload(objectMapper.writeValueAsString(REWARD_TRX_DTO_EXPIRED)).build()));
 
         verify(paymentInstrumentRestConnector).disableAllInstrument(any());
         verify(onboardingRestConnector).disableOnboarding(any());
@@ -2948,7 +2984,7 @@ class WalletServiceTest {
 
         Assertions.assertDoesNotThrow(() ->
                 walletService.processTransaction(
-                        MessageBuilder.withPayload(REWARD_TRX_DTO_REFUNDED).build()));
+                        MessageBuilder.withPayload(objectMapper.writeValueAsString(REWARD_TRX_DTO_REFUNDED)).build()));
 
         verify(paymentInstrumentRestConnector).disableAllInstrument(any());
         verify(onboardingRestConnector).disableOnboarding(any());
@@ -2975,9 +3011,36 @@ class WalletServiceTest {
 
         Assertions.assertDoesNotThrow(() ->
                 walletService.processTransaction(
-                        MessageBuilder.withPayload(REWARD_TRX_DTO_EXPIRED).build()));
+                        MessageBuilder.withPayload(objectMapper.writeValueAsString(REWARD_TRX_DTO_EXPIRED)).build()));
 
         verify(paymentInstrumentRestConnector).disableAllInstrument(any());
+        verify(errorProducer).sendEvent(any());
+
+    }
+
+    @Test
+    void processTransaction_ko_unparsable() {
+
+        Mockito.when(walletRepositoryMock.findById(ID_WALLET))
+                .thenReturn(Optional.of(testWallet));
+
+        Mockito.doAnswer(
+                        invocationOnMock -> {
+                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
+                            return null;
+                        })
+                .when(walletRepositoryMock)
+                .save(any(Wallet.class));
+
+        doThrow(new RuntimeException("test")).doNothing().when(paymentInstrumentRestConnector)
+                .disableAllInstrument(any());
+
+        Assertions.assertDoesNotThrow(() ->
+                walletService.processTransaction(
+                        MessageBuilder.withPayload("AAAAA").build()));
+
+        verifyNoInteractions(paymentInstrumentRestConnector);
         verify(errorProducer).sendEvent(any());
 
     }

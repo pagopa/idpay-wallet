@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
+import it.gov.pagopa.common.config.ObjectMapperConfig;
 import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -27,9 +28,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
@@ -44,7 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = WalletServiceImpl.class)
+@ContextConfiguration(classes = {WalletServiceImpl.class, ObjectMapperConfig.class})
 @TestPropertySource(
         locations = "classpath:application.yml",
         properties = {
@@ -54,35 +55,35 @@ import static org.mockito.ArgumentMatchers.anyString;
         })
 class WalletServiceNoIbanFormalControlTest {
 
-    @MockBean
+    @MockitoBean
     IbanProducer ibanProducer;
-    @MockBean
+    @MockitoBean
     TimelineProducer timelineProducer;
-    @MockBean
+    @MockitoBean
     ErrorProducer errorProducer;
-    @MockBean
+    @MockitoBean
     NotificationProducer notificationProducer;
-    @MockBean
+    @MockitoBean
     WalletRepository walletRepositoryMock;
-    @MockBean
+    @MockitoBean
     WalletUpdatesRepository walletUpdatesRepositoryMock;
-    @MockBean
+    @MockitoBean
     PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-    @MockBean
+    @MockitoBean
     OnboardingRestConnector onboardingRestConnector;
-    @MockBean
+    @MockitoBean
     InitiativeRestConnector initiativeRestConnector;
-    @MockBean
+    @MockitoBean
     WalletMapper walletMapper;
-    @MockBean
+    @MockitoBean
     TimelineMapper timelineMapper;
     @Autowired
     WalletService walletService;
-    @MockBean
+    @MockitoBean
     AuditUtilities auditUtilities;
-    @MockBean
+    @MockitoBean
     Utilities utilities;
-    @MockBean
+    @MockitoBean
     PaymentRestConnector paymentRestConnector;
 
     private static final String USER_ID = "TEST_USER_ID";
