@@ -11,7 +11,7 @@ import org.springframework.messaging.Message;
 public class TransactionConsumer {
 
   @Bean
-  public Consumer<Message<RewardTransactionDTO>> trxConsumer(WalletService walletService){
+  public Consumer<Message<String>> trxConsumer(WalletService walletService){
     return walletService::processTransaction;
   }
 }
