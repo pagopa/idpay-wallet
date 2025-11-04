@@ -17,11 +17,19 @@ public class SupportController {
 
     public SupportController(SupportService supportService) {
         this.supportService = supportService;
+        log.info("[ZENDESK-CONNECTOR-CONTROLLER] - SupportController initialized");
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> sso(@RequestBody @Valid SupportRequestDTO body) {
+        log.info("[ZENDESK-CONNECTOR-CONTROLLER] - Received SSO support request for email '{}'", body.email());
+        log.info("[ZENDESK-CONNECTOR-CONTROLLER] - Starting SSO HTML generation");
+
         String html = supportService.buildSsoHtml(body);
-        return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
+
+        log.info("[ZENDESK-CONNECTOR-CONTROLLER] - Successfully generated SSO HTML for '{}'", body.email());
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
     }
 }
