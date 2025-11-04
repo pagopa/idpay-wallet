@@ -1,265 +1,154 @@
 package it.gov.pagopa.wallet.service.zendesk;
 
+import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
+import it.gov.pagopa.wallet.dto.zendesk.SupportResponseDTO;
+import it.gov.pagopa.wallet.utils.zendesk.FiscalCodeUtils;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
-import it.gov.pagopa.wallet.utils.zendesk.FiscalCodeUtils;
-import it.gov.pagopa.wallet.utils.zendesk.NameAliasUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.crypto.SecretKey;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.HashMap;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
+@ExtendWith(MockitoExtension.class)
 class SupportServiceTest {
 
-    private static final String SECRET_32 = "0123456789ABCDEF0123456789ABCDEF";
-    private static final String ACTION_URL_WITH_QUERY = "https://pagopa.zendesk.com/access/jwt?x=1&y=2";
+    private static final String SECRET = "this-is-a-test-secret-with->=-32-bytes-length!!!";
     private static final String REDIRECT_BASE = "https://bonus.assistenza.pagopa.it/requests/new";
     private static final String ORG = "_users_hc_bonus";
-    private static final String DEFAULT_PRODUCT = "DEF-PROD";
-    private static final Instant FIXED_NOW = Instant.parse("2025-01-01T10:00:00Z");
 
-    private Clock fixedClock;
-    private SupportService service;
-
-    @BeforeEach
-    void setup() {
-        fixedClock = Clock.fixed(FIXED_NOW, ZoneOffset.UTC);
-        service = new SupportService(
-                SECRET_32,
-                ACTION_URL_WITH_QUERY,
-                REDIRECT_BASE,
-                ORG,
-                DEFAULT_PRODUCT,
-                fixedClock
-        );
+    private static Claims parse(String jwt) {
+        var key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(jwt)
+                .getPayload();
     }
 
-    private SupportRequestDTO mockDto(
-            String email,
-            String name,
-            String cf,
-            String ticketFormId,
-            String subject,
-            String message,
-            String productId,
-            String data,
-            Map<String,String> customFields
-    ) {
-        SupportRequestDTO dto = mock(SupportRequestDTO.class);
+    private static SupportRequestDTO mockDto(String email, String first, String last, String cf, String productId) {
+        var dto = mock(SupportRequestDTO.class);
         when(dto.email()).thenReturn(email);
-        when(dto.name()).thenReturn(name);
+        when(dto.firstName()).thenReturn(first);
+        when(dto.lastName()).thenReturn(last);
         when(dto.fiscalCode()).thenReturn(cf);
-        when(dto.ticketFormId()).thenReturn(ticketFormId);
-        when(dto.subject()).thenReturn(subject);
-        when(dto.message()).thenReturn(message);
         when(dto.productId()).thenReturn(productId);
-        when(dto.data()).thenReturn(data);
-        when(dto.customFields()).thenReturn(customFields);
         return dto;
     }
 
     @Test
-    void buildSsoHtml_success_allFields_present_andHtmlEscaped_andJwtClaimsOk() {
-        try (MockedStatic<FiscalCodeUtils> cfMock = mockStatic(FiscalCodeUtils.class)) {
-            cfMock.when(() -> FiscalCodeUtils.sanitize("ABCDEF12G34H567I")).thenReturn("ABCDEF12G34H567I");
-            cfMock.when(() -> FiscalCodeUtils.isValid("ABCDEF12G34H567I")).thenReturn(true);
+    void buildJwtAndReturnTo_validCf_andExplicitProduct_setsNameAndAuxData_andProductQuery() {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-            Map<String,String> custom = new HashMap<>();
-            custom.put("1001", "TAG_A");
-            custom.put("", "SKIP");
-            custom.put("2002", "");
+        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "DEF_PROD", clock);
 
-            String longSubject = "S".repeat(200);
-            String longDesc = "D".repeat(6000);
+        var dto = mockDto("user@example.com", "  Mario ", " Rossi  ", "ABCDEF12G34H567I", "PROD123");
 
-            SupportRequestDTO dto = mockDto(
-                    "user@example.org",
-                    "Mario Rossi",
-                    "ABCDEF12G34H567I",
-                    "999999",
-                    longSubject,
-                    longDesc,
-                    "PRD-123",
-                    "meta",
-                    custom
-            );
+        try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
+            mocked.when(() -> FiscalCodeUtils.sanitize("ABCDEF12G34H567I")).thenReturn("SANITIZED_CF");
+            mocked.when(() -> FiscalCodeUtils.isValid("SANITIZED_CF")).thenReturn(true);
 
-            String html = service.buildSsoHtml(dto);
-            assertNotNull(html);
-            assertTrue(html.contains("<form id=\"jwtForm\" method=\"POST\""), "deve generare form auto-post");
-            assertTrue(html.contains("action=\"https://pagopa.zendesk.com/access/jwt?x=1&amp;y=2\""),
-                    "action URL deve essere escaped");
+            SupportResponseDTO resp = service.buildJwtAndReturnTo(dto);
 
-            String jwt = extractHiddenInput(html, "jwt");
-            String returnToEscaped = extractHiddenInput(html, "return_to");
-            assertNotNull(jwt);
-            assertNotNull(returnToEscaped);
+            assertEquals(REDIRECT_BASE + "?product=PROD123", resp.returnTo());
 
-            String returnTo = htmlUnescape(returnToEscaped);
-
-            assertTrue(returnTo.startsWith(REDIRECT_BASE), "return_to deve iniziare dalla base");
-            assertTrue(returnTo.contains("ticket_form_id=999999"));
-            assertTrue(returnTo.contains("product=PRD-123"));
-            assertTrue(returnTo.contains("data=meta"));
-            assertTrue(returnTo.contains("tf_1001=TAG_A"), "custom field valido deve esserci");
-            assertFalse(returnTo.contains("tf_2002="), "custom field invalido non deve esserci");
-
-            String expectedSubject = "S".repeat(150);
-            String expectedDesc = "D".repeat(5000);
-            String decodedReturnTo = URLDecoder.decode(returnTo, StandardCharsets.UTF_8);
-            assertTrue(decodedReturnTo.contains("subject=" + expectedSubject));
-            assertTrue(decodedReturnTo.contains("description=" + expectedDesc));
-
-            SecretKey key = Keys.hmacShaKeyFor(SECRET_32.getBytes(StandardCharsets.UTF_8));
-            io.jsonwebtoken.Clock jjwtClock = () -> Date.from(FIXED_NOW);
-
-            Jws<Claims> parsed = Jwts.parser()
-                    .verifyWith(key)
-                    .clock(jjwtClock)
-                    .build()
-                    .parseSignedClaims(jwt);
-
-            Claims claims = parsed.getPayload();
-
-            assertEquals("Mario Rossi", claims.get("name"));
-            assertEquals("user@example.org", claims.get("email"));
+            Claims claims = parse(resp.jwt());
+            assertEquals("user@example.com", claims.get("email"));
             assertEquals(ORG, claims.get("organization"));
+            assertNotNull(claims.getId());
+            assertEquals(now, claims.getIssuedAt().toInstant());
+            assertEquals(now.plusSeconds(300), claims.getExpiration().toInstant());
+            assertEquals("Mario Rossi", claims.get("name"));
 
             @SuppressWarnings("unchecked")
             Map<String, Object> userFields = (Map<String, Object>) claims.get("user_fields");
-            assertEquals("ABCDEF12G34H567I", userFields.get("aux_data"));
-
-            long expSeconds = claims.getExpiration().toInstant().getEpochSecond();
-            assertEquals(FIXED_NOW.plusSeconds(300).getEpochSecond(), expSeconds);
+            assertNotNull(userFields);
+            assertEquals("SANITIZED_CF", userFields.get("aux_data"));
         }
     }
 
     @Test
-    void buildSsoHtml_blankName_usesAliasFromEmail() {
-        try (MockedStatic<FiscalCodeUtils> cfMock = mockStatic(FiscalCodeUtils.class);
-             MockedStatic<NameAliasUtils> aliasMock = mockStatic(NameAliasUtils.class)) {
+    void buildJwtAndReturnTo_invalidCf_andNoName_usesDefaultProduct_andNoAuxData() {
+        Instant now = Instant.now();
+        var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-            cfMock.when(() -> FiscalCodeUtils.sanitize("ABCDEF12G34H567I")).thenReturn("ABCDEF12G34H567I");
-            cfMock.when(() -> FiscalCodeUtils.isValid("ABCDEF12G34H567I")).thenReturn(true);
-            aliasMock.when(() -> NameAliasUtils.aliasFromEmail("alias@dom.it")).thenReturn("aliasDom");
+        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "DEFAULT_PROD", clock);
 
-            SupportRequestDTO dto = mockDto(
-                    "alias@dom.it",
-                    "  ",
-                    "ABCDEF12G34H567I",
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+        var dto = mockDto("u@e.com", "   ", null, "whatever", null);
 
-            String html = service.buildSsoHtml(dto);
-            String jwt = extractHiddenInput(html, "jwt");
+        try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
+            mocked.when(() -> FiscalCodeUtils.sanitize("whatever")).thenReturn("x");
+            mocked.when(() -> FiscalCodeUtils.isValid("x")).thenReturn(false);
 
-            SecretKey key = Keys.hmacShaKeyFor(SECRET_32.getBytes(StandardCharsets.UTF_8));
-            io.jsonwebtoken.Clock jjwtClock = () -> Date.from(FIXED_NOW);
+            SupportResponseDTO resp = service.buildJwtAndReturnTo(dto);
 
-            Jws<Claims> parsed = Jwts.parser()
-                    .verifyWith(key)
-                    .clock(jjwtClock)
-                    .build()
-                    .parseSignedClaims(jwt);
+            assertEquals(REDIRECT_BASE + "?product=DEFAULT_PROD", resp.returnTo());
 
-            assertEquals("aliasDom", parsed.getPayload().get("name"));
+            Claims claims = parse(resp.jwt());
+            assertEquals("u@e.com", claims.get("email"));
+            assertFalse(claims.containsKey("name"));
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> userFields = (Map<String, Object>) claims.get("user_fields");
+            assertNotNull(userFields);
+            assertFalse(userFields.containsKey("aux_data"));
         }
     }
 
     @Test
-    void buildSsoHtml_invalidFiscalCode_throwsIllegalArgument() {
-        try (MockedStatic<FiscalCodeUtils> cfMock = mockStatic(FiscalCodeUtils.class)) {
-            cfMock.when(() -> FiscalCodeUtils.sanitize("BAD_CF")).thenReturn("BAD_CF");
-            cfMock.when(() -> FiscalCodeUtils.isValid("BAD_CF")).thenReturn(false);
+    void buildJwtAndReturnTo_noProductAnywhere_hasNoProductQueryParam() {
+        Instant now = Instant.now();
+        var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-            SupportRequestDTO dto = mockDto(
-                    "user@example.org",
-                    "Mario",
-                    "BAD_CF",
-                    null, null, null, null, null, null
-            );
-            assertThrows(IllegalArgumentException.class, () -> service.buildSsoHtml(dto));
+        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", clock);
+
+        var dto = mockDto("x@y.z", "Foo", "Bar", "CF", "   ");
+
+        try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
+            mocked.when(() -> FiscalCodeUtils.sanitize("CF")).thenReturn("CF");
+            mocked.when(() -> FiscalCodeUtils.isValid("CF")).thenReturn(true);
+
+            SupportResponseDTO resp = service.buildJwtAndReturnTo(dto);
+
+
+            assertEquals(REDIRECT_BASE, resp.returnTo());
+
+
+            Claims claims = parse(resp.jwt());
+            assertEquals("Foo Bar", claims.get("name"));
         }
     }
 
     @Test
-    void buildSsoHtml_usesDefaultProduct_whenNotProvided() {
-        try (MockedStatic<FiscalCodeUtils> cfMock = mockStatic(FiscalCodeUtils.class)) {
-            cfMock.when(() -> FiscalCodeUtils.sanitize("ABCDEF12G34H567I")).thenReturn("ABCDEF12G34H567I");
-            cfMock.when(() -> FiscalCodeUtils.isValid("ABCDEF12G34H567I")).thenReturn(true);
+    void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt() {
 
-            SupportRequestDTO dto = mockDto(
-                    "user@example.org",
-                    "Mario",
-                    "ABCDEF12G34H567I",
-                    "888",
-                    "subj",
-                    "body",
-                    "  ",
-                    null,
-                    Map.of()
-            );
+        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", null);
+        var dto = mockDto("a@b.c", null, null, "CF", null);
 
-            String html = service.buildSsoHtml(dto);
-            String returnTo = htmlUnescape(extractHiddenInput(html, "return_to"));
-            assertTrue(returnTo.contains("product=" + DEFAULT_PRODUCT));
+        try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
+            mocked.when(() -> FiscalCodeUtils.sanitize("CF")).thenReturn("CF");
+            mocked.when(() -> FiscalCodeUtils.isValid("CF")).thenReturn(false);
+
+            SupportResponseDTO resp = service.buildJwtAndReturnTo(dto);
+
+            assertNotNull(resp.jwt());
+            assertTrue(resp.jwt().length() > 20);
+            assertEquals(REDIRECT_BASE, resp.returnTo());
+            Claims claims = parse(resp.jwt());
+            assertEquals(ORG, claims.get("organization"));
+            assertFalse(claims.containsKey("name"));
         }
-    }
-
-    @Test
-    void htmlContainsCorrectEnctypeAndAutopostScript() {
-        try (MockedStatic<FiscalCodeUtils> cfMock = mockStatic(FiscalCodeUtils.class)) {
-            cfMock.when(() -> FiscalCodeUtils.sanitize("ABCDEF12G34H567I")).thenReturn("ABCDEF12G34H567I");
-            cfMock.when(() -> FiscalCodeUtils.isValid("ABCDEF12G34H567I")).thenReturn(true);
-
-            SupportRequestDTO dto = mockDto(
-                    "user@example.org",
-                    "Mario",
-                    "ABCDEF12G34H567I",
-                    null, null, null, null, null, null
-            );
-            String html = service.buildSsoHtml(dto);
-            assertTrue(html.contains("enctype=\"application/x-www-form-urlencoded\""));
-            assertTrue(html.contains("document.getElementById('jwtForm').submit();"));
-        }
-    }
-
-    private String extractHiddenInput(String html, String name) {
-        String token = "name=\"" + name + "\" value=\"";
-        int start = html.indexOf(token);
-        assertTrue(start >= 0, "input hidden " + name + " non trovato");
-        int from = start + token.length();
-        int end = html.indexOf("\"", from);
-        assertTrue(end > from, "value non trovato per " + name);
-        return html.substring(from, end);
-    }
-
-    private String htmlUnescape(String s) {
-        return s.replace("&amp;", "&")
-                .replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "\"")
-                .replace("&#39;", "'");
     }
 }

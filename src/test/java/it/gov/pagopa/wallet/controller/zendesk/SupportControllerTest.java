@@ -1,25 +1,21 @@
 package it.gov.pagopa.wallet.controller.zendesk;
 
 import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
+import it.gov.pagopa.wallet.dto.zendesk.SupportResponseDTO;
 import it.gov.pagopa.wallet.service.zendesk.SupportService;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,112 +24,72 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SupportControllerTest {
 
     private MockMvc mockMvc;
-
-    @Mock
     private SupportService supportService;
 
-    private SupportController controller;
-
-    private static final String BASE_URL = "/idpay/wallet/support";
-
-    @RestControllerAdvice
-    static class TestGlobalExceptionHandler {
-
-        @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<String> handleBadJson(HttpMessageNotReadableException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.TEXT_PLAIN)
-                    .body("bad request");
-        }
-
-        @ExceptionHandler(RuntimeException.class)
-        public ResponseEntity<String> handleRuntime(RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .contentType(MediaType.TEXT_PLAIN)
-                    .body("internal error");
-        }
-    }
-
     @BeforeEach
-    void setUp() {
-        controller = new SupportController(supportService);
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(controller)
-                .setControllerAdvice(new TestGlobalExceptionHandler())
+    void setup() {
+        supportService = mock(SupportService.class);
+        mockMvc = MockMvcBuilders.standaloneSetup(new SupportController(supportService))
                 .build();
     }
 
     @Test
-    void sso_returnsHtmlFromService_andTextHtmlContentType() throws Exception {
-        String expectedHtml = "<html>ok</html>";
-        when(supportService.buildSsoHtml(any(SupportRequestDTO.class))).thenReturn(expectedHtml);
-
-        String requestJson = """
+    void buildJwt_success_returns200WithBody_andPassesDTOToService() throws Exception {
+        var reqJson = """
             {
-              "email": "user@example.org",
-              "name": "Mario Rossi",
-              "fiscalCode": "ABCDEF12G34H567I",
-              "ticketFormId": "999999",
-              "subject": "subject",
-              "message": "message",
-              "productId": "PRD-123",
-              "data": "meta",
-              "customFields": {"1001": "TAG_A"}
+              "email": "user@example.com",
+              "firstName": "Mario",
+              "lastName": "Rossi",
+              "fiscalCode": "MRARSS...",
+              "productId": "PROD123"
             }
             """;
 
-        mockMvc.perform(post(BASE_URL)
+        var expected = new SupportResponseDTO("jwt-token", "https://example/return?product=PROD123");
+        when(supportService.buildJwtAndReturnTo(any(SupportRequestDTO.class))).thenReturn(expected);
+
+        mockMvc.perform(post("/idpay/wallet/support")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(reqJson))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(content().string(containsString("<html>ok</html>")));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.jwt", equalTo("jwt-token")))
+                .andExpect(jsonPath("$.returnTo", equalTo("https://example/return?product=PROD123")));
 
         ArgumentCaptor<SupportRequestDTO> captor = ArgumentCaptor.forClass(SupportRequestDTO.class);
-        verify(supportService, times(1)).buildSsoHtml(captor.capture());
-        SupportRequestDTO passed = captor.getValue();
-        assertEquals("user@example.org", passed.email());
-        assertEquals("Mario Rossi", passed.name());
-        assertEquals("ABCDEF12G34H567I", passed.fiscalCode());
+        verify(supportService, times(1)).buildJwtAndReturnTo(captor.capture());
+        SupportRequestDTO dto = captor.getValue();
+
+        assertEquals("user@example.com", dto.email());
+        assertEquals("Mario", dto.firstName());
+        assertEquals("Rossi", dto.lastName());
+        assertEquals("MRARSS...", dto.fiscalCode());
+        assertEquals("PROD123", dto.productId());
     }
 
     @Test
-    void sso_whenServiceThrows_returns500() throws Exception {
-        when(supportService.buildSsoHtml(any(SupportRequestDTO.class)))
-                .thenThrow(new RuntimeException("boom"));
+    void buildJwt_serviceThrows_propagatesException() {
+        var reqJson = """
+        {"email":"boom@example.com","firstName":"A","lastName":"B","fiscalCode":"X","productId":"Y"}
+        """;
 
-        String requestJson = """
-            {
-              "email": "user@example.org",
-              "name": "Mario Rossi",
-              "fiscalCode": "ABCDEF12G34H567I"
-            }
-            """;
+        when(supportService.buildJwtAndReturnTo(any()))
+                .thenThrow(new RuntimeException("kaboom"));
 
-        mockMvc.perform(post(BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("internal error"));
+        ServletException ex = assertThrows(
+                ServletException.class,
+                () -> mockMvc.perform(
+                        MockMvcRequestBuilders.post("/idpay/wallet/support")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(reqJson)
+                ).andReturn() // forza l'esecuzione e lascia propagare l'eccezione
+        );
 
-        verify(supportService, times(1)).buildSsoHtml(any(SupportRequestDTO.class));
-    }
-
-    @Test
-    void sso_withInvalidJson_returns400() throws Exception {
-        String badJson = """
-            {
-              "email": "user@example.org"
-              "fiscalCode": "ABCDEF12G34H567I"
-            }
-            """;
-
-        mockMvc.perform(post(BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(badJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("bad request"));
-
-        verify(supportService, never()).buildSsoHtml(any());
+        // opzionale: verifica la causa e il messaggio
+        assertNotNull(ex.getCause());
+        assertEquals(RuntimeException.class, ex.getCause().getClass());
+        assertEquals("kaboom", ex.getCause().getMessage());
     }
 }
