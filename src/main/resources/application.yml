@@ -323,3 +323,14 @@ app:
   wallet:
     expiringDay: ${WALLET_EXPIRING_DAY:3}
     blockReminderBatch: ${BLOCK_REMINDER_BATCH:100}
+
+support:
+  api:
+    key: ${ZENDESK_JWT_SECRET}   # setta una chiave HMAC >= 32 bytes in env/secret
+    zendesk:
+      actionUri: https://pagopa.zendesk.com/access/jwt
+      redirectUri: https://bonus.assistenza.pagopa.it/requests/new
+      organization: _users_hc_bonus
+    defaultProductId: prod-bonus-ed
+server:
+  port: 8080
