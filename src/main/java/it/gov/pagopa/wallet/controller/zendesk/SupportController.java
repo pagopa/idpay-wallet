@@ -23,7 +23,6 @@ public class SupportController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SupportResponseDTO> buildJwt(@RequestBody @Valid SupportRequestDTO body) {
-        log.info("[ZENDESK-CONNECTOR-CONTROLLER] request for {}", body.email());
         SupportResponseDTO res = supportService.buildJwtAndReturnTo(body);
         return ResponseEntity.ok(res);
     }

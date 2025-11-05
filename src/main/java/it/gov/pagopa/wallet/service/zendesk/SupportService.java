@@ -59,7 +59,7 @@ public class SupportService {
         String jwt = createZendeskJwt(email, name, userFields);
         String returnTo = buildReturnTo(dto.productId());
 
-        log.info("[ZENDESK-CONNECTOR-SERVICE] built jwt+returnTo for '{}'", email);
+        log.info("[ZENDESK-CONNECTOR-SERVICE] built jwt+returnTo");
         return new SupportResponseDTO(jwt, returnTo);
     }
 
