@@ -47,6 +47,10 @@ public class SupportService {
     }
 
     public SupportResponseDTO buildJwtAndReturnTo(SupportRequestDTO dto) {
+        if (StringUtils.isBlank(dto.email()) || !isValidEmail(dto.email())) {
+            throw new IllegalArgumentException("Email mancante o non valida: " + dto.email());
+        }
+
         final String email = dto.email();
 
         final String name = fullNameOrNull(dto.firstName(), dto.lastName());
@@ -106,5 +110,10 @@ public class SupportService {
 
     private static boolean isNotBlank(String s) {
         return s != null && !s.isBlank();
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return email != null && email.matches(emailRegex);
     }
 }
