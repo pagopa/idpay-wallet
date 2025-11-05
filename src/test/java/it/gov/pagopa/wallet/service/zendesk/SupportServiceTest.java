@@ -48,7 +48,7 @@ class SupportServiceTest {
     }
 
     @Test
-    void buildJwtAndReturnTo_validCf_andExplicitProduct_setsNameAndAuxData_andProductQuery() {
+    void buildJwtAndReturnTo_validCf_andExplicitProduct_setsFullNameAndAuxData_andProductQuery() {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
@@ -80,7 +80,7 @@ class SupportServiceTest {
     }
 
     @Test
-    void buildJwtAndReturnTo_invalidCf_andNoName_usesDefaultProduct_andNoAuxData() {
+    void buildJwtAndReturnTo_invalidCf_andNoName_usesDefaultProduct_setsEmailLocalPartAsName_andNoAuxData() {
         Instant now = Instant.now();
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
@@ -98,7 +98,7 @@ class SupportServiceTest {
 
             Claims claims = parse(resp.jwt());
             assertEquals("u@e.com", claims.get("email"));
-            assertFalse(claims.containsKey("name"));
+            assertEquals("u", claims.get("name"));
 
             @SuppressWarnings("unchecked")
             Map<String, Object> userFields = (Map<String, Object>) claims.get("user_fields");
@@ -108,7 +108,7 @@ class SupportServiceTest {
     }
 
     @Test
-    void buildJwtAndReturnTo_noProductAnywhere_hasNoProductQueryParam() {
+    void buildJwtAndReturnTo_noProductAnywhere_hasNoProductQueryParam_andKeepsFullName() {
         Instant now = Instant.now();
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
@@ -122,9 +122,7 @@ class SupportServiceTest {
 
             SupportResponseDTO resp = service.buildJwtAndReturnTo(dto);
 
-
             assertEquals(REDIRECT_BASE, resp.returnTo());
-
 
             Claims claims = parse(resp.jwt());
             assertEquals("Foo Bar", claims.get("name"));
@@ -132,8 +130,7 @@ class SupportServiceTest {
     }
 
     @Test
-    void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt() {
-
+    void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt_andSetsNameFromEmailIfBlank() {
         var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", null);
         var dto = mockDto("a@b.c", null, null, "CF", null);
 
@@ -148,7 +145,7 @@ class SupportServiceTest {
             assertEquals(REDIRECT_BASE, resp.returnTo());
             Claims claims = parse(resp.jwt());
             assertEquals(ORG, claims.get("organization"));
-            assertFalse(claims.containsKey("name"));
+            assertEquals("a", claims.get("name"));
         }
     }
 }

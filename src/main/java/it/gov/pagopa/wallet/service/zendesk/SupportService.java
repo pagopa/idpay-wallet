@@ -83,6 +83,8 @@ public class SupportService {
 
         if (StringUtils.isBlank(name)) {
             builder.claim("name", StringUtils.substringBefore(email, "@"));
+        } else {
+            builder.claim("name", name);
         }
 
         return builder.signWith(jwtKey).compact();
