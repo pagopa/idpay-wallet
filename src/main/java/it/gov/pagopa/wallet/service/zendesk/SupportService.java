@@ -6,6 +6,7 @@ import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
 import it.gov.pagopa.wallet.dto.zendesk.SupportResponseDTO;
 import it.gov.pagopa.wallet.utils.zendesk.FiscalCodeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -80,8 +81,8 @@ public class SupportService {
                 .claim("user_fields", userFields)
                 .expiration(Date.from(now.plusSeconds(5L * 60L)));
 
-        if (name != null) {
-            builder.claim("name", name);
+        if (StringUtils.isBlank(name)) {
+            builder.claim("name", StringUtils.substringBefore(email, "@"));
         }
 
         return builder.signWith(jwtKey).compact();
