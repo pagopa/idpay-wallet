@@ -326,7 +326,7 @@ app:
 
 support:
   api:
-    key: ${ZENDESK_JWT_SECRET}   # setta una chiave HMAC >= 32 bytes in env/secret
+    key: ${ZENDESK_JWT_SECRET}
     zendesk:
       actionUri: https://pagopa.zendesk.com/access/jwt
       redirectUri: https://bonus.assistenza.pagopa.it/requests/new

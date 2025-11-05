@@ -6,6 +6,7 @@ import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
 import it.gov.pagopa.wallet.dto.zendesk.SupportResponseDTO;
 import it.gov.pagopa.wallet.utils.zendesk.FiscalCodeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,7 @@ public class SupportService {
         String jwt = createZendeskJwt(email, name, userFields);
         String returnTo = buildReturnTo(dto.productId());
 
-        log.info("[ZENDESK-CONNECTOR-SERVICE] built jwt+returnTo for '{}'", email);
+        log.info("[ZENDESK-CONNECTOR-SERVICE] built jwt+returnTo");
         return new SupportResponseDTO(jwt, returnTo);
     }
 
@@ -80,7 +81,9 @@ public class SupportService {
                 .claim("user_fields", userFields)
                 .expiration(Date.from(now.plusSeconds(5L * 60L)));
 
-        if (name != null) {
+        if (StringUtils.isBlank(name)) {
+            builder.claim("name", StringUtils.substringBefore(email, "@"));
+        } else {
             builder.claim("name", name);
         }
 
