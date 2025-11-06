@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -47,17 +46,7 @@ public class SupportService {
         log.info("[ZENDESK-CONNECTOR-SERVICE] initialized, org='{}'", organization);
     }
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-            "^(?=.{1,254}$)(?=.{1,64}@)" +
-                    "[A-Za-z0-9._%+-]+@" +
-                    "(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+" +
-                    "[A-Za-z]{2,}$"
-    );
-
     public SupportResponseDTO buildJwtAndReturnTo(SupportRequestDTO dto) {
-        if (StringUtils.isBlank(dto.email()) || !isValidEmail(dto.email())) {
-            throw new IllegalArgumentException("Email mancante o non valida: " + dto.email());
-        }
 
         final String email = dto.email();
 
@@ -120,7 +109,4 @@ public class SupportService {
         return s != null && !s.isBlank();
     }
 
-    private boolean isValidEmail(String email) {
-        return email != null && EMAIL_PATTERN.matcher(email).matches();
-    }
 }
