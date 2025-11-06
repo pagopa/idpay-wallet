@@ -47,6 +47,7 @@ public class SupportService {
     }
 
     public SupportResponseDTO buildJwtAndReturnTo(SupportRequestDTO dto) {
+
         final String email = dto.email();
 
         final String name = fullNameOrNull(dto.firstName(), dto.lastName());
@@ -107,4 +108,5 @@ public class SupportService {
     private static boolean isNotBlank(String s) {
         return s != null && !s.isBlank();
     }
+
 }
