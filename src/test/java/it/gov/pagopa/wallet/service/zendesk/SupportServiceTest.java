@@ -114,7 +114,7 @@ class SupportServiceTest {
 
         var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", clock);
 
-        var dto = mockDto("x@y.z", "Foo", "Bar", "CF", "   ");
+        var dto = mockDto("x@y.zz", "Foo", "Bar", "CF", "   ");
 
         try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
             mocked.when(() -> FiscalCodeUtils.sanitize("CF")).thenReturn("CF");
@@ -132,7 +132,8 @@ class SupportServiceTest {
     @Test
     void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt_andSetsNameFromEmailIfBlank() {
         var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", null);
-        var dto = mockDto("a@b.c", null, null, "CF", null);
+
+        var dto = mockDto("a@b.co", null, null, "CF", null);
 
         try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
             mocked.when(() -> FiscalCodeUtils.sanitize("CF")).thenReturn("CF");
