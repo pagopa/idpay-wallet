@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.service.zendesk;
 
+import it.gov.pagopa.wallet.config.zendesk.SupportProperties;
 import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
 import it.gov.pagopa.wallet.dto.zendesk.SupportResponseDTO;
 import it.gov.pagopa.wallet.utils.zendesk.FiscalCodeUtils;
@@ -27,6 +28,7 @@ class SupportServiceTest {
     private static final String SECRET = "this-is-a-test-secret-with->=-32-bytes-length!!!";
     private static final String REDIRECT_BASE = "https://bonus.assistenza.pagopa.it/requests/new";
     private static final String ORG = "_users_hc_bonus";
+    private static final String ACTION_URI = "https://pagopa.zendesk.com/access/jwt"; // non usata nel service ma presente nelle props
 
     private static Claims parse(String jwt) {
         var key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
@@ -47,12 +49,27 @@ class SupportServiceTest {
         return dto;
     }
 
+    private static SupportProperties makeProps(String defaultProductId) {
+        var props = new SupportProperties();
+        props.setKey(SECRET);
+
+        var z = new SupportProperties.Zendesk();
+        z.setActionUri(ACTION_URI);
+        z.setRedirectUri(REDIRECT_BASE);
+        z.setOrganization(ORG);
+        props.setZendesk(z);
+
+        props.setDefaultProductId(defaultProductId);
+        return props;
+    }
+
     @Test
     void buildJwtAndReturnTo_validCf_andExplicitProduct_setsFullNameAndAuxData_andProductQuery() {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "DEF_PROD", clock);
+        var properties = makeProps("DEF_PROD");
+        var service = new SupportService(properties, clock);
 
         var dto = mockDto("user@example.com", "  Mario ", " Rossi  ", "ABCDEF12G34H567I", "PROD123");
 
@@ -84,7 +101,8 @@ class SupportServiceTest {
         Instant now = Instant.now();
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "DEFAULT_PROD", clock);
+        var properties = makeProps("DEFAULT_PROD");
+        var service = new SupportService(properties, clock);
 
         var dto = mockDto("u@e.com", "   ", null, "whatever", null);
 
@@ -112,7 +130,8 @@ class SupportServiceTest {
         Instant now = Instant.now();
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", clock);
+        var properties = makeProps(""); // nessun defaultProductId
+        var service = new SupportService(properties, clock);
 
         var dto = mockDto("x@y.zz", "Foo", "Bar", "CF", "   ");
 
@@ -131,7 +150,8 @@ class SupportServiceTest {
 
     @Test
     void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt_andSetsNameFromEmailIfBlank() {
-        var service = new SupportService(SECRET, REDIRECT_BASE, ORG, "", null);
+        var properties = makeProps(""); // no default product
+        var service = new SupportService(properties, null); // Clock nullo -> usa systemUTC
 
         var dto = mockDto("a@b.co", null, null, "CF", null);
 
