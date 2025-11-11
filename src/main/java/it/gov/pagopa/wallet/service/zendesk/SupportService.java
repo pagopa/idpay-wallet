@@ -2,13 +2,13 @@ package it.gov.pagopa.wallet.service.zendesk;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import it.gov.pagopa.wallet.config.zendesk.SupportProperties;
 import it.gov.pagopa.wallet.dto.zendesk.SupportRequestDTO;
 import it.gov.pagopa.wallet.dto.zendesk.SupportResponseDTO;
 import it.gov.pagopa.wallet.utils.zendesk.FiscalCodeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,23 +26,19 @@ import java.util.UUID;
 public class SupportService {
 
     private final SecretKey jwtKey;
-    private final Clock clock;
     private final String redirectUriBase;
     private final String organization;
     private final String defaultProductId;
+    private final Clock clock;
 
-    public SupportService(
-            @Value("${support.api.key}") String secret,
-            @Value("${support.api.zendesk.redirectUri}") String redirectUriBase,
-            @Value("${support.api.zendesk.organization}") String organization,
-            @Value("${support.api.defaultProductId:}") String defaultProductId,
-            @Autowired(required=false)Clock clock
-    ) {
-        this.jwtKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.redirectUriBase = redirectUriBase;
-        this.organization = organization;
-        this.defaultProductId = defaultProductId;
+    @Autowired
+    public SupportService(SupportProperties properties, @Autowired(required = false) Clock clock) {
+        this.jwtKey = Keys.hmacShaKeyFor(properties.getKey().getBytes(StandardCharsets.UTF_8));
+        this.redirectUriBase = properties.getZendesk().getRedirectUri();
+        this.organization = properties.getZendesk().getOrganization();
+        this.defaultProductId = properties.getDefaultProductId();
         this.clock = (clock != null) ? clock : Clock.systemUTC();
+
         log.info("[ZENDESK-CONNECTOR-SERVICE] initialized, org='{}'", organization);
     }
 
@@ -50,7 +46,11 @@ public class SupportService {
 
         final String email = dto.email();
 
-        final String name = fullNameOrNull(dto.firstName(), dto.lastName());
+        if (StringUtils.isBlank(email)) {
+            throw new IllegalArgumentException("Email is required");
+        }
+
+        final String name = StringUtils.substringBefore(email, "@");
 
         Map<String, Object> userFields = new HashMap<>();
         String sanitizedCf = FiscalCodeUtils.sanitize(dto.fiscalCode());
@@ -65,13 +65,6 @@ public class SupportService {
         return new SupportResponseDTO(jwt, returnTo);
     }
 
-    private static String fullNameOrNull(String first, String last) {
-        String fn = first == null ? "" : first.trim();
-        String ln = last  == null ? "" : last.trim();
-        String full = (fn + " " + ln).trim();
-        return full.isEmpty() ? null : full;
-    }
-
     private String createZendeskJwt(String email, String name, Map<String, Object> userFields) {
         Instant now = Instant.now(clock);
         var builder = Jwts.builder()
@@ -82,11 +75,7 @@ public class SupportService {
                 .claim("user_fields", userFields)
                 .expiration(Date.from(now.plusSeconds(5L * 60L)));
 
-        if (StringUtils.isBlank(name)) {
-            builder.claim("name", StringUtils.substringBefore(email, "@"));
-        } else {
-            builder.claim("name", name);
-        }
+        builder.claim("name", name);
 
         return builder.signWith(jwtKey).compact();
     }
