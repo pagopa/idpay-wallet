@@ -28,7 +28,7 @@ class SupportServiceTest {
     private static final String SECRET = "this-is-a-test-secret-with->=-32-bytes-length!!!";
     private static final String REDIRECT_BASE = "https://bonus.assistenza.pagopa.it/requests/new";
     private static final String ORG = "_users_hc_bonus";
-    private static final String ACTION_URI = "https://pagopa.zendesk.com/access/jwt"; // non usata nel service ma presente nelle props
+    private static final String ACTION_URI = "https://pagopa.zendesk.com/access/jwt";
 
     private static Claims parse(String jwt) {
         var key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
@@ -37,16 +37,6 @@ class SupportServiceTest {
                 .build()
                 .parseSignedClaims(jwt)
                 .getPayload();
-    }
-
-    private static SupportRequestDTO mockDto(String email, String first, String last, String cf, String productId) {
-        var dto = mock(SupportRequestDTO.class);
-        when(dto.email()).thenReturn(email);
-        when(dto.firstName()).thenReturn(first);
-        when(dto.lastName()).thenReturn(last);
-        when(dto.fiscalCode()).thenReturn(cf);
-        when(dto.productId()).thenReturn(productId);
-        return dto;
     }
 
     private static SupportProperties makeProps(String defaultProductId) {
@@ -64,14 +54,17 @@ class SupportServiceTest {
     }
 
     @Test
-    void buildJwtAndReturnTo_validCf_andExplicitProduct_setsFullNameAndAuxData_andProductQuery() {
+    void buildJwtAndReturnTo_validCf_andExplicitProduct_setsEmailLocalPartAsName_andAuxData_andProductQuery() {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
         var properties = makeProps("DEF_PROD");
         var service = new SupportService(properties, clock);
 
-        var dto = mockDto("user@example.com", "  Mario ", " Rossi  ", "ABCDEF12G34H567I", "PROD123");
+        var dto = mock(SupportRequestDTO.class);
+        when(dto.email()).thenReturn("user@example.com");
+        when(dto.fiscalCode()).thenReturn("ABCDEF12G34H567I");
+        when(dto.productId()).thenReturn("PROD123");
 
         try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
             mocked.when(() -> FiscalCodeUtils.sanitize("ABCDEF12G34H567I")).thenReturn("SANITIZED_CF");
@@ -87,7 +80,7 @@ class SupportServiceTest {
             assertNotNull(claims.getId());
             assertEquals(now, claims.getIssuedAt().toInstant());
             assertEquals(now.plusSeconds(300), claims.getExpiration().toInstant());
-            assertEquals("Mario Rossi", claims.get("name"));
+            assertEquals("user", claims.get("name"));
 
             @SuppressWarnings("unchecked")
             Map<String, Object> userFields = (Map<String, Object>) claims.get("user_fields");
@@ -98,13 +91,16 @@ class SupportServiceTest {
 
     @Test
     void buildJwtAndReturnTo_invalidCf_andNoName_usesDefaultProduct_setsEmailLocalPartAsName_andNoAuxData() {
-        Instant now = Instant.now();
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
         var properties = makeProps("DEFAULT_PROD");
         var service = new SupportService(properties, clock);
 
-        var dto = mockDto("u@e.com", "   ", null, "whatever", null);
+        var dto = mock(SupportRequestDTO.class);
+        when(dto.email()).thenReturn("u@e.com");
+        when(dto.fiscalCode()).thenReturn("whatever");
+        when(dto.productId()).thenReturn(null);
 
         try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
             mocked.when(() -> FiscalCodeUtils.sanitize("whatever")).thenReturn("x");
@@ -126,14 +122,17 @@ class SupportServiceTest {
     }
 
     @Test
-    void buildJwtAndReturnTo_noProductAnywhere_hasNoProductQueryParam_andKeepsFullName() {
-        Instant now = Instant.now();
+    void buildJwtAndReturnTo_noProductAnywhere_hasNoProductQueryParam_andNameFromEmailLocalPart() {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var clock = Clock.fixed(now, ZoneOffset.UTC);
 
-        var properties = makeProps(""); // nessun defaultProductId
+        var properties = makeProps("");
         var service = new SupportService(properties, clock);
 
-        var dto = mockDto("x@y.zz", "Foo", "Bar", "CF", "   ");
+        var dto = mock(SupportRequestDTO.class);
+        when(dto.email()).thenReturn("x@y.zz");
+        when(dto.fiscalCode()).thenReturn("CF");
+        when(dto.productId()).thenReturn("   ");
 
         try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
             mocked.when(() -> FiscalCodeUtils.sanitize("CF")).thenReturn("CF");
@@ -144,16 +143,19 @@ class SupportServiceTest {
             assertEquals(REDIRECT_BASE, resp.returnTo());
 
             Claims claims = parse(resp.jwt());
-            assertEquals("Foo Bar", claims.get("name"));
+            assertEquals("x", claims.get("name"));
         }
     }
 
     @Test
-    void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt_andSetsNameFromEmailIfBlank() {
-        var properties = makeProps(""); // no default product
-        var service = new SupportService(properties, null); // Clock nullo -> usa systemUTC
+    void constructor_withNullClock_usesSystemUtc_andStillBuildsJwt_andSetsNameFromEmailLocalPart() {
+        var properties = makeProps("");
+        var service = new SupportService(properties, null);
 
-        var dto = mockDto("a@b.co", null, null, "CF", null);
+        var dto = mock(SupportRequestDTO.class);
+        when(dto.email()).thenReturn("a@b.co");
+        when(dto.fiscalCode()).thenReturn("CF");
+        when(dto.productId()).thenReturn(null);
 
         try (MockedStatic<FiscalCodeUtils> mocked = mockStatic(FiscalCodeUtils.class)) {
             mocked.when(() -> FiscalCodeUtils.sanitize("CF")).thenReturn("CF");
@@ -168,5 +170,16 @@ class SupportServiceTest {
             assertEquals(ORG, claims.get("organization"));
             assertEquals("a", claims.get("name"));
         }
+    }
+
+    @Test
+    void buildJwtAndReturnTo_blankEmail_throwsIllegalArgumentException() {
+        var properties = makeProps("ANY");
+        var service = new SupportService(properties, Clock.systemUTC());
+
+        var dto = mock(SupportRequestDTO.class);
+        when(dto.email()).thenReturn("   ");
+
+        assertThrows(IllegalArgumentException.class, () -> service.buildJwtAndReturnTo(dto));
     }
 }
