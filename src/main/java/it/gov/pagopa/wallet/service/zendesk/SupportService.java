@@ -46,7 +46,11 @@ public class SupportService {
 
         final String email = dto.email();
 
-        final String name = fullNameOrNull(dto.firstName(), dto.lastName());
+        if (StringUtils.isBlank(email)) {
+            throw new IllegalArgumentException("Email is required");
+        }
+
+        final String name = StringUtils.substringBefore(email, "@");
 
         Map<String, Object> userFields = new HashMap<>();
         String sanitizedCf = FiscalCodeUtils.sanitize(dto.fiscalCode());
@@ -61,13 +65,6 @@ public class SupportService {
         return new SupportResponseDTO(jwt, returnTo);
     }
 
-    private static String fullNameOrNull(String first, String last) {
-        String fn = first == null ? "" : first.trim();
-        String ln = last  == null ? "" : last.trim();
-        String full = (fn + " " + ln).trim();
-        return full.isEmpty() ? null : full;
-    }
-
     private String createZendeskJwt(String email, String name, Map<String, Object> userFields) {
         Instant now = Instant.now(clock);
         var builder = Jwts.builder()
@@ -78,11 +75,7 @@ public class SupportService {
                 .claim("user_fields", userFields)
                 .expiration(Date.from(now.plusSeconds(5L * 60L)));
 
-        if (StringUtils.isBlank(name)) {
-            builder.claim("name", StringUtils.substringBefore(email, "@"));
-        } else {
-            builder.claim("name", name);
-        }
+        builder.claim("name", name);
 
         return builder.signWith(jwtKey).compact();
     }
