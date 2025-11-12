@@ -1,7 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
-import it.gov.pagopa.wallet.dto.*;
-import it.gov.pagopa.wallet.enums.*;
+import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
+import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
 import it.gov.pagopa.wallet.model.Wallet;
@@ -19,9 +19,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.Message;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -37,6 +41,7 @@ class VoucherExpirationReminderServiceTest {
     WalletRepository walletRepositoryMock;
     VoucherExpirationReminderBatchServiceImpl voucherExpirationReminderBatchService;
 
+    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
     private static final String NOTIFICATION_SERVER = "mock-server";
     private static final String NOTIFICATION_TOPIC = "mock-topic";
     private static final int BLOCK_REMINDER_BATCH = 100;
@@ -50,8 +55,6 @@ class VoucherExpirationReminderServiceTest {
 
     @Value("${app.wallet.expiringDay}")
     private int expiringDay;
-    private final LocalDate expirationDate = LocalDate.now().plusDays((long)expiringDay-1);
-    private final String expirationDateString = expirationDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
     private static final Pageable pageable = PageRequest.of(0, 100);
 
     private static final Wallet TEST_WALLET_1 =
@@ -99,7 +102,10 @@ class VoucherExpirationReminderServiceTest {
 
         Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
 
-        when(walletRepositoryMock.findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable))
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc   = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc),  Date.from(endUtc), pageable))
                 .thenReturn(walletPage);
 
         Mockito.doNothing()
@@ -111,7 +117,7 @@ class VoucherExpirationReminderServiceTest {
 
         // Assert
         //Verify that the repository has been called 1 time
-        verify(walletRepositoryMock, times(1)).findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable);
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
         //Verify that the NotificationProducer was called 2 time
         verify(notificationProducerMock, times(2)).sendNotification(any(NotificationQueueDTO.class));
         //Verify that the ErrorProducer has NEVER been called
@@ -125,7 +131,10 @@ class VoucherExpirationReminderServiceTest {
                 PageRequest.of(0, 10),
                 0);
 
-        when(walletRepositoryMock.findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable))
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc   = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
                 .thenReturn(emptyPage);
 
         //act
@@ -133,7 +142,7 @@ class VoucherExpirationReminderServiceTest {
 
         //assert
         //Verify that the repository has been called 1 time
-        verify(walletRepositoryMock, times(1)).findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable);
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
 
         //Verify that the NotificationProducer has NEVER been called
         verify(notificationProducerMock, never()).sendNotification(any(NotificationQueueDTO.class));
@@ -150,7 +159,10 @@ class VoucherExpirationReminderServiceTest {
 
         Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
 
-        when(walletRepositoryMock.findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable))
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc   = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
                 .thenReturn(walletPage);
 
         //Simulates an exception when sending the notification
@@ -162,7 +174,7 @@ class VoucherExpirationReminderServiceTest {
 
         // Assert
         // Verify that the repository has been called 1 time
-        verify(walletRepositoryMock, times(1)).findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable);
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
 
         // Verify that the NotificationProducer was called 1 time (and failed)
         verify(notificationProducerMock, times(1)).sendNotification(any(NotificationQueueDTO.class));
@@ -181,7 +193,10 @@ class VoucherExpirationReminderServiceTest {
         Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
 
 
-        when(walletRepositoryMock.findByInitiativeIdAndVoucherEndDateIgnoringTime(INITIATIVE_ID, expirationDateString, pageable))
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc   = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
                 .thenReturn(walletPage);
 
         //The first send fails, but not the second.

@@ -14,13 +14,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
 @Service
 public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirationReminderBatchService {
+
+    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
 
     private final WalletRepository walletRepository;
     private final NotificationProducer notificationProducer;
@@ -56,16 +60,18 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
 
         LocalDate now = LocalDate.now();
         LocalDate expirationDate = now.plusDays((long)expiringDay-1);
-        String expirationDateString = expirationDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         int page = 0;
         Pageable pageable = PageRequest.of(page, blockReminderBatch);
         Page<Wallet> walletPage;
 
-        log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDate {}", sanitizedInitiativeId, expirationDate);
+        log.info("[REMINDER_BATCH] Searching for expiring vouchers for the initiative {} and expirationDateUTC {}", sanitizedInitiativeId, expirationDate);
 
         do {
-            walletPage = walletRepository.findByInitiativeIdAndVoucherEndDateIgnoringTime(initiativeId, expirationDateString, pageable);
+            LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+            Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+            Instant endUtc   = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+            walletPage = walletRepository.findVoucherExpiredIntoRange(initiativeId, Date.from(startUtc), Date.from(endUtc), pageable);
             List<Wallet> walletList = walletPage.getContent();
             log.info("[REMINDER_BATCH] Page {} - {} expiring vouchers found", page, walletList.size());
 
