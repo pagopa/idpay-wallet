@@ -17,6 +17,7 @@ public class WalletConstants {
   public static final String ERROR_MSG_HEADER_SRC_TOPIC = "srcTopic";
   public static final String ERROR_MSG_HEADER_DESCRIPTION = "description";
   public static final String ERROR_MSG_HEADER_RETRYABLE = "retryable";
+  public static final String ERROR_MSG_HEADER_RETRY = "retry";
   public static final String ERROR_MSG_HEADER_STACKTRACE = "stacktrace";
   public static final String ERROR_MSG_HEADER_CLASS = "rootCauseClass";
   public static final String ERROR_MSG_HEADER_MESSAGE = "rootCauseMessage";

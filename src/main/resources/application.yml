@@ -300,7 +300,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017}
-      database: ${MONGODB_DBNAME:idpay}
+      database: ${MONGODB_DBNAME:idpay-beneficiari}
       # custom configured properties
       config:
         connectionPool:
@@ -323,3 +323,14 @@ app:
   wallet:
     expiringDay: ${WALLET_EXPIRING_DAY:3}
     blockReminderBatch: ${BLOCK_REMINDER_BATCH:100}
+
+support:
+  api:
+    key: ${ZENDESK_JWT_SECRET}
+    zendesk:
+      actionUri: https://pagopa.zendesk.com/access/jwt
+      redirectUri: https://bonus.assistenza.pagopa.it/requests/new
+      organization: _users_hc_bonus
+    defaultProductId: prod-bonus-ed
+server:
+  port: 8080

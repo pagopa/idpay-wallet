@@ -38,16 +38,20 @@ public class AuditUtilities {
   }
 
   public void logCreatedWallet(String userId, String initiativeId) {
+    String sanitizedUserId = sanitizeString(userId);
+    String sanitizedInitiativeId = sanitizeString(initiativeId);
     logAuditString(
             CEF_PATTERN,
-              "Wallet's citizen created.", userId, initiativeId
+              "Wallet's citizen created.", sanitizedUserId, sanitizedInitiativeId
     );
   }
 
   public void logCreateWalletStoppedForJoin(String userId, String initiativeId) {
+    String sanitizedUserId = sanitizeString(userId);
+    String sanitizedInitiativeId = sanitizeString(initiativeId);
     logAuditString(
             CEF_PATTERN,
-            "Wallet's citizen not created due to pre-existing onboarded family member on the initative.", userId, initiativeId
+            "Wallet's citizen not created due to pre-existing onboarded family member on the initative.", sanitizedUserId, sanitizedInitiativeId
     );
   }
 
@@ -173,6 +177,10 @@ public class AuditUtilities {
             CEF_PATTERN_INSTRUMENT_TYPE,
             "Request for association of idpay code to an initiative failed: " + msg, userId, initiativeId, channel, WalletConstants.INSTRUMENT_TYPE_IDPAYCODE
     );
+  }
+
+  public static String sanitizeString(String str) {
+    return str == null ? null : str.replaceAll("[\\r\\n]", "").replaceAll("[^\\w\\s-]", "");
   }
 
 }

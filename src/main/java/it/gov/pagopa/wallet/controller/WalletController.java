@@ -83,4 +83,9 @@ public interface WalletController {
           @PathVariable("initiativeId") String initiativeId,
           @PathVariable("userId") String userId,
           @RequestHeader(defaultValue = WalletConstants.CHANNEL_APP_IO) String channel);
+
+  @PutMapping("/createWallet")
+  ResponseEntity<Void> createWallet(
+          @RequestBody EvaluationDTO evaluationDTO);
+
 }

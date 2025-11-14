@@ -1,5 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -12,6 +14,7 @@ import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.ChannelTransaction;
+import it.gov.pagopa.wallet.enums.SyncTrxStatus;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.IbanProducer;
@@ -28,12 +31,12 @@ import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.IbanUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,6 +69,7 @@ public class WalletServiceImpl implements WalletService {
   private final ErrorProducer errorProducer;
   private final NotificationProducer notificationProducer;
   private final AuditUtilities auditUtilities;
+  private final ObjectMapper objectMapper;
   private final String timelineServer;
   private final String timelineTopic;
   private final String notificationServer;
@@ -79,28 +83,28 @@ public class WalletServiceImpl implements WalletService {
   private final long delay;
 
     public WalletServiceImpl(WalletRepository walletRepository,
-                           WalletUpdatesRepository walletUpdatesRepository,
-                           PaymentInstrumentRestConnector paymentInstrumentRestConnector,
-                           PaymentRestConnector  paymentRestConnector,
-                           OnboardingRestConnector onboardingRestConnector,
-                           IbanProducer ibanProducer,
-                           TimelineProducer timelineProducer,
-                           WalletMapper walletMapper,
-                           TimelineMapper timelineMapper,
-                           ErrorProducer errorProducer,
-                           NotificationProducer notificationProducer,
-                           AuditUtilities auditUtilities,
-                           @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
-                           @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
-                           @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
-                           @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}") String notificationTopic,
-                           @Value("${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}") String ibanServer,
-                           @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}") String ibanTopic,
-                           @Value("${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}") String transactionServer,
-                           @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}") String transactionTopic,
-                           @Value("${app.iban.formalControl}") boolean isFormalControlIban,
-                           @Value("${app.delete.paginationSize}") int pageSize,
-                           @Value("${app.delete.delayTime}") long delay) {
+                             WalletUpdatesRepository walletUpdatesRepository,
+                             PaymentInstrumentRestConnector paymentInstrumentRestConnector,
+                             PaymentRestConnector  paymentRestConnector,
+                             OnboardingRestConnector onboardingRestConnector,
+                             IbanProducer ibanProducer,
+                             TimelineProducer timelineProducer,
+                             WalletMapper walletMapper,
+                             TimelineMapper timelineMapper,
+                             ErrorProducer errorProducer,
+                             NotificationProducer notificationProducer,
+                             AuditUtilities auditUtilities, ObjectMapper objectMapper,
+                             @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
+                             @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
+                             @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
+                             @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}") String notificationTopic,
+                             @Value("${spring.cloud.stream.binders.kafka-iban.environment.spring.cloud.stream.kafka.binder.brokers}") String ibanServer,
+                             @Value("${spring.cloud.stream.bindings.walletQueue-out-0.destination}") String ibanTopic,
+                             @Value("${spring.cloud.stream.binders.kafka-re.environment.spring.cloud.stream.kafka.binder.brokers}") String transactionServer,
+                             @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}") String transactionTopic,
+                             @Value("${app.iban.formalControl}") boolean isFormalControlIban,
+                             @Value("${app.delete.paginationSize}") int pageSize,
+                             @Value("${app.delete.delayTime}") long delay) {
     this.walletRepository = walletRepository;
     this.walletUpdatesRepository = walletUpdatesRepository;
     this.paymentInstrumentRestConnector = paymentInstrumentRestConnector;
@@ -113,6 +117,7 @@ public class WalletServiceImpl implements WalletService {
     this.errorProducer = errorProducer;
     this.notificationProducer = notificationProducer;
     this.auditUtilities = auditUtilities;
+    this.objectMapper = objectMapper;
     this.timelineServer = timelineServer;
     this.timelineTopic = timelineTopic;
     this.notificationServer = notificationServer;
@@ -152,7 +157,7 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet getWallet(String initiativeId, String userId) {
     return walletRepository
-            .findById(generateWalletId(userId, initiativeId))
+            .findByIdAndUserId(generateWalletId(userId, initiativeId), userId)
             .orElseThrow(() -> new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId)));
   }
 
@@ -286,7 +291,7 @@ public class WalletServiceImpl implements WalletService {
       auditUtilities.logEnrollmentIbanKO(
           "error in sending request to checkIban", userId, initiativeId, channel);
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(ibanQueueDTO);
-      this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic);
+      this.sendToQueueError(e, errorMessage, ibanServer, ibanTopic, true);
       performanceLog(startTime, SERVICE_ENROLL_IBAN);
     }
 
@@ -394,11 +399,14 @@ public class WalletServiceImpl implements WalletService {
 
   @Override
   public void createWallet(EvaluationDTO evaluationDTO) {
+    String sanitizedUserId = sanitizeString(evaluationDTO.getUserId());
+    String sanitizedInitiativeId = sanitizeString(evaluationDTO.getInitiativeId());
+    String sanitizedStatus = sanitizeString(evaluationDTO.getStatus());
     log.info(
         "[CREATE_WALLET] EvaluationDTO received. userId: {}; initiativeId: {}; status: {}",
-        evaluationDTO.getUserId(),
-        evaluationDTO.getInitiativeId(),
-        evaluationDTO.getStatus());
+        sanitizedUserId,
+        sanitizedInitiativeId,
+        sanitizedStatus);
 
     long startTime = System.currentTimeMillis();
 
@@ -413,6 +421,7 @@ public class WalletServiceImpl implements WalletService {
     ) {
       Wallet wallet = walletMapper.map(evaluationDTO);
 
+      /**  commened to avoid rewrite due o he re-onboarding
       if (evaluationDTO.getFamilyId() != null) {
         List<Wallet> familyWallets =
             walletRepository.findByInitiativeIdAndFamilyId(
@@ -421,6 +430,7 @@ public class WalletServiceImpl implements WalletService {
           wallet.setAmountCents(familyWallets.get(0).getAmountCents());
         }
       }
+      */
 
       if (WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT.equals(
           evaluationDTO.getInitiativeRewardType())) {
@@ -454,7 +464,7 @@ public class WalletServiceImpl implements WalletService {
     performanceLog(startTime, "CREATE_WALLET");
   }
 
-    @Override
+  @Override
   public void unsubscribe(String initiativeId, String userId, String channel) {
     long startTime = System.currentTimeMillis();
 
@@ -525,16 +535,48 @@ public class WalletServiceImpl implements WalletService {
 
 
   @Override
-  public void processTransaction(RewardTransactionDTO rewardTransactionDTO) {
-    long startTime = System.currentTimeMillis();
+  public void processTransaction(Message<String> rewardTransactionDTOMessage) {
 
-      if(rewardTransactionDTO.getStatus().equals("CAPTURED")){
-          log.info("[PROCESS_TRANSACTION with status captured]");
-          String initiativeId = rewardTransactionDTO.getRewards().isEmpty() ? null : rewardTransactionDTO.getRewards().keySet().iterator().next();
-          if(initiativeId!=null){
-              updateWalletFromTransactionCaptured(initiativeId,rewardTransactionDTO.getUserId());
-          }
+      RewardTransactionDTO rewardTransactionDTO;
+      try {
+          rewardTransactionDTO = objectMapper.readValue(
+                  rewardTransactionDTOMessage.getPayload(), RewardTransactionDTO.class);
+      } catch (JsonProcessingException e) {
+        log.error("[PROCESS_TRX_EH] Unable to map message to RewardTransactionDTO");
+        this.sendToQueueError(e, MessageBuilder.fromMessage(rewardTransactionDTOMessage),
+                transactionServer, transactionTopic, false);
+        return;
       }
+
+    long startTime = System.currentTimeMillis();
+    String trxStatus = rewardTransactionDTO.getStatus();
+
+    if(trxStatus.equals("CAPTURED")){
+        log.info("[PROCESS_TRANSACTION with status captured]");
+        String initiativeId = rewardTransactionDTO.getRewards().isEmpty() ? null :
+                rewardTransactionDTO.getRewards().keySet().iterator().next();
+        if(initiativeId!=null){
+            updateWalletFromTransactionCaptured(initiativeId,rewardTransactionDTO.getUserId());
+        }
+    }
+
+    if ((Boolean.TRUE.equals(rewardTransactionDTO.getExtendedAuthorization()) &&
+            SyncTrxStatus.EXPIRED.name().equals(trxStatus)) ||
+        SyncTrxStatus.REFUNDED.name().equals(trxStatus)) {
+      log.info("[PROCESS_TRANSACTION] Encountered transaction with id {} with status {}, " +
+                      "unsubscribing from the initiative {}",
+              rewardTransactionDTO.getId(), trxStatus, rewardTransactionDTO.getInitiativeId());
+      try {
+        unsubscribe(rewardTransactionDTO.getInitiativeId(),
+                rewardTransactionDTO.getUserId(), rewardTransactionDTO.getChannel());
+      } catch (Exception e) {
+        log.error("[PROCESS_TRANSACTION] Encountered error while processing initiative " +
+                "unsubscribe due to transaction {} in status {}",
+                rewardTransactionDTO.getId(), rewardTransactionDTO.getStatus());
+        final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(rewardTransactionDTO);
+        sendToQueueError(e, rewardTransactionDTOMessage, errorMessage, transactionServer, transactionTopic, true);
+      }
+    }
 
     if (!rewardTransactionDTO.getStatus().equals("REWARDED")
         && !(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
@@ -562,7 +604,7 @@ public class WalletServiceImpl implements WalletService {
                     e);
                 final MessageBuilder<?> errorMessage =
                     MessageBuilder.withPayload(rewardTransactionDTO);
-                this.sendToQueueError(e, errorMessage, transactionServer, transactionTopic);
+                this.sendToQueueError(e, errorMessage, transactionServer, transactionTopic, true);
                 performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
               }
             });
@@ -1038,7 +1080,7 @@ public class WalletServiceImpl implements WalletService {
     } catch (Exception e) {
       log.error("[SEND_NOTIFICATION] An error has occurred. Sending message to Error queue");
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(notificationQueueDTO);
-      this.sendToQueueError(e, errorMessage, notificationServer, notificationTopic);
+      this.sendToQueueError(e, errorMessage, notificationServer, notificationTopic, true);
     }
   }
 
@@ -1076,18 +1118,25 @@ public class WalletServiceImpl implements WalletService {
     } catch (Exception exception) {
       log.error("[SEND_TO_TIMELINE] An error has occurred. Sending message to Error queue");
       final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(queueOperationDTO);
-      this.sendToQueueError(exception, errorMessage, timelineServer, timelineTopic);
+      this.sendToQueueError(exception, errorMessage, timelineServer, timelineTopic, true);
     }
   }
 
   private void sendToQueueError(
-      Exception e, MessageBuilder<?> errorMessage, String server, String topic) {
+          Exception e, Message oldMessage, MessageBuilder<?> errorMessage, String server, String topic, Boolean retry) {
+      errorMessage.setHeader(WalletConstants.ERROR_MSG_HEADER_RETRY,
+              oldMessage.getHeaders().get(WalletConstants.ERROR_MSG_HEADER_RETRY));
+      sendToQueueError(e, errorMessage, server, topic, retry);
+  }
+
+  private void sendToQueueError(
+      Exception e, MessageBuilder<?> errorMessage, String server, String topic, Boolean retry) {
     errorMessage
         .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TYPE, WalletConstants.KAFKA)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_SERVER, server)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_SRC_TOPIC, topic)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_DESCRIPTION, WalletConstants.ERROR_QUEUE)
-        .setHeader(WalletConstants.ERROR_MSG_HEADER_RETRYABLE, true)
+        .setHeader(WalletConstants.ERROR_MSG_HEADER_RETRYABLE, retry)
         .setHeader(WalletConstants.ERROR_MSG_HEADER_STACKTRACE, e.getStackTrace())
         .setHeader(WalletConstants.ERROR_MSG_HEADER_CLASS, e.getClass())
         .setHeader(WalletConstants.ERROR_MSG_HEADER_MESSAGE, e.getMessage());
@@ -1173,5 +1222,9 @@ public class WalletServiceImpl implements WalletService {
       performanceLog(startTime, "GET_INSTRUMENT_DETAIL_ON_INITIATIVES");
       throw e;
     }
+  }
+
+  public static String sanitizeString(String str) {
+    return str == null ? null : str.replaceAll("[\\r\\n]", "").replaceAll("[^\\w\\s-]", "");
   }
 }
