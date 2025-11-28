@@ -23,7 +23,7 @@ public interface WalletRepository extends MongoRepository<Wallet, String> {
     List<Wallet> findByInitiativeIdAndFamilyId(String initiativeId, String familyId);
 
     @Query(
-            value  = "{ 'initiativeId': ?0, 'voucherEndDate': { '$gte': ?1, '$lt': ?2 } }"
+            value  = "{ 'initiativeId': ?0, 'voucherEndDate': { '$gte': ?1, '$lt': ?2 }, 'accruedCents': 0}"
     )
     Page<Wallet> findVoucherExpiredIntoRange(
             String initiativeId,
