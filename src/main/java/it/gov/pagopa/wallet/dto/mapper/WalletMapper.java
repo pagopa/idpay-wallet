@@ -63,7 +63,7 @@ public class WalletMapper {
                 .voucherEndDate(wallet.getVoucherEndDate())
                 .status(wallet.getStatus())
                 .voucherStatus(setVoucherStatus(wallet))
-                .initialAmoutCents(wallet.getInitialAmountCents())
+                .initialAmountCents(wallet.getInitialAmountCents())
                 .amountCents(wallet.getAmountCents())
                 .accruedCents(wallet.getAccruedCents() - wallet.getRefundedCents())
                 .refundedCents(wallet.getRefundedCents())
@@ -84,7 +84,7 @@ public class WalletMapper {
 
     public WalletDTO toIssuerInitiativeDTO(Wallet wallet) {
         return WalletDTO.builder()
-                .initialAmoutCents(wallet.getInitialAmountCents())
+                .initialAmountCents(wallet.getInitialAmountCents())
                 .amountCents(wallet.getAmountCents())
                 .accruedCents(wallet.getAccruedCents() -wallet.getRefundedCents())
                 .refundedCents(wallet.getRefundedCents())
