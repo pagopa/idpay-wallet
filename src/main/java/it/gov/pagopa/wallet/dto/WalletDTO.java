@@ -32,6 +32,7 @@ public class WalletDTO {
     private LocalDate voucherEndDate;
     @JsonProperty("nInstr")
     private int nInstr;
+    private Long initialAmoutCents; // total budget assigned
     private Long amountCents;
     private Long accruedCents;
     private Long refundedCents;

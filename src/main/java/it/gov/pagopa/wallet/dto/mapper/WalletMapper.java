@@ -36,6 +36,7 @@ public class WalletMapper {
                 .familyId(evaluationDTO.getFamilyId())
                 .acceptanceDate(evaluationDTO.getAdmissibilityCheckDate())
                 .status(WalletStatus.NOT_REFUNDABLE.name())
+                .initialAmountCents(evaluationDTO.getBeneficiaryBudgetCents())
                 .amountCents(evaluationDTO.getBeneficiaryBudgetCents())
                 .accruedCents(0L)
                 .refundedCents(0L)
@@ -62,6 +63,7 @@ public class WalletMapper {
                 .voucherEndDate(wallet.getVoucherEndDate())
                 .status(wallet.getStatus())
                 .voucherStatus(setVoucherStatus(wallet))
+                .initialAmoutCents(wallet.getInitialAmountCents())
                 .amountCents(wallet.getAmountCents())
                 .accruedCents(wallet.getAccruedCents() - wallet.getRefundedCents())
                 .refundedCents(wallet.getRefundedCents())
@@ -82,6 +84,7 @@ public class WalletMapper {
 
     public WalletDTO toIssuerInitiativeDTO(Wallet wallet) {
         return WalletDTO.builder()
+                .initialAmoutCents(wallet.getInitialAmountCents())
                 .amountCents(wallet.getAmountCents())
                 .accruedCents(wallet.getAccruedCents() -wallet.getRefundedCents())
                 .refundedCents(wallet.getRefundedCents())
