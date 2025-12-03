@@ -904,7 +904,7 @@ public class WalletServiceImpl implements WalletService {
           return;
       }
       userWallet.setAmountCents(0L);
-      userWallet.setAccruedCents(userWallet.getAccruedCents() == 0L ? accruedRewardCents : 0L);
+      userWallet.setAccruedCents(userWallet.getAccruedCents() == 0L ? accruedRewardCents : userWallet.getAccruedCents());
       userWallet.setUpdateDate(LocalDateTime.now());
       walletRepository.save(userWallet);
   }
