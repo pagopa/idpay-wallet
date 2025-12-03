@@ -534,125 +534,115 @@ public class WalletServiceImpl implements WalletService {
   }
 
 
-    @Override
-    public void processTransaction(Message<String> rewardTransactionDTOMessage) {
+  @Override
+  public void processTransaction(Message<String> rewardTransactionDTOMessage) {
+      RewardTransactionDTO rewardTransactionDTO;
+      try {
+          rewardTransactionDTO = objectMapper.readValue(
+                  rewardTransactionDTOMessage.getPayload(), RewardTransactionDTO.class);
+      } catch (JsonProcessingException e) {
+          log.error("[PROCESS_TRX_EH] Unable to map message to RewardTransactionDTO. payload='{}'",
+                  rewardTransactionDTOMessage.getPayload(), e);
+          this.sendToQueueError(e, MessageBuilder.fromMessage(rewardTransactionDTOMessage),
+                  transactionServer, transactionTopic, false);
+          return;
+      }
+      long startTime = System.currentTimeMillis();
+      String trxStatus = rewardTransactionDTO.getStatus();
+      String trxId = rewardTransactionDTO.getId();
+      String userId = rewardTransactionDTO.getUserId();
+      String channel = rewardTransactionDTO.getChannel();
+      Integer rewardsCount = rewardTransactionDTO.getRewards() != null ? rewardTransactionDTO.getRewards().size() : 0;
 
-        RewardTransactionDTO rewardTransactionDTO;
+      log.info("[PROCESS_TRANSACTION] Received transaction: trxId={} userId={} status={} channel={} rewardsCount={} extendedAuthorization={}",
+              trxId, userId, trxStatus, channel, rewardsCount, rewardTransactionDTO.getExtendedAuthorization());
+
+      // --- BRANCH: CAPTURED ---
+      captured(trxStatus, trxId, userId, rewardsCount, rewardTransactionDTO);
+
+      // --- BRANCH: EXPIRED/REFUNDED + extendedAuthorization ---
+      expiredRefunded(rewardTransactionDTOMessage, rewardTransactionDTO, trxStatus, trxId, userId, channel);
+
+      // --- BRANCH: SKIP se non REWARDED (o stati particolari per canale) ---
+      if (!SyncTrxStatus.REWARDED.name().equals(trxStatus)
+          && !(ChannelTransaction.isChannelPresent(channel)
+            && (SyncTrxStatus.AUTHORIZED.name().equals(trxStatus)
+            || SyncTrxStatus.CANCELLED.name().equals(trxStatus)))) {
+          log.info("[PROCESS_TRANSACTION][SKIP] Transaction not in status REWARDED or allowed channel state. Skipping message. trxId={} userId={} status={} channel={}", trxId, userId, trxStatus, channel);
+          performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
+          return;
+      }
+
+      // --- BRANCH: REWARDED (o stati ammessi da canale) ---
+      rewardedOrOthers(trxId, userId, trxStatus, channel, rewardsCount, rewardTransactionDTO, startTime);
+
+      long endTime = System.currentTimeMillis();
+      long elapsed = endTime - startTime;
+      log.info("[PROCESS_TRANSACTION] Completed processing for trxId={} userId={} status={} in {} ms",
+              trxId, userId, trxStatus, elapsed);
+      performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
+  }
+
+  private void rewardedOrOthers(String trxId, String userId, String trxStatus, String channel, Integer rewardsCount, RewardTransactionDTO rewardTransactionDTO, long startTime) {
+      log.info("[PROCESS_TRANSACTION][REWARDED_FLOW] Processing REWARDED (or allowed) transaction. trxId={} userId={} status={} channel={} rewardsCount={}",
+              trxId, userId, trxStatus, channel, rewardsCount);
+      rewardTransactionDTO
+              .getRewards()
+              .forEach(
+                      (initiativeId, reward) -> {
+                          log.info("[PROCESS_TRANSACTION][REWARDED_FLOW] Updating wallet from transaction. trxId={} userId={} initiativeId={} accruedRewardCents={} counters={}",
+                                  trxId, userId, initiativeId, reward.getAccruedRewardCents(), reward.getCounters());
+                          try {
+                              updateWalletFromTransaction(
+                                      initiativeId,
+                                      rewardTransactionDTO,
+                                      reward.getCounters(),
+                                      reward.getAccruedRewardCents());
+                          } catch (WalletUpdateException e) {
+                              log.error("[PROCESS_TRANSACTION][REWARDED_FLOW] Error while updating wallet. trxId={} userId={} initiativeId={} status={}. Sending message to Error queue.",
+                                      trxId, userId, initiativeId, trxStatus, e);
+                              final MessageBuilder<?> errorMessage =
+                                      MessageBuilder.withPayload(rewardTransactionDTO);
+                              this.sendToQueueError(e, errorMessage, transactionServer, transactionTopic, true);
+                              performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
+                          }
+                      });
+  }
+
+  private void expiredRefunded(Message<String> rewardTransactionDTOMessage, RewardTransactionDTO rewardTransactionDTO, String trxStatus, String trxId, String userId, String channel) {
+    if ((Boolean.TRUE.equals(rewardTransactionDTO.getExtendedAuthorization()) &&
+        SyncTrxStatus.EXPIRED.name().equals(trxStatus)) || SyncTrxStatus.REFUNDED.name().equals(trxStatus)) {
+        log.info("[PROCESS_TRANSACTION][UNSUBSCRIBE_FLOW] Transaction triggers unsubscribe. trxId={} status={} initiativeId={} userId={} channel={}",
+                  trxId, trxStatus, rewardTransactionDTO.getInitiativeId(), userId, channel);
+
         try {
-            rewardTransactionDTO = objectMapper.readValue(
-                    rewardTransactionDTOMessage.getPayload(), RewardTransactionDTO.class);
-        } catch (JsonProcessingException e) {
-            log.error("[PROCESS_TRX_EH] Unable to map message to RewardTransactionDTO. payload='{}'",
-                    rewardTransactionDTOMessage.getPayload(), e);
-            this.sendToQueueError(e, MessageBuilder.fromMessage(rewardTransactionDTOMessage),
-                    transactionServer, transactionTopic, false);
-            return;
-        }
-
-        long startTime = System.currentTimeMillis();
-        String trxStatus = rewardTransactionDTO.getStatus();
-
-        String trxId = rewardTransactionDTO.getId();
-        String userId = rewardTransactionDTO.getUserId();
-        String channel = rewardTransactionDTO.getChannel();
-        Integer rewardsCount = rewardTransactionDTO.getRewards() != null
-                ? rewardTransactionDTO.getRewards().size()
-                : 0;
-
-        log.info("[PROCESS_TRANSACTION] Received transaction: trxId={} userId={} status={} channel={} rewardsCount={} extendedAuthorization={}",
-                trxId, userId, trxStatus, channel, rewardsCount, rewardTransactionDTO.getExtendedAuthorization());
-
-        // --- BRANCH: CAPTURED ---
-        captured(trxStatus, trxId, userId, rewardsCount, rewardTransactionDTO);
-
-        // --- BRANCH: EXPIRED/REFUNDED + extendedAuthorization ---
-        expiredRefunded(rewardTransactionDTOMessage, rewardTransactionDTO, trxStatus, trxId, userId, channel);
-
-        // --- BRANCH: SKIP se non REWARDED (o stati particolari per canale) ---
-        if (!SyncTrxStatus.REWARDED.name().equals(trxStatus)
-                && !(ChannelTransaction.isChannelPresent(channel)
-                && (SyncTrxStatus.AUTHORIZED.name().equals(trxStatus)
-                || SyncTrxStatus.CANCELLED.name().equals(trxStatus)))) {
-            log.info("[PROCESS_TRANSACTION][SKIP] Transaction not in status REWARDED or allowed channel state. Skipping message. trxId={} userId={} status={} channel={}",
-                    trxId, userId, trxStatus, channel);
-            performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
-            return;
-        }
-
-        // --- BRANCH: REWARDED (o stati ammessi da canale) ---
-        rewardedOrOthers(trxId, userId, trxStatus, channel, rewardsCount, rewardTransactionDTO, startTime);
-
-        long endTime = System.currentTimeMillis();
-        long elapsed = endTime - startTime;
-        log.info("[PROCESS_TRANSACTION] Completed processing for trxId={} userId={} status={} in {} ms",
-                trxId, userId, trxStatus, elapsed);
-        performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
-    }
-
-    private void rewardedOrOthers(String trxId, String userId, String trxStatus, String channel, Integer rewardsCount, RewardTransactionDTO rewardTransactionDTO, long startTime) {
-        log.info("[PROCESS_TRANSACTION][REWARDED_FLOW] Processing REWARDED (or allowed) transaction. trxId={} userId={} status={} channel={} rewardsCount={}",
-                trxId, userId, trxStatus, channel, rewardsCount);
-        rewardTransactionDTO
-                .getRewards()
-                .forEach(
-                        (initiativeId, reward) -> {
-                            log.info("[PROCESS_TRANSACTION][REWARDED_FLOW] Updating wallet from transaction. trxId={} userId={} initiativeId={} accruedRewardCents={} counters={}",
-                                    trxId, userId, initiativeId, reward.getAccruedRewardCents(), reward.getCounters());
-
-                            try {
-                                updateWalletFromTransaction(
-                                        initiativeId,
-                                        rewardTransactionDTO,
-                                        reward.getCounters(),
-                                        reward.getAccruedRewardCents());
-                            } catch (WalletUpdateException e) {
-                                log.error("[PROCESS_TRANSACTION][REWARDED_FLOW] Error while updating wallet. trxId={} userId={} initiativeId={} status={}. Sending message to Error queue.",
-                                        trxId, userId, initiativeId, trxStatus, e);
-
-                                final MessageBuilder<?> errorMessage =
-                                        MessageBuilder.withPayload(rewardTransactionDTO);
-                                this.sendToQueueError(e, errorMessage, transactionServer, transactionTopic, true);
-                                performanceLog(startTime, SERVICE_PROCESS_TRANSACTION);
-                            }
-                        });
-    }
-
-    private void expiredRefunded(Message<String> rewardTransactionDTOMessage, RewardTransactionDTO rewardTransactionDTO, String trxStatus, String trxId, String userId, String channel) {
-        if ((Boolean.TRUE.equals(rewardTransactionDTO.getExtendedAuthorization()) &&
-                SyncTrxStatus.EXPIRED.name().equals(trxStatus)) ||
-                SyncTrxStatus.REFUNDED.name().equals(trxStatus)) {
-            log.info("[PROCESS_TRANSACTION][UNSUBSCRIBE_FLOW] Transaction triggers unsubscribe. trxId={} status={} initiativeId={} userId={} channel={}",
-                    trxId, trxStatus, rewardTransactionDTO.getInitiativeId(), userId, channel);
-
-            try {
-                unsubscribe(rewardTransactionDTO.getInitiativeId(), userId, channel);
-                log.info("[PROCESS_TRANSACTION][UNSUBSCRIBE_FLOW] Successfully unsubscribed userId={} from initiativeId={} due to trxId={} status={}",
-                        userId, rewardTransactionDTO.getInitiativeId(), trxId, trxStatus);
-
+             unsubscribe(rewardTransactionDTO.getInitiativeId(), userId, channel);
+             log.info("[PROCESS_TRANSACTION][UNSUBSCRIBE_FLOW] Successfully unsubscribed userId={} from initiativeId={} due to trxId={} status={}",
+                     userId, rewardTransactionDTO.getInitiativeId(), trxId, trxStatus);
             } catch (Exception e) {
-                log.error("[PROCESS_TRANSACTION][UNSUBSCRIBE_FLOW] Error while processing initiative unsubscribe. trxId={} status={} initiativeId={} userId={}",
-                        trxId, trxStatus, rewardTransactionDTO.getInitiativeId(), userId, e);
-                final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(rewardTransactionDTO);
-                sendToQueueError(e, rewardTransactionDTOMessage, errorMessage, transactionServer, transactionTopic, true);
+              log.error("[PROCESS_TRANSACTION][UNSUBSCRIBE_FLOW] Error while processing initiative unsubscribe. trxId={} status={} initiativeId={} userId={}",
+                      trxId, trxStatus, rewardTransactionDTO.getInitiativeId(), userId, e);
+              final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(rewardTransactionDTO);
+              sendToQueueError(e, rewardTransactionDTOMessage, errorMessage, transactionServer, transactionTopic, true);
             }
         }
     }
 
-    private void captured(String trxStatus, String trxId, String userId, Integer rewardsCount, RewardTransactionDTO rewardTransactionDTO) {
-        if (trxStatus.equals("CAPTURED")) {
-            log.info("[PROCESS_TRANSACTION][CAPTURED] Starting captured flow for trxId={} userId={} rewardsCount={}",
-                    trxId, userId, rewardsCount);
-            if (!rewardTransactionDTO.getRewards().isEmpty()) {
-                rewardTransactionDTO.getRewards().forEach((initiativeId, reward) -> {
-                    log.info("[PROCESS_TRANSACTION][CAPTURED] Updating wallet from captured transaction. trxId={} userId={} initiativeId={} accruedRewardCents={}",
-                            trxId, userId, initiativeId, reward.getAccruedRewardCents());
-                    updateWalletFromTransactionCaptured(initiativeId, rewardTransactionDTO.getUserId(), reward.getAccruedRewardCents());
-                });
-            }
-        }
-    }
+  private void captured(String trxStatus, String trxId, String userId, Integer rewardsCount, RewardTransactionDTO rewardTransactionDTO) {
+      if (trxStatus.equals("CAPTURED")) {
+          log.info("[PROCESS_TRANSACTION][CAPTURED] Starting captured flow for trxId={} userId={} rewardsCount={}",
+                  trxId, userId, rewardsCount);
+          if (!rewardTransactionDTO.getRewards().isEmpty()) {
+              rewardTransactionDTO.getRewards().forEach((initiativeId, reward) -> {
+                  log.info("[PROCESS_TRANSACTION][CAPTURED] Updating wallet from captured transaction. trxId={} userId={} initiativeId={} accruedRewardCents={}",
+                          trxId, userId, initiativeId, reward.getAccruedRewardCents());
+                  updateWalletFromTransactionCaptured(initiativeId, rewardTransactionDTO.getUserId(), reward.getAccruedRewardCents());
+              });
+          }
+      }
+  }
 
-    @Override
+  @Override
   public void updateWallet(WalletPIBodyDTO walletPIDTO) {
     long startTime = System.currentTimeMillis();
 
