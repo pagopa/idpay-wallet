@@ -61,6 +61,7 @@ class WalletMapperTest {
                     .familyId(FAMILY_ID)
                     .acceptanceDate(OPERATION_DATE.atStartOfDay())
                     .status(WalletStatus.NOT_REFUNDABLE.name())
+                    .initialAmountCents(50000L)
                     .amountCents(50000L)
                     .accruedCents(0L)
                     .refundedCents(0L)

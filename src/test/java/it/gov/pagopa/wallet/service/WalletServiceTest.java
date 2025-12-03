@@ -124,7 +124,6 @@ class WalletServiceTest {
     private static final String DESCRIPTION_OK = "conto cointestato";
     private static final LocalDateTime TEST_DATE = LocalDateTime.now();
     private static final String USERMAIL = "USERMAIL";
-    private static final String CHANNEL_GENERAL = "CHANNEL";
     private static final String NAME = "NAME";
     private static final String SURNAME = "SURNAME";
     public static final InstrumentAckDTO INSTRUMENT_ACK_DTO_REJECTED_INSTRUMENT = new InstrumentAckDTO(
@@ -322,6 +321,7 @@ class WalletServiceTest {
                     TEST_END_DATE,
                     0,
                     TEST_AMOUNT,
+                    TEST_AMOUNT,
                     TEST_ACCRUED,
                     TEST_REFUNDED,
                     TEST_DATE,
@@ -350,6 +350,7 @@ class WalletServiceTest {
                     TEST_DATE_ONLY_DATE,
                     TEST_END_DATE,
                     0,
+                    TEST_AMOUNT,
                     TEST_AMOUNT,
                     TEST_ACCRUED,
                     TEST_REFUNDED,
@@ -380,6 +381,7 @@ class WalletServiceTest {
                     TEST_END_DATE,
                     0,
                     TEST_AMOUNT,
+                    TEST_AMOUNT,
                     TEST_ACCRUED,
                     TEST_REFUNDED,
                     TEST_DATE,
@@ -407,6 +409,7 @@ class WalletServiceTest {
                     null,
                     null,
                     0,
+                    TEST_AMOUNT,
                     TEST_AMOUNT,
                     TEST_ACCRUED,
                     TEST_REFUNDED,
@@ -587,29 +590,6 @@ class WalletServiceTest {
                     FAMILY_ID,
                     INITIATIVE_ID,
                     INITIATIVE_ID,
-                    TEST_DATE_ONLY_DATE,
-                    INITIATIVE_ID,
-                    WalletConstants.STATUS_ONBOARDING_OK,
-                    TEST_DATE,
-                    TEST_DATE,
-                    List.of(),
-                    500L,
-                    WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT,
-                    ORGANIZATION_NAME,
-                    Boolean.FALSE,
-                    100L,
-                    SERVICE_ID,
-                    Channel.IO,
-                    USERMAIL,
-                    NAME,
-                    SURNAME);
-
-    private static final EvaluationDTO OUTCOME_OK_DISCOUNT_GUIDONIA =
-            new EvaluationDTO(
-                    USER_ID,
-                    FAMILY_ID,
-                    INITIATIVE_ID,
-                    "bonus",
                     TEST_DATE_ONLY_DATE,
                     INITIATIVE_ID,
                     WalletConstants.STATUS_ONBOARDING_OK,
@@ -2483,7 +2463,7 @@ class WalletServiceTest {
         walletList.add(TEST_WALLET_UNSUBSCRIBED);
 
         WalletDTO walletDtoRef = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), VoucherStatus.ACTIVE.name(),
-                IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2), 0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
+                IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2), 0, TEST_AMOUNT, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
                 0L,
                 List.of(),
@@ -2494,7 +2474,7 @@ class WalletServiceTest {
                 SURNAME);
         WalletDTO walletDtoUnsub = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
                 VoucherStatus.ACTIVE.name(), IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2),
-                0, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
+                0, TEST_AMOUNT,TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
                 0L,
                 List.of(),
