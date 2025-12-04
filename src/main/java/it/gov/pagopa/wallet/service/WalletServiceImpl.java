@@ -511,6 +511,13 @@ public class WalletServiceImpl implements WalletService {
         auditUtilities.logUnsubscribe(userId, initiativeId);
         log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}", initiativeId,
             userId);
+        QueueOperationDTO queueOperationDTO =
+            timelineMapper.unsubscribeToTimeline(
+                wallet.getInitiativeId(),
+                wallet.getUserId(),
+                wallet.getRequestUnsubscribeDate()
+            );
+        sendToTimeline(queueOperationDTO);
       }
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
     } catch (Exception e) {
@@ -524,13 +531,6 @@ public class WalletServiceImpl implements WalletService {
           initiativeId, userId);
       throw e;
     }
-    QueueOperationDTO queueOperationDTO =
-            timelineMapper.unsubscribeToTimeline(
-                    wallet.getInitiativeId(),
-                    wallet.getUserId(),
-                    wallet.getRequestUnsubscribeDate()
-            );
-    sendToTimeline(queueOperationDTO);
   }
 
 
