@@ -468,8 +468,15 @@ public class WalletServiceImpl implements WalletService {
   public void unsubscribe(String initiativeId, String userId, String channel) {
     long startTime = System.currentTimeMillis();
 
-    log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
     Wallet wallet = findByInitiativeIdAndUserId(initiativeId, userId);
+
+    if (WalletStatus.UNSUBSCRIBED.equals(wallet.getStatus())) {
+      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
+      log.info("[UNSUBSCRIBE] The user {} has already unsubscribed from initiative {}", userId, initiativeId);
+      return;
+    }
+
+    log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
     LocalDateTime now = LocalDateTime.now();
     String statusTemp = wallet.getStatus();
     wallet.setRequestUnsubscribeDate(now);
@@ -503,22 +510,13 @@ public class WalletServiceImpl implements WalletService {
       throw e;
     }
     try {
-      if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)) {
-        wallet.setStatus(WalletStatus.UNSUBSCRIBED);
-        wallet.setNInstr(0);
-        wallet.setUpdateDate(now);
-        walletRepository.save(wallet);
-        auditUtilities.logUnsubscribe(userId, initiativeId);
-        log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}", initiativeId,
-            userId);
-        QueueOperationDTO queueOperationDTO =
-            timelineMapper.unsubscribeToTimeline(
-                wallet.getInitiativeId(),
-                wallet.getUserId(),
-                wallet.getRequestUnsubscribeDate()
-            );
-        sendToTimeline(queueOperationDTO);
-      }
+      wallet.setStatus(WalletStatus.UNSUBSCRIBED);
+      wallet.setNInstr(0);
+      wallet.setUpdateDate(now);
+      walletRepository.save(wallet);
+      auditUtilities.logUnsubscribe(userId, initiativeId);
+      log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}", initiativeId,
+          userId);
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
     } catch (Exception e) {
       this.rollbackWallet(statusTemp, wallet);
@@ -531,6 +529,13 @@ public class WalletServiceImpl implements WalletService {
           initiativeId, userId);
       throw e;
     }
+    QueueOperationDTO queueOperationDTO =
+        timelineMapper.unsubscribeToTimeline(
+            wallet.getInitiativeId(),
+            wallet.getUserId(),
+            wallet.getRequestUnsubscribeDate()
+        );
+    sendToTimeline(queueOperationDTO);
   }
 
 
