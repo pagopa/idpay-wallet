@@ -35,6 +35,7 @@ public class Wallet {
   private LocalDate voucherStartDate;
   private LocalDate voucherEndDate;
   private String iban;
+  private Long initialAmountCents; // total budget assigned
   private Long amountCents;
   private Long accruedCents;
   private Long refundedCents;

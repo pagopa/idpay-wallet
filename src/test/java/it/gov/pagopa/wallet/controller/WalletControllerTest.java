@@ -30,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,7 +43,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,6 +106,7 @@ class WalletControllerTest {
                     null,
                     null,
                     null,
+                    null,
                     TEST_DATE,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
                     LOGO_URL,
@@ -140,6 +139,7 @@ class WalletControllerTest {
                     DATE,
                     DATE,
                     1,
+                    null,
                     45000L,
                     5000L ,
                     0L,
@@ -168,6 +168,7 @@ class WalletControllerTest {
                     null,
                     null,
                     0,
+                    null,
                     45000L,
                     5000L ,
                     0L,
