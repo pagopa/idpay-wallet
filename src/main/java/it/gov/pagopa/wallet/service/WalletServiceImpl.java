@@ -513,6 +513,8 @@ public class WalletServiceImpl implements WalletService {
       wallet.setStatus(WalletStatus.UNSUBSCRIBED);
       wallet.setNInstr(0);
       wallet.setUpdateDate(now);
+      wallet.setAccruedCents(0L);
+      wallet.setAmountCents(0L);
       walletRepository.save(wallet);
       auditUtilities.logUnsubscribe(userId, initiativeId);
       log.info("[UNSUBSCRIBE] Wallet disabled on initiative {} for user {}", initiativeId,
