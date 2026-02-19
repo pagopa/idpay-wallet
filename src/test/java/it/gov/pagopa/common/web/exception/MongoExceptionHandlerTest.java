@@ -1,7 +1,5 @@
 package it.gov.pagopa.common.web.exception;
 
-import static org.mockito.Mockito.doThrow;
-
 import com.mongodb.MongoQueryException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.ServerAddress;
@@ -12,14 +10,13 @@ import org.bson.BsonDocument;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mongodb.UncategorizedMongoDbException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -27,9 +24,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.mockito.Mockito.doThrow;
+
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(value = {
-        MongoExceptionHandlerTest.TestController.class}, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+        MongoExceptionHandlerTest.TestController.class})
 @ContextConfiguration(classes = {MongoExceptionHandler.class,
         MongoExceptionHandlerTest.TestController.class, ErrorManager.class})
 class MongoExceptionHandlerTest {
@@ -37,7 +36,7 @@ class MongoExceptionHandlerTest {
   @Autowired
   private MockMvc mockMvc;
 
-  @SpyBean
+  @MockitoSpyBean
   private TestController testControllerSpy;
 
 
