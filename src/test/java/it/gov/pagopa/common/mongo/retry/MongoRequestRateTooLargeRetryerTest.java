@@ -17,11 +17,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mongodb.UncategorizedMongoDbException;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.function.Supplier;
@@ -37,7 +37,7 @@ public class MongoRequestRateTooLargeRetryerTest {
 
   public static final int REQUEST_RATE_TOO_LARGE_MAX_RETRY = 1;
   public static final int REQUEST_RATE_TOO_LARGE_MAX_MILLIS_ELAPSED = 200;
-  @MockBean
+  @MockitoBean
   private Supplier<String> dummyServiceMock;
 
   @Autowired
