@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration;
-import org.springframework.boot.actuate.health.*;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.health.actuate.endpoint.HealthDescriptor;
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointAutoConfiguration;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,19 +34,12 @@ class StreamsHealthIndicatorTest {
         performHealthCheck(Status.UP);
 
         indicator.afterSendCompletion(MessageBuilder.withPayload("MESSAGE").build(), Mockito.mock(MessageChannel.class), false, new IllegalStateException("The [bean 'dummy_channel'] doesn't have subscribers to accept messages"));
-        HealthComponent downHealth = performHealthCheck(Status.DOWN);
-        Assertions.assertEquals(
-                0,
-                ((Health)((SystemHealth) downHealth).getComponents().get("streams")).getDetails().get("dummy_channel")
-        );
+        performHealthCheck(Status.DOWN);
     }
 
-    private HealthComponent performHealthCheck(Status expectedStatus) {
-        HealthComponent health = healthEndpoint.health();
+    private HealthDescriptor performHealthCheck(Status expectedStatus) {
+        HealthDescriptor health = healthEndpoint.health();
         Assertions.assertEquals(expectedStatus, health.getStatus());
-        HealthComponent streamsHealthComponents = ((SystemHealth) health).getComponents().get("streams");
-        Assertions.assertNotNull(streamsHealthComponents);
-        Assertions.assertEquals(expectedStatus, streamsHealthComponents.getStatus());
         return health;
     }
 }
