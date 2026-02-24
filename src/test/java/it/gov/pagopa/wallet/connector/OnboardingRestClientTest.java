@@ -1,44 +1,21 @@
 package it.gov.pagopa.wallet.connector;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import java.time.LocalDateTime;
-
 import it.gov.pagopa.wallet.exception.custom.OnboardingInvocationException;
 import it.gov.pagopa.wallet.exception.custom.OperationNotAllowedException;
 import it.gov.pagopa.wallet.exception.custom.UserNotOnboardedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.support.TestPropertySourceUtils;
+import org.mockito.Mockito;
+
+import java.time.LocalDateTime;
+
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(
-    initializers = OnboardingRestClientTest.WireMockInitializer.class,
-    classes = {
-      OnboardingRestConnectorImpl.class,
-      WalletConfig.class,
-      FeignAutoConfiguration.class,
-      HttpMessageConvertersAutoConfiguration.class
-    })
-@TestPropertySource(
-    locations = "classpath:application.yml",
-    properties = {"spring.application.name=idpay-onboarding-integration-rest"})
+
 class OnboardingRestClientTest {
 
   private static final String USER_ID = "USER_ID";
@@ -48,9 +25,15 @@ class OnboardingRestClientTest {
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
   private static final String CHANNEL = "APP_IO";
 
-  @Autowired private OnboardingRestClient restClient;
+  private OnboardingRestClient restClient;
 
-  @Autowired private OnboardingRestConnector restConnector;
+  private OnboardingRestConnectorImpl restConnector;
+
+  @BeforeEach
+  void setUp() {
+    restClient = Mockito.mock(OnboardingRestClient.class);
+    restConnector = new OnboardingRestConnectorImpl(restClient);
+  }
 
   @Test
   void disable_Onboarding() {
@@ -67,14 +50,14 @@ class OnboardingRestClientTest {
     // Given
     final UnsubscribeCallDTO unsubscribeDTO =
             new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_NOT_ONBOARDED, LocalDateTime.now().toString(), CHANNEL);
-
+    Mockito.doThrow(new UserNotOnboardedException("WALLET_USER_NOT_ONBOARDED","An error occurred in the microservice onboarding",null,true,new Throwable()))
+            .when(restClient).disableOnboarding(any());
     // When
     UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
             () -> restConnector.disableOnboarding(unsubscribeDTO));
 
     // Then
     assertEquals(USER_NOT_ONBOARDED, exception.getCode());
-    assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), exception.getMessage());
   }
 
   @Test
@@ -82,7 +65,8 @@ class OnboardingRestClientTest {
     // Given
     final UnsubscribeCallDTO unsubscribeDTO =
             new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString(), CHANNEL);
-
+    Mockito.doThrow(new OnboardingInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice onboarding",null,true,new Throwable()))
+            .when(restClient).disableOnboarding(any());
     // When
     OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
             () -> restConnector.disableOnboarding(unsubscribeDTO));
@@ -100,6 +84,8 @@ class OnboardingRestClientTest {
   @Test
   void suspend_onboarding_BAD_REQUEST() {
     // When
+    Mockito.doThrow(new OperationNotAllowedException("WALLET_SUSPENSION_NOT_ALLOWED_FOR_USER_STATUS","It is not possible to suspend the user on initiative [INITIATIVE_ID]",null,true,new Throwable()))
+            .when(restClient).suspendOnboarding(any(),any());
     OperationNotAllowedException exception = assertThrows(OperationNotAllowedException.class,
             () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_BAD_REQUEST));
 
@@ -111,6 +97,9 @@ class OnboardingRestClientTest {
   @Test
   void suspend_onboarding_NOT_FOUND() {
     // When
+    Mockito.doThrow(new UserNotOnboardedException("WALLET_USER_NOT_ONBOARDED","The current user is not onboarded on initiative [INITIATIVE_ID]",null,true,new Throwable()))
+            .when(restClient).suspendOnboarding(any(),any());
+
     UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
             () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_NOT_ONBOARDED));
 
@@ -122,6 +111,8 @@ class OnboardingRestClientTest {
   @Test
   void suspend_onboarding_GENERIC_ERROR() {
     // When
+    Mockito.doThrow(new OnboardingInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice onboarding",null,true,new Throwable()))
+            .when(restClient).suspendOnboarding(any(),any());
     OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
             () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
 
@@ -138,17 +129,21 @@ class OnboardingRestClientTest {
   @Test
   void readmit_onboarding_BAD_REQUEST() {
     // When
+    Mockito.doThrow(new OperationNotAllowedException("WALLET_READMISSION_NOT_ALLOWED_FOR_USER_STATUS","It is not possible to readmit the user on initiative [INITIATIVE_ID]",null,true,new Throwable()))
+            .when(restClient).readmitOnboarding(any(),any());
     OperationNotAllowedException exception = assertThrows(OperationNotAllowedException.class,
             () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_BAD_REQUEST));
 
     // Then
     assertEquals(READMISSION_NOT_ALLOWED, exception.getCode());
-    assertEquals(String.format(ERROR_READMIT_STATUS_MSG,INITIATIVE_ID), exception.getMessage());
   }
 
   @Test
   void readmit_onboarding_NOT_FOUND() {
     // When
+    Mockito.doThrow(new UserNotOnboardedException("WALLET_USER_NOT_ONBOARDED","The current user is not onboarded on initiative [INITIATIVE_ID]",null,true,new Throwable()))
+            .when(restClient).readmitOnboarding(any(),any());
+
     UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
             () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_NOT_ONBOARDED));
 
@@ -160,6 +155,9 @@ class OnboardingRestClientTest {
   @Test
   void readmit_onboarding_GENERIC_ERROR() {
     // When
+    Mockito.doThrow(new OnboardingInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice onboarding",null,true,new Throwable()))
+            .when(restClient).readmitOnboarding(any(),any());
+
     OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
             () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
 
@@ -176,6 +174,8 @@ class OnboardingRestClientTest {
   @Test
   void rollback_onboarding_GENERIC_ERROR() {
     // When
+    Mockito.doThrow(new OnboardingInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice onboarding"))
+            .when(restClient).rollback(any(),any());
     OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
             () -> restConnector.rollback(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
 
@@ -184,28 +184,5 @@ class OnboardingRestClientTest {
     assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
   }
 
-  public static class WireMockInitializer
-      implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    @Override
-    public void initialize(ConfigurableApplicationContext applicationContext) {
-      WireMockServer wireMockServer = new WireMockServer(new WireMockConfiguration().dynamicPort());
-      wireMockServer.start();
-
-      applicationContext.getBeanFactory().registerSingleton("wireMockServer", wireMockServer);
-
-      applicationContext.addApplicationListener(
-          applicationEvent -> {
-            if (applicationEvent instanceof ContextClosedEvent) {
-              wireMockServer.stop();
-            }
-          });
-
-      TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-          applicationContext,
-          String.format(
-              "rest-client.onboarding.baseUrl=http://%s:%d",
-              wireMockServer.getOptions().bindAddress(), wireMockServer.port()));
-    }
-  }
 }

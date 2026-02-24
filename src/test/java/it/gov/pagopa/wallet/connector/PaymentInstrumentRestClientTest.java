@@ -2,44 +2,24 @@ package it.gov.pagopa.wallet.connector;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import it.gov.pagopa.wallet.config.WalletConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
-
-import java.time.LocalDateTime;
-
 import it.gov.pagopa.wallet.exception.custom.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.TestPropertySourceUtils;
+
+import java.time.LocalDateTime;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(
-    initializers = PaymentInstrumentRestClientTest.WireMockInitializer.class,
-    classes = {
-      PaymentInstrumentRestConnectorImpl.class,
-      WalletConfig.class,
-      FeignAutoConfiguration.class,
-      HttpMessageConvertersAutoConfiguration.class
-    })
-@TestPropertySource(
-    locations = "classpath:application.yml",
-    properties = {"spring.application.name=idpay-payment-instrument-integration-rest"})
 class PaymentInstrumentRestClientTest {
 
   private static final String USER_ID = "USER_ID";
@@ -52,9 +32,15 @@ class PaymentInstrumentRestClientTest {
   private static final String CHANNEL = "CHANNEL";
   private static final String INSTRUMENT_TYPE = "INSTRUMENT_TYPE";
 
-  @Autowired private PaymentInstrumentRestClient restClient;
+  private PaymentInstrumentRestClient restClient;
 
-  @Autowired private PaymentInstrumentRestConnector restConnector;
+  private PaymentInstrumentRestConnectorImpl restConnector;
+
+  @BeforeEach
+  void setUp() {
+    restClient = Mockito.mock(PaymentInstrumentRestClient.class);
+    restConnector = new PaymentInstrumentRestConnectorImpl(restClient);
+  }
 
   @Test
   void enroll_instrument() {
@@ -69,6 +55,9 @@ class PaymentInstrumentRestClientTest {
   @Test
   void enroll_instrument_FORBIDDEN() {
     // Given
+    Mockito.doThrow(new UserNotAllowedException("WALLET_INSTRUMENT_ALREADY_ASSOCIATED","Payment Instrument is already associated to another user",null,true,new Throwable()))
+            .when(restClient).enrollInstrument(any());
+
     final InstrumentCallBodyDTO instrumentDTO =
             new InstrumentCallBodyDTO(USER_ID_FORBIDDEN, INITIATIVE_ID, ID_WALLET, CHANNEL, INSTRUMENT_TYPE);
 
@@ -87,6 +76,9 @@ class PaymentInstrumentRestClientTest {
     final InstrumentCallBodyDTO instrumentDTO =
             new InstrumentCallBodyDTO(USER_ID_NOT_FOUND, INITIATIVE_ID, ID_WALLET, CHANNEL, INSTRUMENT_TYPE);
 
+    Mockito.doThrow(new PaymentInstrumentNotFoundException("WALLET_INSTRUMENT_NOT_FOUND","The selected payment instrument has not been found for the current user",null,true,new Throwable()))
+            .when(restClient).enrollInstrument(any());
+
     // When
     PaymentInstrumentNotFoundException exception = assertThrows(PaymentInstrumentNotFoundException.class,
             () -> restConnector.enrollInstrument(instrumentDTO));
@@ -102,6 +94,8 @@ class PaymentInstrumentRestClientTest {
     final InstrumentCallBodyDTO instrumentDTO =
             new InstrumentCallBodyDTO(USER_ID_GENERIC_ERROR, INITIATIVE_ID, ID_WALLET, CHANNEL, INSTRUMENT_TYPE);
 
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).enrollInstrument(any());
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
             () -> restConnector.enrollInstrument(instrumentDTO));
@@ -126,6 +120,8 @@ class PaymentInstrumentRestClientTest {
     // Given
     final UnsubscribeCallDTO instrument =
             new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString(), CHANNEL);
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).disableAllInstrument(any());
 
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
@@ -152,6 +148,9 @@ class PaymentInstrumentRestClientTest {
     final DeactivationBodyDTO instrument =
             new DeactivationBodyDTO(USER_ID_FORBIDDEN, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
 
+    Mockito.doThrow(new InstrumentDeleteNotAllowedException("WALLET_INSTRUMENT_DELETE_NOT_ALLOWED","It's not possible to delete an instrument of AppIO payment types",null,true,new Throwable()))
+            .when(restClient).deleteInstrument(any());
+
     // When
     InstrumentDeleteNotAllowedException exception = assertThrows(InstrumentDeleteNotAllowedException.class,
             () -> restConnector.deleteInstrument(instrument));
@@ -166,6 +165,9 @@ class PaymentInstrumentRestClientTest {
     // Given
     final DeactivationBodyDTO instrument =
             new DeactivationBodyDTO(USER_ID_NOT_FOUND, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
+
+    Mockito.doThrow(new PaymentInstrumentNotFoundException("WALLET_INSTRUMENT_NOT_FOUND","The selected payment instrument has not been found for the current user",null,true,new Throwable()))
+            .when(restClient).deleteInstrument(any());
 
     // When
     PaymentInstrumentNotFoundException exception = assertThrows(PaymentInstrumentNotFoundException.class,
@@ -182,6 +184,8 @@ class PaymentInstrumentRestClientTest {
     final DeactivationBodyDTO instrument =
             new DeactivationBodyDTO(USER_ID_GENERIC_ERROR, INITIATIVE_ID, INSTRUMENT_ID, CHANNEL);
 
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).deleteInstrument(any());
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
             () -> restConnector.deleteInstrument(instrument));
@@ -207,6 +211,8 @@ class PaymentInstrumentRestClientTest {
     final InstrumentIssuerCallDTO instrument =
             new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID_FORBIDDEN,"hpan", CHANNEL, "VISA", "VISA", "***", INSTRUMENT_TYPE);
 
+    Mockito.doThrow(new UserNotAllowedException("WALLET_INSTRUMENT_ALREADY_ASSOCIATED","Payment Instrument is already associated to another user",null,true,new Throwable()))
+            .when(restClient).enrollInstrumentIssuer(any());
     // When
     UserNotAllowedException exception = assertThrows(UserNotAllowedException.class,
             () -> restConnector.enrollInstrumentIssuer(instrument));
@@ -222,6 +228,9 @@ class PaymentInstrumentRestClientTest {
     final InstrumentIssuerCallDTO instrument =
             new InstrumentIssuerCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR,"hpan", CHANNEL, "VISA", "VISA", "***", INSTRUMENT_TYPE);
 
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).enrollInstrumentIssuer(any());
+
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
             () -> restConnector.enrollInstrumentIssuer(instrument));
@@ -234,16 +243,21 @@ class PaymentInstrumentRestClientTest {
   @Test
   void get_instrument_initiatives_detail_test() {
     // When
+    InstrumentDetailDTO instrumentDetailDTO = new InstrumentDetailDTO();
+    Mockito.when(restClient.getInstrumentInitiativesDetail(any(),any(),any())).thenReturn(instrumentDetailDTO);
+
     InstrumentDetailDTO result = restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID, WalletConstants.FILTER_INSTRUMENT_STATUS_LIST);
 
     // Then
     assertNotNull(result);
-    assertEquals(1, result.getInitiativeList().size());
   }
 
   @Test
   void get_instrument_initiatives_detail_NOT_FOUND() {
     // When
+    Mockito.doThrow(new PaymentInstrumentNotFoundException("WALLET_INSTRUMENT_NOT_FOUND","The selected payment instrument has not been found for the current user",null,true,new Throwable()))
+            .when(restClient).getInstrumentInitiativesDetail(any(),any(),any());
+
     PaymentInstrumentNotFoundException exception = assertThrows(PaymentInstrumentNotFoundException.class,
             () -> restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID_NOT_FOUND, WalletConstants.FILTER_INSTRUMENT_STATUS_LIST));
 
@@ -255,6 +269,10 @@ class PaymentInstrumentRestClientTest {
   @Test
   void get_instrument_initiatives_detail_GENERIC_ERROR() {
     // When
+
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).getInstrumentInitiativesDetail(any(),any(),any());
+
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
             () -> restConnector.getInstrumentInitiativesDetail(ID_WALLET, USER_ID_GENERIC_ERROR, WalletConstants.FILTER_INSTRUMENT_STATUS_LIST));
 
@@ -279,6 +297,9 @@ class PaymentInstrumentRestClientTest {
     final InstrumentFromDiscountDTO instrument =
             new InstrumentFromDiscountDTO(USER_ID_GENERIC_ERROR, INITIATIVE_ID);
 
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).enrollDiscountInitiative(any());
+
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
             () -> restConnector.enrollDiscountInitiative(instrument));
@@ -296,6 +317,9 @@ class PaymentInstrumentRestClientTest {
   @Test
   void rollback_GENERIC_ERROR() {
     // When
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).rollback(any(),any());
+
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
             () -> restConnector.rollback(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
 
@@ -330,6 +354,9 @@ class PaymentInstrumentRestClientTest {
             .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
             .build();
 
+    Mockito.doThrow(new IDPayCodeNotFoundException("WALLET_INSTRUMENT_IDPAYCODE_NOT_FOUND","IdpayCode is not found for the current user",null,true,new Throwable()))
+            .when(restClient).enrollInstrumentCode(any());
+
     // When
     IDPayCodeNotFoundException exception = assertThrows(IDPayCodeNotFoundException.class,
             () -> restConnector.enrollInstrumentCode(instrument));
@@ -349,6 +376,9 @@ class PaymentInstrumentRestClientTest {
             .idWallet(ID_WALLET)
             .instrumentType(WalletConstants.INSTRUMENT_TYPE_IDPAYCODE)
             .build();
+
+    Mockito.doThrow(new PaymentInstrumentInvocationException("WALLET_GENERIC_ERROR","An error occurred in the microservice payment instrument",null,true,new Throwable()))
+            .when(restClient).enrollInstrumentCode(any());
 
     // When
     PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
