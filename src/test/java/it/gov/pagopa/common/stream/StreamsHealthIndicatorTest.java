@@ -2,44 +2,43 @@ package it.gov.pagopa.common.stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
-import org.springframework.boot.health.actuate.endpoint.HealthDescriptor;
-import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointAutoConfiguration;
-import org.springframework.boot.health.contributor.Status;
+import org.springframework.cloud.stream.messaging.DirectWithAttributesChannel;
+import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {StreamsHealthIndicator.class, HealthEndpointAutoConfiguration.class})
+import java.util.Collections;
+
+
 class StreamsHealthIndicatorTest {
 
-    @Autowired
-    private HealthEndpoint healthEndpoint;
-    @Autowired
-    private StreamsHealthIndicator indicator;
-
     @Test
-    void test() {
-        performHealthCheck(Status.UP);
+    void testHealthIndicator() {
+        ApplicationContext mockContext = Mockito.mock(ApplicationContext.class);
+        Mockito.when(mockContext.getBeansOfType(DirectWithAttributesChannel.class))
+                .thenReturn(Collections.emptyMap());
 
+        StreamsHealthIndicator indicator = new StreamsHealthIndicator(mockContext);
+
+        // initially up because there are no disconnected subscribers
+        Assertions.assertEquals("UP", indicator.health().getStatus().getCode());
+
+        // send a message with a runtime exception (should not affect health)
         indicator.afterSendCompletion(MessageBuilder.withPayload("MESSAGE").build(), Mockito.mock(MessageChannel.class), false, new RuntimeException());
-        performHealthCheck(Status.UP);
+        Assertions.assertEquals("UP", indicator.health().getStatus().getCode());
 
+        // send a message with IllegalStateException not related to subscriber
         indicator.afterSendCompletion(MessageBuilder.withPayload("MESSAGE").build(), Mockito.mock(MessageChannel.class), false, new IllegalStateException(""));
-        performHealthCheck(Status.UP);
+        Assertions.assertEquals("UP", indicator.health().getStatus().getCode());
 
-        indicator.afterSendCompletion(MessageBuilder.withPayload("MESSAGE").build(), Mockito.mock(MessageChannel.class), false, new IllegalStateException("The [bean 'dummy_channel'] doesn't have subscribers to accept messages"));
-        performHealthCheck(Status.DOWN);
-    }
-
-    private HealthDescriptor performHealthCheck(Status expectedStatus) {
-        HealthDescriptor health = healthEndpoint.health();
-        Assertions.assertEquals(expectedStatus, health.getStatus());
-        return health;
+        // send a message with subscriber disconnected exception
+        indicator.afterSendCompletion(
+                MessageBuilder.withPayload("MESSAGE").build(),
+                Mockito.mock(MessageChannel.class),
+                false,
+                new IllegalStateException("The [bean 'dummy_channel'] doesn't have subscribers to accept messages")
+        );
+        Assertions.assertEquals("DOWN", indicator.health().getStatus().getCode());
     }
 }
