@@ -33,14 +33,13 @@ import java.util.concurrent.TimeUnit;
 @TestPropertySource(
         properties = {
                 "de.flapdoodle.mongodb.embedded.version=4.2.24",
-
                 "spring.data.mongodb.database=idpay",
-                "spring.data.mongodb.config.connectionPool.maxSize: 100",
-                "spring.data.mongodb.config.connectionPool.minSize: 0",
-                "spring.data.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
-                "spring.data.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
-                "spring.data.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
-                "spring.data.mongodb.config.connectionPool.maxConnecting: 2",
+                "spring.data.mongodb.config.connectionPool.maxSize= 100",
+                "spring.data.mongodb.config.connectionPool.minSize= 0",
+                "spring.data.mongodb.config.connectionPool.maxWaitTimeMS= 120000",
+                "spring.data.mongodb.config.connectionPool.maxConnectionLifeTimeMS= 0",
+                "spring.data.mongodb.config.connectionPool.maxConnectionIdleTimeMS= 120000",
+                "spring.data.mongodb.config.connectionPool.maxConnecting= 2",
         })
 class BaseMongoRepositoryIntegrationTest {
 
@@ -53,19 +52,12 @@ class BaseMongoRepositoryIntegrationTest {
         @Autowired
         private MongoMetricsCommandListener mongoMetricsCommandListener;
 
-        @Bean
-        @Primary
-        MongoClientSettingsBuilderCustomizer testMongoCustomizer() {
-            return builder -> builder
-                    .applyToConnectionPoolSettings(pool -> {
-                        pool.maxSize(100);
-                        pool.minSize(0);
-                        pool.maxWaitTime(120000, TimeUnit.MILLISECONDS);
-                        pool.maxConnectionLifeTime(0, TimeUnit.MILLISECONDS);
-                        pool.maxConnectionIdleTime(120000, TimeUnit.MILLISECONDS);
-                        pool.maxConnecting(2);
-                    })
-                    .addCommandListener(mongoMetricsCommandListener);
+        @Override
+        public MongoClientSettingsBuilderCustomizer customizer(MongoDbCustomProperties mongoDbCustomProperties) {
+            return builder -> {
+                super.customizer(mongoDbCustomProperties).customize(builder);
+                builder.addCommandListener(mongoMetricsCommandListener);
+            };
         }
 
     }
