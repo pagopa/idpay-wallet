@@ -18,24 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-@TestPropertySource(
-        properties = {
-                "de.flapdoodle.mongodb.embedded.version=4.2.24",
-
-                "spring.data.mongodb.database=idpay",
-                "spring.data.mongodb.config.connectionPool.maxSize: 100",
-                "spring.data.mongodb.config.connectionPool.minSize: 0",
-                "spring.data.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
-                "spring.data.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
-                "spring.data.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
-                "spring.data.mongodb.config.connectionPool.maxConnecting: 2",
-        })
 @ExtendWith(SpringExtension.class)
 @AutoConfigureSingleInstanceMongodb
 @ContextConfiguration(classes = {BaseMongoRepositoryIntegrationTest.TestMongoRepositoryConfig.class, MongoTestUtilitiesService.TestMongoConfiguration.class, SimpleMeterRegistry.class})
@@ -52,10 +40,15 @@ class BaseMongoRepositoryIntegrationTest {
 
         @Override
         public MongoClientSettingsBuilderCustomizer customizer(MongoDbCustomProperties mongoDbCustomProperties) {
-            return builder -> {
-                super.customizer(mongoDbCustomProperties).customize(builder);
-                builder.addCommandListener(mongoMetricsCommandListener);
-            };
+            return builder -> builder.applyToConnectionPoolSettings(
+                    connectionPool -> {
+                        connectionPool.maxSize(100);
+                        connectionPool.minSize(0);
+                        connectionPool.maxWaitTime(120000, TimeUnit.MILLISECONDS);
+                        connectionPool.maxConnectionLifeTime(0, TimeUnit.MILLISECONDS);
+                        connectionPool.maxConnectionIdleTime(120000, TimeUnit.MILLISECONDS);
+                        connectionPool.maxConnecting(2);
+                    }).addCommandListener(mongoMetricsCommandListener);
         }
 
     }
