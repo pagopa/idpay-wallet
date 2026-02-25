@@ -26,7 +26,7 @@ import java.util.Map;
 
 @TestPropertySource(
         properties = {
-                "de.flapdoodle.mongodb.embedded.version=4.24.0",
+                "de.flapdoodle.mongodb.embedded.version=4.2.24",
 
                 "spring.data.mongodb.database=idpay",
                 "spring.data.mongodb.config.connectionPool.maxSize: 100",
