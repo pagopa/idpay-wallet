@@ -1,6 +1,6 @@
 package it.gov.pagopa.common.mongo.config;
 
-import com.mongodb.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import it.gov.pagopa.common.mongo.repository.MongoRepositoryImpl;
 import lombok.Setter;
 import org.bson.types.Decimal128;
