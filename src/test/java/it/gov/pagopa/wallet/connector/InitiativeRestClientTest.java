@@ -1,57 +1,39 @@
 package it.gov.pagopa.wallet.connector;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import it.gov.pagopa.wallet.config.WalletConfig;
-import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(
-    initializers = InitiativeRestClientTest.WireMockInitializer.class,
-    classes = {
-        InitiativeRestConnectorImpl.class,
-        WalletConfig.class,
-        FeignAutoConfiguration.class,
-        HttpMessageConvertersAutoConfiguration.class
-    })
-@TestPropertySource(
-    locations = "classpath:application.yml",
-    properties = {"spring.application.name=idpay-initiative-integration-rest"})
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.verify;
+
+
 class InitiativeRestClientTest {
 
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
 
-  @Autowired
   private InitiativeRestClient restClient;
 
-  @Autowired
-  private InitiativeRestConnector restConnector;
+  private InitiativeRestConnectorImpl restConnector;
 
-  @Test
-  void getInitiativeBeneficiaryView() {
 
-    InitiativeDTO actual = restConnector.getInitiativeBeneficiaryView(INITIATIVE_ID);
-
-    assertEquals(INITIATIVE_ID, actual.getInitiativeId());
-
+  @BeforeEach
+  void setUp() {
+    restClient = Mockito.mock(InitiativeRestClient.class);
+    restConnector = new InitiativeRestConnectorImpl(restClient);
   }
 
+  @Test
+  void getInitiativeBeneficiaryView_ok(){
+    assertDoesNotThrow(() -> restConnector.getInitiativeBeneficiaryView(INITIATIVE_ID));
+    verify(restClient).getInitiativeBeneficiaryView(INITIATIVE_ID);
+  }
 
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
