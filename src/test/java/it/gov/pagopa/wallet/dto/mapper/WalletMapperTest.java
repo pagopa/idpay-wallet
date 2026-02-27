@@ -1,10 +1,11 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
+import it.gov.pagopa.wallet.dto.InitiativesStatusDTO;
+import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
 import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.VoucherStatus;
 import it.gov.pagopa.wallet.enums.WalletStatus;
@@ -22,17 +23,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = WalletMapper.class)
 @TestPropertySource(properties = "app.wallet.expiringDay=3")
 class WalletMapperTest {
 
-    @MockBean
+    @MockitoBean
     Utilities utilities;
     private static final String USER_ID = "test_user";
     private static final String FAMILY_ID = "test_family";

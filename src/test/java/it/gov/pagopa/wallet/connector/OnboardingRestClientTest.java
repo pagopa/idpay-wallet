@@ -2,187 +2,259 @@ package it.gov.pagopa.wallet.connector;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import it.gov.pagopa.wallet.config.WalletConfig;
+import feign.FeignException;
+import feign.Request;
+import feign.Response;
 import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
-import java.time.LocalDateTime;
-
 import it.gov.pagopa.wallet.exception.custom.OnboardingInvocationException;
 import it.gov.pagopa.wallet.exception.custom.OperationNotAllowedException;
 import it.gov.pagopa.wallet.exception.custom.UserNotOnboardedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.TestPropertySourceUtils;
-import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.*;
-import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
-import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(
-    initializers = OnboardingRestClientTest.WireMockInitializer.class,
-    classes = {
-      OnboardingRestConnectorImpl.class,
-      WalletConfig.class,
-      FeignAutoConfiguration.class,
-      HttpMessageConvertersAutoConfiguration.class
-    })
-@TestPropertySource(
-    locations = "classpath:application.yml",
-    properties = {"spring.application.name=idpay-onboarding-integration-rest"})
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.USER_UNSUBSCRIBED;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doThrow;
+
 class OnboardingRestClientTest {
 
   private static final String USER_ID = "USER_ID";
-  private static final String USER_ID_NOT_ONBOARDED = "USER_ID_NOT_ONBOARDED";
-  private static final String USER_ID_GENERIC_ERROR = "USER_ID_GENERIC_ERROR";
-  private static final String USER_ID_BAD_REQUEST = "USER_ID_BAD_REQUEST";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
   private static final String CHANNEL = "APP_IO";
 
-  @Autowired private OnboardingRestClient restClient;
+  private OnboardingRestClient restClient;
 
-  @Autowired private OnboardingRestConnector restConnector;
+  private OnboardingRestConnectorImpl restConnector;
 
-  @Test
-  void disable_Onboarding() {
-    // Given
-    final UnsubscribeCallDTO unsubscribeDTO =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, LocalDateTime.now().toString(), CHANNEL);
 
-    // When
-    assertDoesNotThrow(() -> restConnector.disableOnboarding(unsubscribeDTO));
+  @BeforeEach
+  void setUp() {
+    restClient = mock(OnboardingRestClient.class);
+    restConnector = new OnboardingRestConnectorImpl(restClient);
   }
 
   @Test
-  void disable_Onboarding_NOT_FOUND() {
-    // Given
-    final UnsubscribeCallDTO unsubscribeDTO =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_NOT_ONBOARDED, LocalDateTime.now().toString(), CHANNEL);
+  void disableOnboarding_success() {
+    UnsubscribeCallDTO dto = new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, USER_UNSUBSCRIBED, CHANNEL);
 
-    // When
-    UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-            () -> restConnector.disableOnboarding(unsubscribeDTO));
+    doNothing().when(restClient).disableOnboarding(dto);
 
-    // Then
-    assertEquals(USER_NOT_ONBOARDED, exception.getCode());
-    assertEquals(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID), exception.getMessage());
+    assertDoesNotThrow(() -> restConnector.disableOnboarding(dto));
+    verify(restClient, times(1)).disableOnboarding(dto);
   }
 
   @Test
-  void disable_Onboarding_GENERIC_ERROR() {
-    // Given
-    final UnsubscribeCallDTO unsubscribeDTO =
-            new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID_GENERIC_ERROR, LocalDateTime.now().toString(), CHANNEL);
+  void disableOnboarding_userNotOnboarded_throwsUserNotOnboardedException() {
+    UnsubscribeCallDTO dto = new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, USER_UNSUBSCRIBED, CHANNEL);
 
-    // When
-    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
-            () -> restConnector.disableOnboarding(unsubscribeDTO));
+    FeignException feign404 = FeignException.errorStatus(
+            "disableOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(404)
+                    .reason("Not Found")
+                    .headers(Map.of())
+                    .body("Not Found", StandardCharsets.UTF_8)
+                    .build()
+    );
 
-    // Then
-    assertEquals(GENERIC_ERROR, exception.getCode());
-    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
+    doThrow(feign404).when(restClient).disableOnboarding(dto);
+
+    UserNotOnboardedException ex = assertThrows(UserNotOnboardedException.class,
+            () -> restConnector.disableOnboarding(dto));
+    assertTrue(ex.getMessage().contains(dto.getInitiativeId()));
   }
 
   @Test
-  void suspend_onboarding() {
-    assertDoesNotThrow(() -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID));
+  void disableOnboarding_otherFeignError_throwsOnboardingInvocationException() {
+    UnsubscribeCallDTO dto = new UnsubscribeCallDTO(INITIATIVE_ID, USER_ID, USER_UNSUBSCRIBED, CHANNEL);
+
+    FeignException feign500 = FeignException.errorStatus(
+            "disableOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(500)
+                    .reason("Internal Server Error")
+                    .headers(Map.of())
+                    .body("Error", StandardCharsets.UTF_8)
+                    .build()
+    );
+
+    doThrow(feign500).when(restClient).disableOnboarding(dto);
+
+    OnboardingInvocationException ex = assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.disableOnboarding(dto));
+    assertTrue(ex.getMessage().contains("error"));
   }
 
   @Test
-  void suspend_onboarding_BAD_REQUEST() {
-    // When
-    OperationNotAllowedException exception = assertThrows(OperationNotAllowedException.class,
-            () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_BAD_REQUEST));
-
-    // Then
-    assertEquals(SUSPENSION_NOT_ALLOWED, exception.getCode());
-    assertEquals(String.format(ERROR_SUSPENSION_STATUS_MSG,INITIATIVE_ID), exception.getMessage());
+  void suspendOnboarding_success() {
+    doNothing().when(restClient).suspendOnboarding("init1", "user1");
+    assertDoesNotThrow(() -> restConnector.suspendOnboarding("init1", "user1"));
+    verify(restClient, times(1)).suspendOnboarding("init1", "user1");
   }
 
   @Test
-  void suspend_onboarding_NOT_FOUND() {
-    // When
-    UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-            () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_NOT_ONBOARDED));
+  void suspendOnboarding_badRequest_throwsOperationNotAllowedException() {
+    FeignException feign400 = FeignException.errorStatus(
+            "suspendOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(400)
+                    .reason("Bad Request")
+                    .headers(Map.of())
+                    .body("Bad Request", StandardCharsets.UTF_8)
+                    .build()
+    );
 
-    // Then
-    assertEquals(USER_NOT_ONBOARDED, exception.getCode());
-    assertEquals(String.format(USER_NOT_ONBOARDED_MSG,INITIATIVE_ID), exception.getMessage());
+    doThrow(feign400).when(restClient).suspendOnboarding("init1", "user1");
+
+    OperationNotAllowedException ex = assertThrows(OperationNotAllowedException.class,
+            () -> restConnector.suspendOnboarding("init1", "user1"));
+    assertEquals("WALLET_SUSPENSION_NOT_ALLOWED_FOR_USER_STATUS", ex.getCode());
   }
 
   @Test
-  void suspend_onboarding_GENERIC_ERROR() {
-    // When
-    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
-            () -> restConnector.suspendOnboarding(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
+  void suspendOnboarding_404_throwsUserNotOnboardedException() {
+    FeignException feign404 = FeignException.errorStatus(
+            "suspendOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(404)
+                    .reason("Not Found")
+                    .headers(Map.of())
+                    .body("Not Found", StandardCharsets.UTF_8)
+                    .build()
+    );
 
-    // Then
-    assertEquals(GENERIC_ERROR, exception.getCode());
-    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
+    doThrow(feign404).when(restClient).suspendOnboarding("init1", "user1");
+
+    assertThrows(UserNotOnboardedException.class,
+            () -> restConnector.suspendOnboarding("init1", "user1"));
   }
 
   @Test
-  void readmit_onboarding() {
-    assertDoesNotThrow(() -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID));
+  void suspendOnboarding_500_throwsUserNotOnboardedException() {
+    FeignException feign500 = FeignException.errorStatus(
+            "suspendOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(500)
+                    .reason("Internal Server Error")
+                    .headers(Map.of())
+                    .body("Internal Server Error", StandardCharsets.UTF_8)
+                    .build()
+    );
+
+    doThrow(feign500).when(restClient).suspendOnboarding("init1", "user1");
+
+    assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.suspendOnboarding("init1", "user1"));
   }
 
   @Test
-  void readmit_onboarding_BAD_REQUEST() {
-    // When
-    OperationNotAllowedException exception = assertThrows(OperationNotAllowedException.class,
-            () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_BAD_REQUEST));
-
-    // Then
-    assertEquals(READMISSION_NOT_ALLOWED, exception.getCode());
-    assertEquals(String.format(ERROR_READMIT_STATUS_MSG,INITIATIVE_ID), exception.getMessage());
+  void readmitOnboarding_success() {
+    doNothing().when(restClient).readmitOnboarding("init1", "user1");
+    assertDoesNotThrow(() -> restConnector.readmitOnboarding("init1", "user1"));
   }
 
   @Test
-  void readmit_onboarding_NOT_FOUND() {
-    // When
-    UserNotOnboardedException exception = assertThrows(UserNotOnboardedException.class,
-            () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_NOT_ONBOARDED));
+  void readmitOnboarding_badRequest_throwsOperationNotAllowedException() {
+    FeignException feign400 = FeignException.errorStatus(
+            "readmitOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(400)
+                    .reason("Bad Request")
+                    .headers(Map.of())
+                    .body("Bad Request", StandardCharsets.UTF_8)
+                    .build()
+    );
 
-    // Then
-    assertEquals(USER_NOT_ONBOARDED, exception.getCode());
-    assertEquals(String.format(USER_NOT_ONBOARDED_MSG,INITIATIVE_ID), exception.getMessage());
+    doThrow(feign400).when(restClient).readmitOnboarding("init1", "user1");
+
+    OperationNotAllowedException ex = assertThrows(OperationNotAllowedException.class,
+            () -> restConnector.readmitOnboarding("init1", "user1"));
+    assertEquals("WALLET_READMISSION_NOT_ALLOWED_FOR_USER_STATUS", ex.getCode());
   }
 
   @Test
-  void readmit_onboarding_GENERIC_ERROR() {
-    // When
-    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
-            () -> restConnector.readmitOnboarding(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
+  void readmitOnboarding_404_throwsUserNotOnboardedException() {
+    FeignException feign404 = FeignException.errorStatus(
+            "readmitOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(404)
+                    .reason("Not Found")
+                    .headers(Map.of())
+                    .body("Not Found", StandardCharsets.UTF_8)
+                    .build()
+    );
 
-    // Then
-    assertEquals(GENERIC_ERROR, exception.getCode());
-    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
+    doThrow(feign404).when(restClient).readmitOnboarding("init1", "user1");
+
+    assertThrows(UserNotOnboardedException.class,
+            () -> restConnector.readmitOnboarding("init1", "user1"));
   }
 
   @Test
-  void rollback_onboarding() {
-    assertDoesNotThrow(() -> restConnector.rollback(INITIATIVE_ID, USER_ID));
+  void readmitOnboarding_500_throwsUserNotOnboardedException() {
+    FeignException feign500 = FeignException.errorStatus(
+            "readmitOnboarding",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(500)
+                    .reason("Internal Server Error")
+                    .headers(Map.of())
+                    .body("Internal Server Error", StandardCharsets.UTF_8)
+                    .build()
+    );
+
+    doThrow(feign500).when(restClient).readmitOnboarding("init1", "user1");
+
+    assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.readmitOnboarding("init1", "user1"));
   }
 
   @Test
-  void rollback_onboarding_GENERIC_ERROR() {
-    // When
-    OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
-            () -> restConnector.rollback(INITIATIVE_ID, USER_ID_GENERIC_ERROR));
-
-    // Then
-    assertEquals(GENERIC_ERROR, exception.getCode());
-    assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
+  void rollback_success() {
+    doNothing().when(restClient).rollback("init1", "user1");
+    assertDoesNotThrow(() -> restConnector.rollback("init1", "user1"));
   }
+
+  @Test
+  void rollback_anyError_throwsOnboardingInvocationException() {
+    FeignException feign500 = FeignException.errorStatus(
+            "rollback",
+            Response.builder()
+                    .request(Request.create(Request.HttpMethod.GET, "", Map.of(), null, null, null))
+                    .status(500)
+                    .reason("Internal Server Error")
+                    .headers(Map.of())
+                    .body("Error", StandardCharsets.UTF_8)
+                    .build()
+    );
+
+    doThrow(feign500).when(restClient).rollback("init1", "user1");
+
+    assertThrows(OnboardingInvocationException.class,
+            () -> restConnector.rollback("init1", "user1"));
+  }
+
 
   public static class WireMockInitializer
       implements ApplicationContextInitializer<ConfigurableApplicationContext> {
