@@ -16,6 +16,8 @@ import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.regex.Pattern;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(value = {ErrorManagerTest.TestController.class}, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(value = {ErrorManagerTest.TestController.class}, excludeAutoConfiguration = { UserDetailsServiceAutoConfiguration .class , SecurityAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {ErrorManagerTest.TestController.class, ErrorManager.class})
 class ErrorManagerTest {
   private static final String ERRORDTO_STRING = "{\"code\":Error,\"message\":\"Something gone wrong\"}";

@@ -14,6 +14,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -47,7 +49,8 @@ import org.springframework.web.bind.annotation.RestController;
         MongoRequestRateTooLargeRetryIntegrationTest.TestController.class,
         MongoRequestRateTooLargeRetryIntegrationTest.TestRepository.class,
 })
-@WebMvcTest(excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(excludeAutoConfiguration =  { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureSingleInstanceMongodb
 class MongoRequestRateTooLargeRetryIntegrationTest {
 
