@@ -4,8 +4,17 @@ import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Response;
-import it.gov.pagopa.wallet.dto.*;
-import it.gov.pagopa.wallet.exception.custom.*;
+import it.gov.pagopa.wallet.dto.UnsubscribeCallDTO;
+import it.gov.pagopa.wallet.dto.DeactivationBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentCallBodyDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerCallDTO;
+import it.gov.pagopa.wallet.dto.InstrumentFromDiscountDTO;
+import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
+import it.gov.pagopa.wallet.exception.custom.PaymentInstrumentInvocationException;
+import it.gov.pagopa.wallet.exception.custom.UserNotAllowedException;
+import it.gov.pagopa.wallet.exception.custom.PaymentInstrumentNotFoundException;
+import it.gov.pagopa.wallet.exception.custom.InstrumentDeleteNotAllowedException;
+import it.gov.pagopa.wallet.exception.custom.IDPayCodeNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,9 +24,14 @@ import java.util.Collections;
 import java.util.List;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.PAYMENT_INSTRUMENT_ALREADY_ASSOCIATED_MSG;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 
 class PaymentInstrumentRestClientTest {
