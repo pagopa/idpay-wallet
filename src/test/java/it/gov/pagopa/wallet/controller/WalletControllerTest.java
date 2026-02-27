@@ -644,7 +644,6 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getAmountCents(), walletDTO.getAmountCents());
         assertEquals(INITIATIVE_DTO.getAccruedCents(), walletDTO.getAccruedCents());
         assertEquals(INITIATIVE_DTO.getRefundedCents(), walletDTO.getRefundedCents());
-        //assertEquals(INITIATIVE_DTO.getNTrx(), walletDTO.getNTrx());
         assertEquals(INITIATIVE_DTO.getMaxTrx(),walletDTO.getMaxTrx());
     }
 

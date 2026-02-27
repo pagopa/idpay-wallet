@@ -202,9 +202,10 @@ class PaymentInstrumentRestClientTest {
     doThrow(feignException(500))
             .when(restClient).enrollInstrument(any());
 
+    InstrumentCallBodyDTO instrumentCallBodyDTO = new InstrumentCallBodyDTO();
     assertThrows(
             PaymentInstrumentInvocationException.class,
-            () -> restConnector.enrollInstrument(new InstrumentCallBodyDTO())
+            () -> restConnector.enrollInstrument(instrumentCallBodyDTO)
     );
   }
 
@@ -289,9 +290,10 @@ class PaymentInstrumentRestClientTest {
     doThrow(feignException(404))
             .when(restClient).enrollInstrumentCode(any());
 
+    InstrumentCallBodyDTO body = new InstrumentCallBodyDTO();
     assertThrows(
             IDPayCodeNotFoundException.class,
-            () -> restConnector.enrollInstrumentCode(new InstrumentCallBodyDTO())
+            () -> restConnector.enrollInstrumentCode(body)
     );
   }
 
@@ -300,9 +302,10 @@ class PaymentInstrumentRestClientTest {
     doThrow(feignException(500))
             .when(restClient).enrollInstrumentCode(any());
 
+    InstrumentCallBodyDTO body = new InstrumentCallBodyDTO();
     assertThrows(
             PaymentInstrumentInvocationException.class,
-            () -> restConnector.enrollInstrumentCode(new InstrumentCallBodyDTO())
+            () -> restConnector.enrollInstrumentCode(body)
     );
   }
 
