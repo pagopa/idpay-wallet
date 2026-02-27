@@ -29,12 +29,12 @@ import java.util.Map;
                 "de.flapdoodle.mongodb.embedded.version=4.2.24",
 
                 "spring.mongodb.database=idpay",
-                "spring.mongodb.config.connectionPool.maxSize: 100",
-                "spring.mongodb.config.connectionPool.minSize: 0",
-                "spring.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
-                "spring.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
-                "spring.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
-                "spring.mongodb.config.connectionPool.maxConnecting: 2",
+                "spring.data.mongodb.config.connectionPool.maxSize: 100",
+                "spring.data.mongodb.config.connectionPool.minSize: 0",
+                "spring.data.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
+                "spring.data.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
+                "spring.data.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
+                "spring.data.mongodb.config.connectionPool.maxConnecting: 2",
         })
 @ExtendWith(SpringExtension.class)
 @AutoConfigureSingleInstanceMongodb
