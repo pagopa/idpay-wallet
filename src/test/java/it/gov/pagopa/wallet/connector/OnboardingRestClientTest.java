@@ -20,15 +20,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.USER_UNSUBSCRIBED;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doThrow;
 
 class OnboardingRestClientTest {
 
   private static final String USER_ID = "USER_ID";
-  private static final String USER_ID_NOT_ONBOARDED = "USER_ID_NOT_ONBOARDED";
-  private static final String USER_ID_GENERIC_ERROR = "USER_ID_GENERIC_ERROR";
-  private static final String USER_ID_BAD_REQUEST = "USER_ID_BAD_REQUEST";
   private static final String INITIATIVE_ID = "INITIATIVE_ID";
   private static final String CHANNEL = "APP_IO";
 

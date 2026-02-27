@@ -4,7 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.InstrumentDetailDTO;
+import it.gov.pagopa.wallet.dto.InitiativesStatusDTO;
+import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
 import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.VoucherStatus;
 import it.gov.pagopa.wallet.enums.WalletStatus;
