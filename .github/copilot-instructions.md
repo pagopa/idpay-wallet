@@ -106,6 +106,16 @@ try (var scope = new java.util.concurrent.StructuredTaskScope.ShutdownOnFailure(
 
 - Jackson 3 builder usage (recommended): see `JacksonConfig` snippet above.
 
+## Code Style Enforcement:
+
+Strictly follow the .editorconfig defined in the root.
+
+Use Google Java Style (2-space indents).
+
+For Java 25 features: Ensure Record components and Case patterns in switch expressions are formatted for maximum readability (split lines for >3 components).
+
+Import Ordering: Group jakarta.* imports above third-party libraries but below java.*.
+
 ## When to Ask the Human
 - Complex architecture changes (package splits, adapter rework) require an explicit design decision from the maintainers.
 - When introducing non-backward-compatible changes to serialization formats, request release coordination.
