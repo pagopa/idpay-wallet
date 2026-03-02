@@ -1,6 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.mongodb.MongoClientException;
 import it.gov.pagopa.common.config.ObjectMapperConfig;
 import it.gov.pagopa.wallet.connector.*;
@@ -100,7 +100,7 @@ class WalletServiceTest {
     @MockitoBean
     PaymentRestConnector paymentRestConnector;
     @Autowired
-    ObjectMapper objectMapper;
+    JsonMapper objectMapper;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String FAMILY_ID = "TEST_FAMILY_ID";
@@ -609,7 +609,7 @@ class WalletServiceTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
+        objectMapper = JsonMapper.builder().build();
         MockitoAnnotations.openMocks(this);
         testWallet = Wallet.builder()
                 .userId(USER_ID)

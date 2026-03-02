@@ -1,0 +1,6 @@
+"search.exclude": {
+    "**/target": true,
+    "**/build": true,
+    "**/.idea": true,
+    "**/.settings": true
+}

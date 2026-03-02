@@ -1,7 +1,6 @@
 package it.gov.pagopa.wallet.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -31,7 +30,7 @@ class UtilitiesTest {
     Utilities utilities;
 
     @MockitoBean
-    ObjectMapper objectMapper;
+    JsonMapper objectMapper;
 
     private static final String BAD_REQUEST = "BAD REQUEST";
     private static final String MESSAGE = "test";
@@ -45,7 +44,7 @@ class UtilitiesTest {
 
 
     @Test
-    void exceptionConverter_ok() throws JsonProcessingException {
+    void exceptionConverter_ok() {
         Request request =
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
@@ -60,7 +59,7 @@ class UtilitiesTest {
     }
 
     @Test
-    void exceptionConverter_ok_DTOMessageNull() throws JsonProcessingException {
+    void exceptionConverter_ok_DTOMessageNull() {
         Request request =
                 Request.create(Request.HttpMethod.PUT, "url", new HashMap<>(), null, new RequestTemplate());
         FeignException.BadRequest e = new FeignException.BadRequest(BAD_REQUEST, request, new byte[0], null);
