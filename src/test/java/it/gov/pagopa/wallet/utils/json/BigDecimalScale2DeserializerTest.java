@@ -1,6 +1,8 @@
 package it.gov.pagopa.wallet.utils.json;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
@@ -16,39 +18,18 @@ class BigDecimalScale2DeserializerTest {
         return JsonMapper.builder().addModule(m).build();
     }
 
-    @Test
-    void deserialize_moreThanTwoDecimals_roundsCorrectly() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "1.236,1.24",
+            "1.235,1.23",
+            "2,2.00",
+            "-1.235,-1.23"
+    })
+    void deserialize_various_rounding(String input, String expected) throws Exception {
         JsonMapper mapper = mapperWithDeserializer();
-        BigDecimal result = mapper.readValue("1.236", BigDecimal.class);
+        BigDecimal result = mapper.readValue(input, BigDecimal.class);
 
         assertEquals(2, result.scale());
-        assertEquals(0, result.compareTo(new BigDecimal("1.24")));
-    }
-
-    @Test
-    void deserialize_halfDown_tieRoundsDown() throws Exception {
-        JsonMapper mapper = mapperWithDeserializer();
-        BigDecimal result = mapper.readValue("1.235", BigDecimal.class);
-
-        assertEquals(2, result.scale());
-        assertEquals(0, result.compareTo(new BigDecimal("1.23")));
-    }
-
-    @Test
-    void deserialize_integer_getsTwoDecimalScale() throws Exception {
-        JsonMapper mapper = mapperWithDeserializer();
-        BigDecimal result = mapper.readValue("2", BigDecimal.class);
-
-        assertEquals(2, result.scale());
-        assertEquals(0, result.compareTo(new BigDecimal("2.00")));
-    }
-
-    @Test
-    void deserialize_negativeHalfDown_tieRoundsTowardZero() throws Exception {
-        JsonMapper mapper = mapperWithDeserializer();
-        BigDecimal result = mapper.readValue("-1.235", BigDecimal.class);
-
-        assertEquals(2, result.scale());
-        assertEquals(0, result.compareTo(new BigDecimal("-1.23")));
+        assertEquals(0, result.compareTo(new BigDecimal(expected)));
     }
 }

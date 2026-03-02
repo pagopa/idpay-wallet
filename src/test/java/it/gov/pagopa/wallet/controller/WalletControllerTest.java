@@ -716,7 +716,7 @@ class WalletControllerTest {
 
     @Test
     void update_wallet_ok() throws Exception {
-        JsonMapper objectMapper = JsonMapper.builder().build();
+        JsonMapper localMapper = JsonMapper.builder().build();
         WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO);
         List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
         walletPIDTOList.add(walletPIDTO);
@@ -725,7 +725,7 @@ class WalletControllerTest {
         mvc.perform(
                         MockMvcRequestBuilders.put(BASE_URL + UPDATE_WALLET_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(walletPIBodyDTO))
+                                .content(localMapper.writeValueAsString(walletPIBodyDTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent())
                 .andReturn();
