@@ -46,6 +46,7 @@ public class Wallet {
   private LocalDateTime updateDate;
   private LocalDateTime lastCounterUpdate;
   private LocalDateTime suspensionDate;
+  private LocalDateTime createdAt;
   private String initiativeRewardType;
   private Boolean isLogoPresent;
   private Long maxTrx;
