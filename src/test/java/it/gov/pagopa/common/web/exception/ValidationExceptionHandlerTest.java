@@ -1,6 +1,6 @@
 package it.gov.pagopa.common.web.exception;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -39,7 +39,7 @@ class ValidationExceptionHandlerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    ObjectMapper objectMapper;
+    JsonMapper objectMapper;
 
     @MockitoSpyBean
     private TestController testControllerSpy;

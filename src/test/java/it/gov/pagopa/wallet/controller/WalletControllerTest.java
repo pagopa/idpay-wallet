@@ -1,6 +1,6 @@
 package it.gov.pagopa.wallet.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
@@ -232,7 +232,7 @@ class WalletControllerTest {
     protected MockMvc mvc;
 
     @Autowired
-    ObjectMapper objectMapper;
+    JsonMapper objectMapper;
 
     @Test
     void enroll_instrument_ok() throws Exception {
@@ -716,7 +716,7 @@ class WalletControllerTest {
 
     @Test
     void update_wallet_ok() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
+        JsonMapper localMapper = JsonMapper.builder().build();
         WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO);
         List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
         walletPIDTOList.add(walletPIDTO);
@@ -725,7 +725,7 @@ class WalletControllerTest {
         mvc.perform(
                         MockMvcRequestBuilders.put(BASE_URL + UPDATE_WALLET_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(walletPIBodyDTO))
+                                .content(localMapper.writeValueAsString(walletPIBodyDTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent())
                 .andReturn();
