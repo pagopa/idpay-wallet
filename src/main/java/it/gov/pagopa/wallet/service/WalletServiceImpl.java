@@ -56,7 +56,7 @@ public class WalletServiceImpl implements WalletService {
   public static final String SERVICE_COMMAND_DELETE_INITIATIVE = "DELETE_INITIATIVE";
   public static final String WALLET_STATUS_UNSUBSCRIBED_MESSAGE = "wallet in status unsubscribed";
   public static final String SERVICE_ENROLL_INSTRUMENT_CODE = "ENROLL_INSTRUMENT_CODE";
-  public static final Collection<String> ALLOWED_CHANNEL_STATUS = Arrays.asList(SyncTrxStatus.REWARDED.toString(), SyncTrxStatus.INVOICED.toString());
+  private static final Collection<String> ALLOWED_CHANNEL_STATUS = Arrays.asList(SyncTrxStatus.REWARDED.toString(), SyncTrxStatus.INVOICED.toString());
   private final WalletRepository walletRepository;
   private final WalletUpdatesRepository walletUpdatesRepository;
   private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
