@@ -6,6 +6,7 @@ public enum SyncTrxStatus {
     AUTHORIZATION_REQUESTED,
     AUTHORIZED,
     CAPTURED,
+    INVOICED,
     REWARDED,
     REJECTED,
     CANCELLED,
