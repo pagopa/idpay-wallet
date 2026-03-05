@@ -1,6 +1,6 @@
 package it.gov.pagopa.wallet.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import feign.FeignException;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
@@ -13,13 +13,13 @@ import java.util.TimeZone;
 
 @Component
 public class Utilities {
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final String logoUrl;
 
     public static final String LOGO_PATH_TEMPLATE = "logos/%s/%s/%s";
     public static final String LOGO_NAME = "logo.png";
 
-    public Utilities(ObjectMapper objectMapper,
+    public Utilities(JsonMapper objectMapper,
                      @Value("${app.initiative.logo.url}") String logoUrl) {
         this.objectMapper = objectMapper;
         this.logoUrl = logoUrl;
@@ -31,7 +31,7 @@ public class Utilities {
             ErrorDTO errorDTO = objectMapper.readValue(e.contentUTF8(), ErrorDTO.class);
             error = errorDTO.getMessage() != null ? errorDTO.getMessage() : e.getMessage();
         } catch (Exception ex) {
-            error= e.getMessage();
+            error = e.getMessage();
         }
 
         return error;

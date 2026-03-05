@@ -1,7 +1,6 @@
 package it.gov.pagopa.wallet.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -69,7 +68,7 @@ public class WalletServiceImpl implements WalletService {
   private final ErrorProducer errorProducer;
   private final NotificationProducer notificationProducer;
   private final AuditUtilities auditUtilities;
-  private final ObjectMapper objectMapper;
+  private final JsonMapper objectMapper;
   private final String timelineServer;
   private final String timelineTopic;
   private final String notificationServer;
@@ -93,7 +92,7 @@ public class WalletServiceImpl implements WalletService {
                              TimelineMapper timelineMapper,
                              ErrorProducer errorProducer,
                              NotificationProducer notificationProducer,
-                             AuditUtilities auditUtilities, ObjectMapper objectMapper,
+                             AuditUtilities auditUtilities, JsonMapper objectMapper,
                              @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
                              @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
                              @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
@@ -451,7 +450,7 @@ public class WalletServiceImpl implements WalletService {
               .build(), evaluationDTO.getUserId());
       wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
       wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
-
+      wallet.setCreatedAt(LocalDateTime.now());
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
 
@@ -545,7 +544,7 @@ public class WalletServiceImpl implements WalletService {
       try {
           rewardTransactionDTO = objectMapper.readValue(
                   rewardTransactionDTOMessage.getPayload(), RewardTransactionDTO.class);
-      } catch (JsonProcessingException e) {
+      } catch (Exception e) {
           log.error("[PROCESS_TRX_EH] Unable to map message to RewardTransactionDTO. payload='{}'",
                   rewardTransactionDTOMessage.getPayload(), e);
           this.sendToQueueError(e, MessageBuilder.fromMessage(rewardTransactionDTOMessage),

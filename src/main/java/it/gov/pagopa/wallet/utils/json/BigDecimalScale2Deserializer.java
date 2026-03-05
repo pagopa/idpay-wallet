@@ -1,15 +1,19 @@
 package it.gov.pagopa.wallet.utils.json;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
-import java.io.IOException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdDeserializer;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class BigDecimalScale2Deserializer extends NumberDeserializers.BigDecimalDeserializer {
+public class BigDecimalScale2Deserializer extends StdDeserializer<BigDecimal> {
+  public BigDecimalScale2Deserializer() {
+    super(BigDecimal.class);
+  }
+
   @Override
-  public BigDecimal deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    return super.deserialize(p, ctxt).setScale(2, RoundingMode.HALF_DOWN);
+  public BigDecimal deserialize(JsonParser p, DeserializationContext ctxt) {
+    return p.getDecimalValue().setScale(2, RoundingMode.HALF_DOWN);
   }
 }

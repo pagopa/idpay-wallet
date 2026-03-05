@@ -13,13 +13,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -30,13 +32,13 @@ import org.springframework.web.bind.annotation.RestController;
         properties = {
                 "de.flapdoodle.mongodb.embedded.version=4.2.24",
 
-                "spring.data.mongodb.database=idpay",
-                "spring.data.mongodb.config.connectionPool.maxSize: 100",
-                "spring.data.mongodb.config.connectionPool.minSize: 0",
-                "spring.data.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
-                "spring.data.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
-                "spring.data.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
-                "spring.data.mongodb.config.connectionPool.maxConnecting: 2",
+                "spring.mongodb.database=idpay",
+                "spring.mongodb.config.connectionPool.maxSize: 100",
+                "spring.mongodb.config.connectionPool.minSize: 0",
+                "spring.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
+                "spring.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
+                "spring.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
+                "spring.mongodb.config.connectionPool.maxConnecting: 2",
         })
 @ContextConfiguration(classes = {
         MongoRequestRateTooLargeAutomaticRetryAspect.class,
@@ -47,7 +49,8 @@ import org.springframework.web.bind.annotation.RestController;
         MongoRequestRateTooLargeRetryIntegrationTest.TestController.class,
         MongoRequestRateTooLargeRetryIntegrationTest.TestRepository.class,
 })
-@WebMvcTest(excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(excludeAutoConfiguration =  { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureSingleInstanceMongodb
 class MongoRequestRateTooLargeRetryIntegrationTest {
 
@@ -58,12 +61,12 @@ class MongoRequestRateTooLargeRetryIntegrationTest {
 
     private static final int API_RETRYABLE_MAX_RETRY = 5;
 
-    @SpyBean
+    @MockitoSpyBean
     private TestRepository testRepositorySpy;
     @Autowired
     private DummySpringRepository dummySpringRepository;
 
-    @SpyBean
+    @MockitoSpyBean
     private MongoRequestRateTooLargeAutomaticRetryAspect automaticRetryAspectSpy;
 
     private static int[] counter;
@@ -113,7 +116,7 @@ class MongoRequestRateTooLargeRetryIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/test")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-                .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}", false));
+                .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}"));
 
         Assertions.assertEquals(1, counter[0]);
     }
@@ -123,9 +126,9 @@ class MongoRequestRateTooLargeRetryIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/test-api-retryable")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-                .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}", false));
+                .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}"));
 
-        Assertions.assertEquals(counter[0], API_RETRYABLE_MAX_RETRY + 1);
+        Assertions.assertEquals(API_RETRYABLE_MAX_RETRY + 1, counter[0]);
     }
 
     @Test

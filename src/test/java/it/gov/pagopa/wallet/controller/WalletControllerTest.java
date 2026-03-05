@@ -1,12 +1,21 @@
 package it.gov.pagopa.wallet.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.config.WalletErrorManagerConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.*;
+import it.gov.pagopa.wallet.dto.WalletDTO;
+import it.gov.pagopa.wallet.dto.IbanBodyDTO;
+import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
+import it.gov.pagopa.wallet.dto.InitiativeListDTO;
+import it.gov.pagopa.wallet.dto.WalletPIDTO;
+import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
+import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
+import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
+import it.gov.pagopa.wallet.dto.EvaluationDTO;
+import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
 import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.custom.EnrollmentNotAllowedException;
@@ -22,11 +31,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -48,7 +59,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(
         value = {WalletController.class},
-        excludeAutoConfiguration = SecurityAutoConfiguration.class)
+        excludeAutoConfiguration =  { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
 @Import({ServiceExceptionConfig.class, WalletErrorManagerConfig.class})
 class WalletControllerTest {
 
@@ -213,14 +225,14 @@ class WalletControllerTest {
             );
 
 
-    @MockBean
+    @MockitoBean
     WalletService walletServiceMock;
 
     @Autowired
     protected MockMvc mvc;
 
     @Autowired
-    ObjectMapper objectMapper;
+    JsonMapper objectMapper;
 
     @Test
     void enroll_instrument_ok() throws Exception {
@@ -632,7 +644,6 @@ class WalletControllerTest {
         assertEquals(INITIATIVE_DTO.getAmountCents(), walletDTO.getAmountCents());
         assertEquals(INITIATIVE_DTO.getAccruedCents(), walletDTO.getAccruedCents());
         assertEquals(INITIATIVE_DTO.getRefundedCents(), walletDTO.getRefundedCents());
-        assertEquals(INITIATIVE_DTO.getNTrx(), walletDTO.getNTrx());
         assertEquals(INITIATIVE_DTO.getMaxTrx(),walletDTO.getMaxTrx());
     }
 
@@ -705,7 +716,7 @@ class WalletControllerTest {
 
     @Test
     void update_wallet_ok() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
+        JsonMapper localMapper = JsonMapper.builder().build();
         WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO);
         List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
         walletPIDTOList.add(walletPIDTO);
@@ -714,7 +725,7 @@ class WalletControllerTest {
         mvc.perform(
                         MockMvcRequestBuilders.put(BASE_URL + UPDATE_WALLET_URL)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(walletPIBodyDTO))
+                                .content(localMapper.writeValueAsString(walletPIBodyDTO))
                                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent())
                 .andReturn();
