@@ -423,7 +423,7 @@ public class WalletServiceImpl implements WalletService {
 //        || WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())
     ) {
       rewardCalculatorRestConnector.createOnboardingCounters(
-        evaluationDTO.getInitiativeId(), evaluationDTO.getUserId());
+          sanitizedInitiativeId, sanitizedUserId);
 
       Wallet wallet = walletMapper.map(evaluationDTO);
 
