@@ -1,15 +1,5 @@
 package it.gov.pagopa.wallet.connector;
 
-import feign.FeignException;
-import feign.Request;
-import feign.Response;
-import it.gov.pagopa.wallet.exception.custom.PaymentInvocationException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
@@ -17,6 +7,17 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import feign.FeignException;
+import feign.Request;
+import feign.Response;
+import it.gov.pagopa.wallet.exception.custom.RewardCalculatorInvocationException;
 
 class RewardCalculatorRestClientTest {
 
@@ -41,7 +42,7 @@ class RewardCalculatorRestClientTest {
   }
 
   @Test
-  void createOnboardingCounters_error_throwsPaymentInvocationException() {
+  void createOnboardingCounters_error_throwsRewardCalculatorInvocationException() {
     FeignException feign500 = FeignException.errorStatus(
         "createOnboardingCounters",
         Response.builder()
@@ -55,7 +56,7 @@ class RewardCalculatorRestClientTest {
 
     doThrow(feign500).when(restClient).createOnboardingCounters(INITIATIVE_ID, USER_ID);
 
-    assertThrows(PaymentInvocationException.class,
+    assertThrows(RewardCalculatorInvocationException.class,
         () -> restConnector.createOnboardingCounters(INITIATIVE_ID, USER_ID));
   }
 }
