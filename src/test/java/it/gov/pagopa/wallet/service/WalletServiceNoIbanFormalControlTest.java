@@ -5,6 +5,7 @@ import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentRestConnector;
+import it.gov.pagopa.wallet.connector.RewardCalculatorRestConnector;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
@@ -69,6 +70,8 @@ class WalletServiceNoIbanFormalControlTest {
     WalletUpdatesRepository walletUpdatesRepositoryMock;
     @MockitoBean
     PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+        @MockitoBean
+        RewardCalculatorRestConnector rewardCalculatorRestConnector;
     @MockitoBean
     OnboardingRestConnector onboardingRestConnector;
     @MockitoBean

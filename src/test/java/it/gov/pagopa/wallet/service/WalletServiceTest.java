@@ -43,7 +43,6 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
@@ -85,6 +84,8 @@ class WalletServiceTest {
     WalletUpdatesRepository walletUpdatesRepositoryMock;
     @MockitoBean
     PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+        @MockitoBean
+        RewardCalculatorRestConnector rewardCalculatorRestConnector;
     @MockitoBean
     OnboardingRestConnector onboardingRestConnector;
     @MockitoBean
@@ -1318,6 +1319,8 @@ class WalletServiceTest {
         walletService.createWallet(EVALUATION_ONBOARDING_OK);
         Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
+        Mockito.verify(rewardCalculatorRestConnector, Mockito.times(1))
+                .createOnboardingCounters(INITIATIVE_ID, USER_ID);
     }
 
     @Test
@@ -1332,6 +1335,8 @@ class WalletServiceTest {
         Assertions.assertEquals(0, TEST_AMOUNT.compareTo(wallet.getAmountCents()));
         Mockito.verify(walletRepositoryMock).save(any(Wallet.class));
         Mockito.verify(timelineProducer).sendEvent(any());
+        Mockito.verify(rewardCalculatorRestConnector, Mockito.times(1))
+                .createOnboardingCounters(INITIATIVE_ID, USER_ID);
     }
 
     @Test
@@ -1345,6 +1350,7 @@ class WalletServiceTest {
 //        Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
         Mockito.verifyNoInteractions(walletRepositoryMock);
         Mockito.verifyNoInteractions(timelineProducer);
+        Mockito.verifyNoInteractions(rewardCalculatorRestConnector);
     }
 
     @Test
@@ -1352,6 +1358,7 @@ class WalletServiceTest {
         walletService.createWallet(OUTCOME_KO);
         Mockito.verify(walletRepositoryMock, Mockito.times(0)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(0)).sendEvent(any());
+                Mockito.verifyNoInteractions(rewardCalculatorRestConnector);
     }
 
     @Test
@@ -1360,6 +1367,8 @@ class WalletServiceTest {
         walletService.createWallet(OUTCOME_OK_DISCOUNT);
         Mockito.verify(walletRepositoryMock, Mockito.times(1)).save(any());
         Mockito.verify(timelineProducer, Mockito.times(1)).sendEvent(any());
+                Mockito.verify(rewardCalculatorRestConnector, Mockito.times(1))
+                                .createOnboardingCounters(INITIATIVE_ID, USER_ID);
         assertEquals(testWallet.getStatus(), WalletStatus.REFUNDABLE.name());
     }
 
