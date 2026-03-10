@@ -442,11 +442,6 @@ public class WalletServiceImpl implements WalletService {
           evaluationDTO.getInitiativeRewardType())) {
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
         wallet.setNInstr(1);
-        paymentInstrumentRestConnector.enrollDiscountInitiative(
-            InstrumentFromDiscountDTO.builder()
-                .initiativeId(evaluationDTO.getInitiativeId())
-                .userId(evaluationDTO.getUserId())
-                .build());
       }
 
       log.info("[POST_PAYMENT_BAR_CODE_EXTENDED] Create the vocuher and return his start and end Date");
