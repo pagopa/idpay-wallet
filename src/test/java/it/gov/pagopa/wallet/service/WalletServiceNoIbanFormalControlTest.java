@@ -70,8 +70,8 @@ class WalletServiceNoIbanFormalControlTest {
     WalletUpdatesRepository walletUpdatesRepositoryMock;
     @MockitoBean
     PaymentInstrumentRestConnector paymentInstrumentRestConnector;
-        @MockitoBean
-        RewardCalculatorRestConnector rewardCalculatorRestConnector;
+    @MockitoBean
+    RewardCalculatorRestConnector rewardCalculatorRestConnector;
     @MockitoBean
     OnboardingRestConnector onboardingRestConnector;
     @MockitoBean
