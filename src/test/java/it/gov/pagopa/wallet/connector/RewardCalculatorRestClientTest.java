@@ -46,7 +46,7 @@ class RewardCalculatorRestClientTest {
     FeignException feign500 = FeignException.errorStatus(
         "createOnboardingCounters",
         Response.builder()
-            .request(Request.create(Request.HttpMethod.POST, "", Map.of(), null, null, null))
+        .request(Request.create(Request.HttpMethod.PUT, "", Map.of(), null, null, null))
             .status(500)
             .reason("Internal Server Error")
             .headers(Map.of())

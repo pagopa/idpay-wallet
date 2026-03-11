@@ -3,7 +3,7 @@ package it.gov.pagopa.wallet.connector;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient(
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
     url = "${rest-client.reward-calculator.baseUrl}")
 public interface RewardCalculatorRestClient {
 
-  @PostMapping(
+    @PutMapping(
       value = "/reward/onboarding/{initiativeId}/users/{userId}/counters",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
