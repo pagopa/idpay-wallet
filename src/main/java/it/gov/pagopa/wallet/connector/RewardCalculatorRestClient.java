@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
     url = "${rest-client.reward-calculator.baseUrl}")
 public interface RewardCalculatorRestClient {
 
-    @PutMapping(
-      value = "/reward/onboarding/{initiativeId}/users/{userId}/counters",
+  @PutMapping(
+      value = "/reward/onboarding/{initiativeId}/{userId}/counters",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   void createOnboardingCounters(
