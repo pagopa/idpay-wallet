@@ -1477,6 +1477,7 @@ class WalletServiceTest {
         walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO);
         assertNotNull(testWallet.getRequestUnsubscribeDate());
         assertEquals(WalletStatus.UNSUBSCRIBED, testWallet.getStatus());
+        verifyNoInteractions(paymentInstrumentRestConnector);
 
     }
 
@@ -1802,7 +1803,7 @@ class WalletServiceTest {
     }
 
     @Test
-    void unsubscribe_rollback_payment_instrument() {
+    void unsubscribe_ko_onboarding() {
         // Given
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(testWallet));
@@ -1821,34 +1822,34 @@ class WalletServiceTest {
 
         verify(walletRepositoryMock, times(1)).findById(any());
         verifyNoMoreInteractions(walletRepositoryMock);
-        verify(paymentInstrumentRestConnector, times(1)).disableAllInstrument(any());
-        verify(paymentInstrumentRestConnector, times(1)).rollback(INITIATIVE_ID, USER_ID);
-        verifyNoMoreInteractions(paymentInstrumentRestConnector);
+        verify(onboardingRestConnector, times(1)).disableOnboarding(any());
+        verifyNoMoreInteractions(onboardingRestConnector);
+        verifyNoInteractions(paymentInstrumentRestConnector);
     }
 
     @Test
-    void unsubscribe_payment_instrument_ko() {
+    void unsubscribe_ko_onboarding_without_wallet_save() {
         // Given
         Mockito.when(walletRepositoryMock.findById(ID_WALLET))
                 .thenReturn(Optional.of(TEST_WALLET_2));
 
-        doThrow(new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG))
-                .when(paymentInstrumentRestConnector)
-                .disableAllInstrument(any(UnsubscribeCallDTO.class));
+        doThrow(new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG))
+                .when(onboardingRestConnector)
+                .disableOnboarding(any(UnsubscribeCallDTO.class));
 
         // When
-        PaymentInstrumentInvocationException exception = assertThrows(PaymentInstrumentInvocationException.class,
+        OnboardingInvocationException exception = assertThrows(OnboardingInvocationException.class,
                 () -> walletService.unsubscribe(INITIATIVE_ID, USER_ID, CHANNEL_APP_IO));
 
         // Then
         assertEquals(GENERIC_ERROR, exception.getCode());
-        assertEquals(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG, exception.getMessage());
+        assertEquals(ERROR_ONBOARDING_INVOCATION_MSG, exception.getMessage());
 
         verify(walletRepositoryMock, times(1)).findById(any());
         verifyNoMoreInteractions(walletRepositoryMock);
-        verify(paymentInstrumentRestConnector, times(1)).disableAllInstrument(any());
-        verifyNoInteractions(onboardingRestConnector);
-        verifyNoMoreInteractions(paymentInstrumentRestConnector);
+        verify(onboardingRestConnector, times(1)).disableOnboarding(any());
+        verifyNoMoreInteractions(onboardingRestConnector);
+        verifyNoInteractions(paymentInstrumentRestConnector);
     }
 
     @Test
@@ -1868,11 +1869,10 @@ class WalletServiceTest {
         assertEquals("ERROR", exception.getMessage());
 
         verify(walletRepositoryMock, times(1)).findById(any());
-        verify(paymentInstrumentRestConnector, times(1)).disableAllInstrument(any());
         verify(onboardingRestConnector, times(1)).disableOnboarding(any());
         verify(walletRepositoryMock, times(2)).save(any());
         verify(onboardingRestConnector, times(1)).rollback(any(), any());
-        verify(paymentInstrumentRestConnector, times(1)).rollback(any(), any());
+        verifyNoInteractions(paymentInstrumentRestConnector);
     }
 
     @SneakyThrows
@@ -2951,8 +2951,8 @@ class WalletServiceTest {
                 walletService.processTransaction(
                         MessageBuilder.withPayload(objectMapper.writeValueAsString(REWARD_TRX_DTO_EXPIRED)).build()));
 
-        verify(paymentInstrumentRestConnector).disableAllInstrument(any());
         verify(onboardingRestConnector).disableOnboarding(any());
+        verifyNoInteractions(paymentInstrumentRestConnector);
 
     }
 
@@ -2975,8 +2975,8 @@ class WalletServiceTest {
                 walletService.processTransaction(
                         MessageBuilder.withPayload(objectMapper.writeValueAsString(REWARD_TRX_DTO_REFUNDED)).build()));
 
-        verify(paymentInstrumentRestConnector).disableAllInstrument(any());
         verify(onboardingRestConnector).disableOnboarding(any());
+        verifyNoInteractions(paymentInstrumentRestConnector);
 
     }
 
@@ -2995,14 +2995,16 @@ class WalletServiceTest {
                 .when(walletRepositoryMock)
                 .save(any(Wallet.class));
 
-        doThrow(new RuntimeException("test")).doNothing().when(paymentInstrumentRestConnector)
-                .disableAllInstrument(any());
+        doThrow(new OnboardingInvocationException(ERROR_ONBOARDING_INVOCATION_MSG))
+                .when(onboardingRestConnector)
+                .disableOnboarding(any());
 
         Assertions.assertDoesNotThrow(() ->
                 walletService.processTransaction(
                         MessageBuilder.withPayload(objectMapper.writeValueAsString(REWARD_TRX_DTO_EXPIRED)).build()));
 
-        verify(paymentInstrumentRestConnector).disableAllInstrument(any());
+        verify(onboardingRestConnector).disableOnboarding(any());
+        verifyNoInteractions(paymentInstrumentRestConnector);
         verify(errorProducer).sendEvent(any());
 
     }
@@ -3021,9 +3023,6 @@ class WalletServiceTest {
                         })
                 .when(walletRepositoryMock)
                 .save(any(Wallet.class));
-
-        doThrow(new RuntimeException("test")).doNothing().when(paymentInstrumentRestConnector)
-                .disableAllInstrument(any());
 
         Assertions.assertDoesNotThrow(() ->
                 walletService.processTransaction(

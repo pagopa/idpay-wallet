@@ -485,24 +485,10 @@ public class WalletServiceImpl implements WalletService {
         new UnsubscribeCallDTO(
             initiativeId, userId, wallet.getRequestUnsubscribeDate().toString(), channel);
     try {
-      paymentInstrumentRestConnector.disableAllInstrument(unsubscribeCallDTO);
-      log.info("[UNSUBSCRIBE] Payment instruments disabled on initiative {} for user {}",
-          initiativeId, userId);
-    } catch (ServiceException e) {
-      performanceLog(startTime, SERVICE_UNSUBSCRIBE);
-      auditUtilities.logUnsubscribeKO(
-          userId, initiativeId, "request of disabling all payment instruments failed");
-      log.info(
-          "[UNSUBSCRIBE] Request of disabling all payment instruments on initiative {} for user {} failed",
-          initiativeId, userId);
-      throw e;
-    }
-    try {
       onboardingRestConnector.disableOnboarding(unsubscribeCallDTO);
       log.info("[UNSUBSCRIBE] Onboarding disabled on initiative {} for user {}", initiativeId,
           userId);
     } catch (ServiceException e) {
-      paymentInstrumentRestConnector.rollback(initiativeId, userId);
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
           userId, initiativeId, "request of disabling onboarding failed");
@@ -522,7 +508,6 @@ public class WalletServiceImpl implements WalletService {
     } catch (Exception e) {
       this.rollbackWallet(statusTemp, wallet);
       onboardingRestConnector.rollback(initiativeId, userId);
-      paymentInstrumentRestConnector.rollback(initiativeId, userId);
       performanceLog(startTime, SERVICE_UNSUBSCRIBE);
       auditUtilities.logUnsubscribeKO(
           userId, initiativeId, "request of disabling wallet failed");
