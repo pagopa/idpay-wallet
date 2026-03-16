@@ -44,16 +44,6 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   }
 
   @Override
-  public void disableAllInstrument(UnsubscribeCallDTO body) {
-    try {
-      paymentInstrumentRestClient.disableAllInstrument(body);
-    } catch (FeignException e){
-      log.error("[DISABLE_ALL_INSTRUMENT] An error occurred while invoking the payment instrument microservice");
-      throw new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG, true, e);
-    }
-  }
-
-  @Override
   public void deleteInstrument(DeactivationBodyDTO body) {
     try {
       paymentInstrumentRestClient.deleteInstrument(body);

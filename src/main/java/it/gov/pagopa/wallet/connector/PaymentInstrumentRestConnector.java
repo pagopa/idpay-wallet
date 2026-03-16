@@ -11,8 +11,6 @@ public interface PaymentInstrumentRestConnector {
 
   void enrollInstrument(@RequestBody InstrumentCallBodyDTO body);
 
-  void disableAllInstrument(@RequestBody UnsubscribeCallDTO body);
-
   void deleteInstrument(@RequestBody DeactivationBodyDTO body);
 
   void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);

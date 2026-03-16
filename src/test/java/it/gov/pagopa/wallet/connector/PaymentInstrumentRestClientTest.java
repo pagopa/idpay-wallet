@@ -113,29 +113,6 @@ class PaymentInstrumentRestClientTest {
   }
 
   @Test
-  void disableAllInstrument_ok() {
-    UnsubscribeCallDTO body = new UnsubscribeCallDTO(INITIATIVE_ID, INSTRUMENT_ID,"",CHANNEL );
-    assertDoesNotThrow(() -> restConnector.disableAllInstrument(body));
-    verify(restClient).disableAllInstrument(body);
-  }
-
-  @Test
-  void disableAllInstrument_403() {
-    UnsubscribeCallDTO body = new UnsubscribeCallDTO(INITIATIVE_ID, INSTRUMENT_ID,"",CHANNEL );
-
-    doThrow(feignException(403))
-            .when(restClient).disableAllInstrument(any());
-
-    PaymentInstrumentInvocationException ex = assertThrows(
-            PaymentInstrumentInvocationException.class,
-            () -> restConnector.disableAllInstrument(body)
-    );
-
-    assertEquals("An error occurred in the microservice payment instrument", ex.getMessage());
-  }
-
-
-  @Test
   void enrollInstrument_ok() {
     InstrumentCallBodyDTO body = new InstrumentCallBodyDTO();
 
