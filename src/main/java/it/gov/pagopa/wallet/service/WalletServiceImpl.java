@@ -5,6 +5,7 @@ import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentRestConnector;
+import it.gov.pagopa.wallet.connector.RewardCalculatorRestConnector;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
@@ -59,6 +60,7 @@ public class WalletServiceImpl implements WalletService {
   private final WalletRepository walletRepository;
   private final WalletUpdatesRepository walletUpdatesRepository;
   private final PaymentInstrumentRestConnector paymentInstrumentRestConnector;
+  private final RewardCalculatorRestConnector rewardCalculatorRestConnector;
   private final PaymentRestConnector paymentRestConnector;
   private final OnboardingRestConnector onboardingRestConnector;
   private final IbanProducer ibanProducer;
@@ -84,6 +86,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletServiceImpl(WalletRepository walletRepository,
                              WalletUpdatesRepository walletUpdatesRepository,
                              PaymentInstrumentRestConnector paymentInstrumentRestConnector,
+                             RewardCalculatorRestConnector rewardCalculatorRestConnector,
                              PaymentRestConnector  paymentRestConnector,
                              OnboardingRestConnector onboardingRestConnector,
                              IbanProducer ibanProducer,
@@ -107,6 +110,7 @@ public class WalletServiceImpl implements WalletService {
     this.walletRepository = walletRepository;
     this.walletUpdatesRepository = walletUpdatesRepository;
     this.paymentInstrumentRestConnector = paymentInstrumentRestConnector;
+    this.rewardCalculatorRestConnector = rewardCalculatorRestConnector;
     this.paymentRestConnector = paymentRestConnector;
     this.onboardingRestConnector = onboardingRestConnector;
     this.ibanProducer = ibanProducer;
@@ -418,6 +422,9 @@ public class WalletServiceImpl implements WalletService {
     if (WalletConstants.STATUS_ONBOARDING_OK.equals(evaluationDTO.getStatus())
 //        || WalletConstants.STATUS_JOINED.equals(evaluationDTO.getStatus())
     ) {
+      rewardCalculatorRestConnector.createOnboardingCounters(
+          sanitizedInitiativeId, sanitizedUserId);
+
       Wallet wallet = walletMapper.map(evaluationDTO);
 
       /**  commened to avoid rewrite due o he re-onboarding
@@ -435,11 +442,6 @@ public class WalletServiceImpl implements WalletService {
           evaluationDTO.getInitiativeRewardType())) {
         wallet.setStatus(WalletStatus.REFUNDABLE.name());
         wallet.setNInstr(1);
-        paymentInstrumentRestConnector.enrollDiscountInitiative(
-            InstrumentFromDiscountDTO.builder()
-                .initiativeId(evaluationDTO.getInitiativeId())
-                .userId(evaluationDTO.getUserId())
-                .build());
       }
 
       log.info("[POST_PAYMENT_BAR_CODE_EXTENDED] Create the vocuher and return his start and end Date");
@@ -1158,8 +1160,8 @@ public class WalletServiceImpl implements WalletService {
     }
   }
 
-  private void sendToQueueError(
-          Exception e, Message oldMessage, MessageBuilder<?> errorMessage, String server, String topic, Boolean retry) {
+    private void sendToQueueError(
+      Exception e, Message<?> oldMessage, MessageBuilder<?> errorMessage, String server, String topic, Boolean retry) {
       errorMessage.setHeader(WalletConstants.ERROR_MSG_HEADER_RETRY,
               oldMessage.getHeaders().get(WalletConstants.ERROR_MSG_HEADER_RETRY));
       sendToQueueError(e, errorMessage, server, topic, retry);
