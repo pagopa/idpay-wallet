@@ -60,6 +60,9 @@ rest-client:
   initiative:
     serviceCode: ${IDPAY_INITIATIVE_SERVICE_CODE:idpay-initiative}
     baseUrl: ${IDPAY_INITIATIVE_BASE_URL:}
+  reward-calculator:
+    serviceCode: ${IDPAY_REWARD_CALCULATOR_SERVICE_CODE:idpay-reward-calculator}
+    baseUrl: ${IDPAY_REWARD_CALCULATOR_BASE_URL:}
 
 spring:
   application:
