@@ -75,27 +75,6 @@ class PaymentInstrumentRestClientTest {
     assertEquals("An error occurred in the microservice payment instrument", ex.getMessage());
   }
 
-
-  @Test
-  void rollback_ok() {
-    assertDoesNotThrow(() -> restConnector.rollback(USER_ID,INITIATIVE_ID));
-    verify(restClient).rollback(USER_ID,INITIATIVE_ID);
-  }
-
-  @Test
-  void rollback_403() {
-
-    doThrow(feignException(403))
-            .when(restClient).rollback(any(),any());
-
-    PaymentInstrumentInvocationException ex = assertThrows(
-            PaymentInstrumentInvocationException.class,
-            () -> restConnector.rollback(USER_ID,INITIATIVE_ID)
-    );
-
-    assertEquals("An error occurred in the microservice payment instrument", ex.getMessage());
-  }
-
   @Test
   void enrollInstrumentIssuer_ok() {
     InstrumentIssuerCallDTO body = new InstrumentIssuerCallDTO("","","","","","","","");

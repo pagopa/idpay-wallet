@@ -12,7 +12,7 @@ public interface PaymentInstrumentRestConnector {
   void enrollInstrument(@RequestBody InstrumentCallBodyDTO body);
 
   void disableAllInstrument(@RequestBody UnsubscribeCallDTO body);
-  
+
   void deleteInstrument(@RequestBody DeactivationBodyDTO body);
 
   void enrollInstrumentIssuer(InstrumentIssuerCallDTO body);
@@ -21,7 +21,6 @@ public interface PaymentInstrumentRestConnector {
                                                      @PathVariable("userId") String userId,
                                                      @RequestParam("statusList") List<String> statusList);
   void enrollDiscountInitiative(@RequestBody InstrumentFromDiscountDTO body);
-  void rollback(@PathVariable String initiativeId,@PathVariable String userId);
   void enrollInstrumentCode(@RequestBody InstrumentCallBodyDTO body);
 
 }

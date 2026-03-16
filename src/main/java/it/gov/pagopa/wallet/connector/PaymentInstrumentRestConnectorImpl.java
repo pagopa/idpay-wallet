@@ -116,16 +116,6 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   }
 
   @Override
-  public void rollback(String initiativeId, String userId) {
-    try {
-      paymentInstrumentRestClient.rollback(initiativeId, userId);
-    } catch (FeignException e){
-      log.error("[ROLLBACK] An error occurred while invoking the payment instrument microservice");
-      throw new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG, true, e);
-    }
-  }
-
-  @Override
   public void enrollInstrumentCode(InstrumentCallBodyDTO body) {
     try {
       paymentInstrumentRestClient.enrollInstrumentCode(body);
