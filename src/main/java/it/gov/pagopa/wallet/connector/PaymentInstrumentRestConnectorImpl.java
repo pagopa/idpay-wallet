@@ -44,16 +44,6 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
   }
 
   @Override
-  public void disableAllInstrument(UnsubscribeCallDTO body) {
-    try {
-      paymentInstrumentRestClient.disableAllInstrument(body);
-    } catch (FeignException e){
-      log.error("[DISABLE_ALL_INSTRUMENT] An error occurred while invoking the payment instrument microservice");
-      throw new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG, true, e);
-    }
-  }
-
-  @Override
   public void deleteInstrument(DeactivationBodyDTO body) {
     try {
       paymentInstrumentRestClient.deleteInstrument(body);
@@ -111,16 +101,6 @@ public class PaymentInstrumentRestConnectorImpl implements PaymentInstrumentRest
       paymentInstrumentRestClient.enrollDiscountInitiative(body);
     } catch (FeignException e){
       log.error("[ENROLL_DISCOUNT_INITIATIVE] An error occurred while invoking the payment instrument microservice");
-      throw new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG, true, e);
-    }
-  }
-
-  @Override
-  public void rollback(String initiativeId, String userId) {
-    try {
-      paymentInstrumentRestClient.rollback(initiativeId, userId);
-    } catch (FeignException e){
-      log.error("[ROLLBACK] An error occurred while invoking the payment instrument microservice");
       throw new PaymentInstrumentInvocationException(ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG, true, e);
     }
   }
