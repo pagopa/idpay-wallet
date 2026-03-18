@@ -641,7 +641,7 @@ public class WalletServiceImpl implements WalletService {
     for (WalletPIDTO walletPI : walletPIDTO.getWalletDTOlist()) {
       Wallet wallet =
           walletRepository
-              .findById(generateWalletId(walletPI.getUserId(), walletPI.getInitiativeId()))
+              .findByUserIdAndInitiativeId(walletPI.getUserId(), walletPI.getInitiativeId())
               .orElse(null);
       if (wallet == null) {
         log.info(
@@ -675,7 +675,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findById(generateWalletId(instrumentAckDTO.getUserId(), instrumentAckDTO.getInitiativeId()))
+            .findByUserIdAndInitiativeId(instrumentAckDTO.getUserId(), instrumentAckDTO.getInitiativeId())
             .orElse(null);
 
     if (wallet == null) {
@@ -718,7 +718,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findById(generateWalletId(refundDTO.getBeneficiaryId(), refundDTO.getInitiativeId()))
+            .findByUserIdAndInitiativeId(refundDTO.getBeneficiaryId(), refundDTO.getInitiativeId())
             .orElse(null);
 
     if (wallet == null) {
@@ -888,7 +888,7 @@ public class WalletServiceImpl implements WalletService {
 
 
   private void updateWalletFromTransactionCaptured(String initiativeId, String userId, Long accruedRewardCents ) {
-      Wallet userWallet = walletRepository.findById(generateWalletId(userId, initiativeId)).orElse(null);
+      Wallet userWallet = walletRepository.findByUserIdAndInitiativeId(userId, initiativeId).orElse(null);
       if (userWallet == null) {
           log.info("[UPDATE_WALLET_FROM_TRANSACTION_CAPTURED] No wallet found for user {} and initiativeId {}",
                   userId, initiativeId);
@@ -908,7 +908,7 @@ public class WalletServiceImpl implements WalletService {
     if (!(ChannelTransaction.isChannelPresent(rewardTransactionDTO.getChannel())
         && rewardTransactionDTO.getStatus().equals("REWARDED"))) {
 
-      Wallet userWallet = walletRepository.findById(generateWalletId(rewardTransactionDTO.getUserId(), initiativeId)).orElse(null);
+      Wallet userWallet = walletRepository.findByUserIdAndInitiativeId(rewardTransactionDTO.getUserId(), initiativeId).orElse(null);
 
       if (userWallet == null) {
         log.info("[UPDATE_WALLET_FROM_TRANSACTION] No wallet found for user {} and initiativeId {}",
@@ -980,7 +980,7 @@ public class WalletServiceImpl implements WalletService {
 
   private Wallet findByInitiativeIdAndUserId(String initiativeId, String userId) {
     return walletRepository
-            .findById(generateWalletId(userId, initiativeId))
+            .findByUserIdAndInitiativeId(userId, initiativeId)
             .orElseThrow(
                     () -> new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, initiativeId)));
   }
@@ -1009,7 +1009,7 @@ public class WalletServiceImpl implements WalletService {
 
     Wallet wallet =
         walletRepository
-            .findById(generateWalletId(iban.getUserId(), iban.getInitiativeId()))
+            .findByUserIdAndInitiativeId(iban.getUserId(), iban.getInitiativeId())
             .orElse(null);
 
     if (wallet == null) {

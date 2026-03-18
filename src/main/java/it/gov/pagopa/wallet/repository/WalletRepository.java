@@ -22,6 +22,8 @@ public interface WalletRepository extends MongoRepository<Wallet, String> {
 
     List<Wallet> findByInitiativeIdAndFamilyId(String initiativeId, String familyId);
 
+    Optional<Wallet> findByUserIdAndInitiativeId(String userId, String initiativeId);
+
     @Query(
             value  = "{ 'initiativeId': ?0, 'voucherEndDate': { '$gte': ?1, '$lt': ?2 }, 'accruedCents': 0}"
     )
