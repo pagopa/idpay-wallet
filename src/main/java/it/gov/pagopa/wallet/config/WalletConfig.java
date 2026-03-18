@@ -4,6 +4,7 @@ import it.gov.pagopa.wallet.connector.InitiativeRestClient;
 import it.gov.pagopa.wallet.connector.OnboardingRestClient;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestClient;
 import it.gov.pagopa.wallet.connector.PaymentRestClient;
+import it.gov.pagopa.wallet.connector.RewardCalculatorRestClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
       PaymentInstrumentRestClient.class,
       PaymentRestClient.class,
       OnboardingRestClient.class,
-      InitiativeRestClient.class
+      InitiativeRestClient.class,
+      RewardCalculatorRestClient.class
     })
 public class WalletConfig {}
