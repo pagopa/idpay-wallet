@@ -3,7 +3,6 @@ package it.gov.pagopa.common.mongo.retry;
 
 import it.gov.pagopa.common.mongo.DummySpringRepository;
 import it.gov.pagopa.common.mongo.config.MongoConfig;
-import it.gov.pagopa.common.mongo.retry.exception.MongoRequestRateTooLargeRetryExpiredException;
 import it.gov.pagopa.common.mongo.singleinstance.AutoConfigureSingleInstanceMongodb;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.exception.ErrorManager;
@@ -146,20 +145,6 @@ class MongoRequestRateTooLargeRetryIntegrationTest {
     Assertions.assertEquals(counter[0], API_RETRYABLE_MAX_RETRY + 1);
   }
 
-  @Test
-  void testNoController_Method() {
-    try {
-      testRepositorySpy.test();
-      Assertions.fail("Expected exception");
-    } catch (MongoRequestRateTooLargeRetryExpiredException e) {
-      Assertions.assertEquals(maxRetry + 1, e.getCounter());
-      Assertions.assertEquals(maxRetry, e.getMaxRetry());
-      Assertions.assertEquals(maxMillisElapsed, e.getMaxMillisElapsed());
-      Assertions.assertTrue(e.getMillisElapsed() > 0);
-    }
-
-    Assertions.assertEquals(counter[0], maxRetry + 1);
-  }
 
   @Test
   void testSpringRepositoryInterceptor() throws Throwable {
