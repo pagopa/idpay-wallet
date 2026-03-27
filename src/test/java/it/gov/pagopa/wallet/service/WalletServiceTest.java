@@ -1,6 +1,5 @@
 package it.gov.pagopa.wallet.service;
 
-import tools.jackson.databind.json.JsonMapper;
 import com.mongodb.MongoClientException;
 import it.gov.pagopa.common.config.ObjectMapperConfig;
 import it.gov.pagopa.wallet.connector.*;
@@ -44,6 +43,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -101,7 +102,7 @@ class WalletServiceTest {
     @MockitoBean
     PaymentRestConnector paymentRestConnector;
     @Autowired
-    JsonMapper objectMapper;
+    ObjectMapper objectMapper;
 
     private static final String USER_ID = "TEST_USER_ID";
     private static final String FAMILY_ID = "TEST_FAMILY_ID";

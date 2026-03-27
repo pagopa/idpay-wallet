@@ -1,16 +1,18 @@
 package it.gov.pagopa.wallet.utils.json;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.math.BigDecimal;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class BigDecimalScale2DeserializerTest {
 
-    private JsonMapper mapperWithDeserializer() {
+    private ObjectMapper mapperWithDeserializer() {
         SimpleModule m = new SimpleModule();
         m.addDeserializer(BigDecimal.class, new BigDecimalScale2Deserializer());
         return JsonMapper.builder().addModule(m).build();
@@ -24,7 +26,7 @@ class BigDecimalScale2DeserializerTest {
             "-1.235,-1.23"
     })
     void deserialize_various_rounding(String input, String expected) throws Exception {
-        JsonMapper mapper = mapperWithDeserializer();
+        ObjectMapper mapper = mapperWithDeserializer();
         BigDecimal result = mapper.readValue(input, BigDecimal.class);
 
         assertEquals(2, result.scale());
