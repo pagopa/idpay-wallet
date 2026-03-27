@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @TestPropertySource(
     properties = {
         "de.flapdoodle.mongodb.embedded.version=4.2.24",
-        "management.health.mongo.enabled=false",
+
         "spring.mongodb.database=idpay",
         "spring.mongodb.config.connectionPool.maxSize: 100",
         "spring.mongodb.config.connectionPool.minSize: 0",
@@ -149,7 +149,7 @@ class MongoRequestRateTooLargeRetryIntegrationTest {
   @Test
   void testNoController_Method() {
     try {
-      TestController.buildNestedRepositoryMethodInvoke(testRepositorySpy);
+      testRepositorySpy.test();
       Assertions.fail("Expected exception");
     } catch (MongoRequestRateTooLargeRetryExpiredException e) {
       Assertions.assertEquals(maxRetry + 1, e.getCounter());
