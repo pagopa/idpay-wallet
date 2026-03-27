@@ -1,9 +1,11 @@
 package it.gov.pagopa.common.mongo.retry;
 
+
 import it.gov.pagopa.common.mongo.DummySpringRepository;
 import it.gov.pagopa.common.mongo.config.MongoConfig;
 import it.gov.pagopa.common.mongo.retry.exception.MongoRequestRateTooLargeRetryExpiredException;
 import it.gov.pagopa.common.mongo.singleinstance.AutoConfigureSingleInstanceMongodb;
+import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.exception.ErrorManager;
 import it.gov.pagopa.common.web.exception.MongoExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,129 +33,140 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @TestPropertySource(
-        properties = {
-                "de.flapdoodle.mongodb.embedded.version=4.2.24",
+    properties = {
+        "de.flapdoodle.mongodb.embedded.version=4.2.24",
 
-                "spring.mongodb.database=idpay",
-                "spring.mongodb.config.connectionPool.maxSize: 100",
-                "spring.mongodb.config.connectionPool.minSize: 0",
-                "spring.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
-                "spring.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
-                "spring.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
-                "spring.mongodb.config.connectionPool.maxConnecting: 2",
-        })
+        "spring.mongodb.database=idpay",
+        "spring.mongodb.config.connectionPool.maxSize: 100",
+        "spring.mongodb.config.connectionPool.minSize: 0",
+        "spring.mongodb.config.connectionPool.maxWaitTimeMS: 120000",
+        "spring.mongodb.config.connectionPool.maxConnectionLifeTimeMS: 0",
+        "spring.mongodb.config.connectionPool.maxConnectionIdleTimeMS: 120000",
+        "spring.mongodb.config.connectionPool.maxConnecting: 2",
+    })
 @ContextConfiguration(classes = {
-        MongoRequestRateTooLargeAutomaticRetryAspect.class,
-        ErrorManager.class,
-        MongoExceptionHandler.class,
-        MongoConfig.class,
+    MongoRequestRateTooLargeAutomaticRetryAspect.class,
+    MongoExceptionHandler.class,
+    MongoConfig.class,
 
-        MongoRequestRateTooLargeRetryIntegrationTest.TestController.class,
-        MongoRequestRateTooLargeRetryIntegrationTest.TestRepository.class,
+    MongoRequestRateTooLargeRetryIntegrationTest.TestController.class,
+    MongoRequestRateTooLargeRetryIntegrationTest.TestRepository.class,
+    MongoRequestRateTooLargeRetryIntegrationTest.TestConfig.class
 })
-@WebMvcTest(excludeAutoConfiguration =  { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class})
+@WebMvcTest(excludeAutoConfiguration = { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class,})
 @AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureSingleInstanceMongodb
 class MongoRequestRateTooLargeRetryIntegrationTest {
 
-    @Value("${mongo.request-rate-too-large.batch.max-retry:3}")
-    private int maxRetry;
-    @Value("${mongo.request-rate-too-large.batch.max-millis-elapsed:0}")
-    private int maxMillisElapsed;
-
-    private static final int API_RETRYABLE_MAX_RETRY = 5;
-
-    @MockitoSpyBean
-    private TestRepository testRepositorySpy;
-    @Autowired
-    private DummySpringRepository dummySpringRepository;
-
-    @MockitoSpyBean
-    private MongoRequestRateTooLargeAutomaticRetryAspect automaticRetryAspectSpy;
-
-    private static int[] counter;
-
-    @BeforeEach
-    void init() {
-        counter = new int[]{0};
+  @TestConfiguration
+  static class TestConfig {
+    @Bean
+    public ErrorManager errorManager() {
+      return new ErrorManager(new ErrorDTO());
     }
+  }
 
-    @RestController
-    @Slf4j
-    static class TestController {
+  @Value("${mongo.request-rate-too-large.batch.max-retry:3}")
+  private int maxRetry;
+  @Value("${mongo.request-rate-too-large.batch.max-millis-elapsed:0}")
+  private int maxMillisElapsed;
 
-        @Autowired
-        private TestRepository repository;
+  private static final int API_RETRYABLE_MAX_RETRY = 5;
 
-        @GetMapping("/test")
-        String testEndpoint() {
-            return buildNestedRepositoryMethodInvoke(repository);
-        }
+  @MockitoSpyBean
+  private TestRepository testRepositorySpy;
+  @Autowired
+  private DummySpringRepository dummySpringRepository;
 
-        @MongoRequestRateTooLargeApiRetryable(maxRetry = API_RETRYABLE_MAX_RETRY)
-        @GetMapping("/test-api-retryable")
-        String testEndpointRetryable() {
-            return buildNestedRepositoryMethodInvoke(repository);
-        }
+  @MockitoSpyBean
+  private MongoRequestRateTooLargeAutomaticRetryAspect automaticRetryAspectSpy;
 
-        static String buildNestedRepositoryMethodInvoke(TestRepository repository) {
-            return repository.test();
-        }
-    }
+  @MockitoSpyBean
+  private ErrorManager errorManager;
 
-    @Service
-    static class TestRepository {
-        public String test() {
-            counter[0]++;
-            throw MongoRequestRateTooLargeRetryerTest.buildRequestRateTooLargeMongodbException_whenReading();
+  private static int[] counter;
 
-        }
-    }
+  @BeforeEach
+  void init() {
+    counter = new int[]{0};
+  }
+
+  @RestController
+  @Slf4j
+  static class TestController {
 
     @Autowired
-    private MockMvc mockMvc;
+    private TestRepository repository;
 
-    @Test
-    void testController_Method() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/test")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-                .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}"));
-
-        Assertions.assertEquals(1, counter[0]);
+    @GetMapping("/test")
+    String testEndpoint() {
+      return buildNestedRepositoryMethodInvoke(repository);
     }
 
-    @Test
-    void testControllerRetryable_Method() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/test-api-retryable")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-                .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}"));
-
-        Assertions.assertEquals(API_RETRYABLE_MAX_RETRY + 1, counter[0]);
+    @MongoRequestRateTooLargeApiRetryable(maxRetry = API_RETRYABLE_MAX_RETRY)
+    @GetMapping("/test-api-retryable")
+    String testEndpointRetryable() {
+      return buildNestedRepositoryMethodInvoke(repository);
     }
 
-    @Test
-    void testNoController_Method() {
-        try {
-            TestController.buildNestedRepositoryMethodInvoke(testRepositorySpy);
-            Assertions.fail("Expected exception");
-        } catch (MongoRequestRateTooLargeRetryExpiredException e) {
-            Assertions.assertEquals(maxRetry + 1, e.getCounter());
-            Assertions.assertEquals(maxRetry, e.getMaxRetry());
-            Assertions.assertEquals(maxMillisElapsed, e.getMaxMillisElapsed());
-            Assertions.assertTrue(e.getMillisElapsed() > 0);
-        }
+    static String buildNestedRepositoryMethodInvoke(TestRepository repository) {
+      return repository.test();
+    }
+  }
 
-        Assertions.assertEquals(counter[0], maxRetry + 1);
+  @Service
+  static class TestRepository {
+    public String test() {
+      counter[0]++;
+      throw MongoRequestRateTooLargeRetryerTest.buildRequestRateTooLargeMongodbException_whenReading();
+
+    }
+  }
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  @Test
+  void testController_Method() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/test")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+        .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}", false));
+
+    Assertions.assertEquals(1, counter[0]);
+  }
+
+  @Test
+  void testControllerRetryable_Method() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/test-api-retryable")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+        .andExpect(MockMvcResultMatchers.content().json("{\"message\":\"Too Many Requests\"}", false));
+
+    Assertions.assertEquals(counter[0], API_RETRYABLE_MAX_RETRY + 1);
+  }
+
+  @Test
+  void testNoController_Method() {
+    try {
+      TestController.buildNestedRepositoryMethodInvoke(testRepositorySpy);
+      Assertions.fail("Expected exception");
+    } catch (MongoRequestRateTooLargeRetryExpiredException e) {
+      Assertions.assertEquals(maxRetry + 1, e.getCounter());
+      Assertions.assertEquals(maxRetry, e.getMaxRetry());
+      Assertions.assertEquals(maxMillisElapsed, e.getMaxMillisElapsed());
+      Assertions.assertTrue(e.getMillisElapsed() > 0);
     }
 
-    @Test
-    void testSpringRepositoryInterceptor() throws Throwable {
-        // When
-        dummySpringRepository.findByIdOrderById("ID");
+    Assertions.assertEquals(counter[0], maxRetry + 1);
+  }
 
-        // Then
-        Mockito.verify(automaticRetryAspectSpy).decorateRepositoryMethods(Mockito.argThat(i -> i.getArgs()[0].equals("ID")));
-    }
+  @Test
+  void testSpringRepositoryInterceptor() throws Throwable {
+    // When
+    dummySpringRepository.findByIdOrderById("ID");
+
+    // Then
+    Mockito.verify(automaticRetryAspectSpy).decorateRepositoryMethods(Mockito.argThat(i -> i.getArgs()[0].equals("ID")));
+  }
 }
