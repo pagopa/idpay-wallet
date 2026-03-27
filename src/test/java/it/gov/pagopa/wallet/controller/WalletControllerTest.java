@@ -1,21 +1,11 @@
 package it.gov.pagopa.wallet.controller;
 
-import tools.jackson.databind.json.JsonMapper;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.config.ServiceExceptionConfig;
 import it.gov.pagopa.wallet.config.WalletErrorManagerConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
-import it.gov.pagopa.wallet.dto.WalletDTO;
-import it.gov.pagopa.wallet.dto.IbanBodyDTO;
-import it.gov.pagopa.wallet.dto.EnrollmentStatusDTO;
-import it.gov.pagopa.wallet.dto.InitiativeListDTO;
-import it.gov.pagopa.wallet.dto.WalletPIDTO;
-import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
-import it.gov.pagopa.wallet.dto.InstrumentIssuerDTO;
-import it.gov.pagopa.wallet.dto.WalletPIBodyDTO;
-import it.gov.pagopa.wallet.dto.EvaluationDTO;
-import it.gov.pagopa.wallet.dto.InitiativesWithInstrumentDTO;
+import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import it.gov.pagopa.wallet.exception.custom.EnrollmentNotAllowedException;
@@ -41,6 +31,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -232,7 +224,7 @@ class WalletControllerTest {
     protected MockMvc mvc;
 
     @Autowired
-    JsonMapper objectMapper;
+    ObjectMapper objectMapper;
 
     @Test
     void enroll_instrument_ok() throws Exception {
@@ -716,7 +708,7 @@ class WalletControllerTest {
 
     @Test
     void update_wallet_ok() throws Exception {
-        JsonMapper localMapper = JsonMapper.builder().build();
+        ObjectMapper localMapper = JsonMapper.builder().build();
         WalletPIDTO walletPIDTO = new WalletPIDTO(INITIATIVE_ID, USER_ID, MASKED_PAN, BRAND_LOGO, BRAND_LOGO);
         List<WalletPIDTO> walletPIDTOList = new ArrayList<>();
         walletPIDTOList.add(walletPIDTO);

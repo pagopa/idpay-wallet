@@ -1,6 +1,5 @@
 package it.gov.pagopa.wallet.service;
 
-import tools.jackson.databind.json.JsonMapper;
 import it.gov.pagopa.common.web.exception.ServiceException;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -34,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,7 +70,7 @@ public class WalletServiceImpl implements WalletService {
   private final ErrorProducer errorProducer;
   private final NotificationProducer notificationProducer;
   private final AuditUtilities auditUtilities;
-  private final JsonMapper objectMapper;
+  private final ObjectMapper objectMapper;
   private final String timelineServer;
   private final String timelineTopic;
   private final String notificationServer;
@@ -95,7 +95,7 @@ public class WalletServiceImpl implements WalletService {
                              TimelineMapper timelineMapper,
                              ErrorProducer errorProducer,
                              NotificationProducer notificationProducer,
-                             AuditUtilities auditUtilities, JsonMapper objectMapper,
+                             AuditUtilities auditUtilities, ObjectMapper objectMapper,
                              @Value("${spring.cloud.stream.binders.kafka-timeline.environment.spring.cloud.stream.kafka.binder.brokers}") String timelineServer,
                              @Value("${spring.cloud.stream.bindings.walletQueue-out-1.destination}") String timelineTopic,
                              @Value("${spring.cloud.stream.binders.kafka-notification.environment.spring.cloud.stream.kafka.binder.brokers}") String notificationServer,
