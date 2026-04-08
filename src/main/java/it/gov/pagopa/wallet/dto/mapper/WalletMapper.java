@@ -9,8 +9,11 @@ import it.gov.pagopa.wallet.utils.Utilities;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +22,10 @@ public class WalletMapper {
     @Value("${app.wallet.expiringDay}")
     private int expiringDay;
     private final Utilities utilities;
+    private final Clock clock;
 
-    public WalletMapper(Utilities utilities) {
+    public WalletMapper(Utilities utilities, Clock clock) {
+        this.clock = clock;
         this.utilities = utilities;
     }
 
@@ -40,7 +45,7 @@ public class WalletMapper {
                 .amountCents(evaluationDTO.getBeneficiaryBudgetCents())
                 .accruedCents(0L)
                 .refundedCents(0L)
-                .lastCounterUpdate(LocalDateTime.now())
+                .lastCounterUpdate(Instant.now(clock))
                 .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
                 .isLogoPresent(evaluationDTO.getIsLogoPresent())
                 .maxTrx(evaluationDTO.getMaxTrx())
@@ -110,30 +115,41 @@ public class WalletMapper {
                 .initiativeList(initiativesStatusDTO).build();
     }
 
-    private String setVoucherStatus(Wallet wallet) {
+  private String setVoucherStatus(Wallet wallet) {
 
-        if(wallet.getVoucherStartDate() == null || wallet.getVoucherEndDate() == null){
-            return null;
-        }
-
-        LocalDate today         = LocalDate.now();
-        LocalDate start         = wallet.getVoucherStartDate();
-        LocalDate end           = wallet.getVoucherEndDate();
-        LocalDate expiringFrom  = end.minusDays(expiringDay);
-
-        boolean isAccruedCentsZero      = wallet.getAccruedCents() == 0;
-        boolean todayIsBetweenInclusive = (today.isAfter(start) || today.isEqual(start)) && !today.isAfter(end);
-        boolean todayInExpiringWindow   = todayIsBetweenInclusive && (today.isEqual(expiringFrom) || today.isAfter(expiringFrom));
-
-        if (wallet.getAccruedCents() > 0) {
-            return VoucherStatus.USED.name();
-        } else if (today.isAfter(end) && isAccruedCentsZero) {
-            return VoucherStatus.EXPIRED.name();
-        } else if (todayInExpiringWindow && isAccruedCentsZero) {
-            return VoucherStatus.EXPIRING.name();
-        } else if (todayIsBetweenInclusive && isAccruedCentsZero) {
-            return VoucherStatus.ACTIVE.name();
-        }
-        return null;
+    if (wallet.getVoucherStartDate() == null || wallet.getVoucherEndDate() == null) {
+      return null;
     }
+
+    ZoneId zone = ZoneId.of("Europe/Rome");
+
+    LocalDate today = Instant.now(clock).atZone(zone).toLocalDate();
+    LocalDate start = wallet.getVoucherStartDate().atZone(zone).toLocalDate();
+    LocalDate end   = wallet.getVoucherEndDate().atZone(zone).toLocalDate();
+
+    LocalDate expiringFrom = end.minusDays(expiringDay);
+
+    boolean isAccruedCentsZero = wallet.getAccruedCents() == 0;
+
+    boolean todayIsBetweenInclusive =
+        !today.isBefore(start) && !today.isAfter(end);
+
+    boolean todayInExpiringWindow =
+        todayIsBetweenInclusive && !today.isBefore(expiringFrom);
+
+    if (wallet.getAccruedCents() > 0) {
+      return VoucherStatus.USED.name();
+
+    } else if (today.isAfter(end) && isAccruedCentsZero) {
+      return VoucherStatus.EXPIRED.name();
+
+    } else if (todayInExpiringWindow && isAccruedCentsZero) {
+      return VoucherStatus.EXPIRING.name();
+
+    } else if (todayIsBetweenInclusive && isAccruedCentsZero) {
+      return VoucherStatus.ACTIVE.name();
+    }
+
+    return null;
+  }
 }

@@ -13,6 +13,7 @@ import it.gov.pagopa.wallet.exception.custom.InitiativeInvalidException;
 import it.gov.pagopa.wallet.exception.custom.InvalidIbanException;
 import it.gov.pagopa.wallet.exception.custom.UserNotOnboardedException;
 import it.gov.pagopa.wallet.service.WalletService;
+import it.gov.pagopa.wallet.utils.TestClockConfig;
 import it.gov.pagopa.wallet.utils.Utilities;
 import org.iban4j.IbanFormatException;
 import org.iban4j.InvalidCheckDigitException;
@@ -34,8 +35,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +55,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         value = {WalletController.class},
         excludeAutoConfiguration =  { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class})
 @AutoConfigureMockMvc(addFilters = false)
-@Import({ServiceExceptionConfig.class, WalletErrorManagerConfig.class})
+@Import({ServiceExceptionConfig.class, WalletErrorManagerConfig.class, TestClockConfig.class})
 class WalletControllerTest {
 
     private static final String BASE_URL = "http://localhost:8080/idpay/wallet";
@@ -85,8 +87,14 @@ class WalletControllerTest {
             ORGANIZATION_ID, INITIATIVE_ID, Utilities.LOGO_NAME);
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
 
-    private static final LocalDate DATE = LocalDate.now();
-    private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+    private static final Clock CLOCK =
+        Clock.fixed(
+            Instant.parse("2024-01-01T10:00:00Z"),
+            ZoneOffset.UTC
+        );
+
+    private static final Instant DATE = Instant.now(CLOCK);
+    private static final Instant TEST_DATE = Instant.now(CLOCK);
     private static final String SERVICE_ID = "serviceid";
 
     private static final String USERMAIL = "USERMAIL";
@@ -196,11 +204,11 @@ class WalletControllerTest {
                     FAMILY_ID,
                     INITIATIVE_ID,
                     INITIATIVE_ID,
-                    LocalDate.now(),
+                    Instant.now(CLOCK),
                     ORGANIZATION_ID,
                     STATUS,
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
+                    Instant.now(CLOCK),
+                    Instant.now(CLOCK),
                     null,
                     null,
                     null,
@@ -225,6 +233,7 @@ class WalletControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
 
     @Test
     void enroll_instrument_ok() throws Exception {
@@ -770,7 +779,7 @@ class WalletControllerTest {
                         BRAND_LOGO,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         1);
 
         doNothing().when(walletServiceMock).processAck(instrumentAckDTO);
@@ -797,7 +806,7 @@ class WalletControllerTest {
                         BRAND_LOGO,
                         MASKED_PAN,
                         "ADD_INSTRUMENT",
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         1);
 
         doThrow(new UserNotOnboardedException(String.format(USER_NOT_ONBOARDED_MSG, INITIATIVE_ID)))

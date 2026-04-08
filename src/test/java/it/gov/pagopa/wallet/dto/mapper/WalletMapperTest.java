@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.dto.mapper;
 
+import it.gov.pagopa.common.config.TimeConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.WalletDTO;
@@ -13,8 +14,9 @@ import it.gov.pagopa.wallet.model.Wallet;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = WalletMapper.class)
+@ContextConfiguration(classes = {WalletMapper.class, TimeConfig.class})
 @TestPropertySource(properties = "app.wallet.expiringDay=3")
 class WalletMapperTest {
 
@@ -43,8 +45,8 @@ class WalletMapperTest {
     private static final String INITIATIVE_ID = "test_initiative";
     private static final String ORGANIZATION_ID = "test_organization";
     private static final String ID_WALLET = "ID_WALLET";
-    private static final LocalDate OPERATION_DATE = LocalDate.now();
-    private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+    private static final Instant OPERATION_DATE = Instant.now();
+    private static final Instant TEST_DATE = Instant.now();
     private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
     private static final Long COUNTER_VERSION = 0L;
     private static final List<Long> COUNTER_HISTORY = new ArrayList<>();
@@ -52,6 +54,8 @@ class WalletMapperTest {
     private static final String USERMAIL = "USERMAIL";
     private static final String NAME = "NAME";
     private static final String SURNAME = "SURNAME";
+
+    private static final ZoneId zone = ZoneId.of("Europe/Rome");
     private static final Wallet NEW_WALLET =
             Wallet.builder()
                     .id(USER_ID + "_" + INITIATIVE_ID)
@@ -63,7 +67,12 @@ class WalletMapperTest {
                     .organizationId(ORGANIZATION_ID)
                     .userId(USER_ID)
                     .familyId(FAMILY_ID)
-                    .acceptanceDate(OPERATION_DATE.atStartOfDay())
+                    .acceptanceDate(OPERATION_DATE
+                        .atZone(zone)
+                        .toLocalDate()
+                        .atStartOfDay(zone)
+                        .toInstant()
+                    )
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .initialAmountCents(50000L)
                     .amountCents(50000L)
@@ -94,7 +103,12 @@ class WalletMapperTest {
                     .organizationId(ORGANIZATION_ID)
                     .userId(USER_ID)
                     .familyId(FAMILY_ID)
-                    .acceptanceDate(OPERATION_DATE.atStartOfDay())
+                    .acceptanceDate(OPERATION_DATE
+                        .atZone(zone)
+                        .toLocalDate()
+                        .atStartOfDay(zone)
+                        .toInstant()
+                    )
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .amountCents(49000L)
                     .accruedCents(1000L)
@@ -117,7 +131,12 @@ class WalletMapperTest {
                     .organizationId(ORGANIZATION_ID)
                     .userId(USER_ID)
                     .familyId(FAMILY_ID)
-                    .acceptanceDate(OPERATION_DATE.atStartOfDay())
+                    .acceptanceDate(OPERATION_DATE
+                        .atZone(zone)
+                        .toLocalDate()
+                        .atStartOfDay(zone)
+                        .toInstant()
+                    )
                     .status(WalletStatus.NOT_REFUNDABLE.name())
                     .amountCents(49000L)
                     .accruedCents(1000L)
@@ -139,8 +158,18 @@ class WalletMapperTest {
                     OPERATION_DATE,
                     ORGANIZATION_ID,
                     WalletConstants.STATUS_ONBOARDING_OK,
-                    OPERATION_DATE.atStartOfDay(),
-                    OPERATION_DATE.atStartOfDay(),
+                    OPERATION_DATE
+                        .atZone(zone)
+                        .toLocalDate()
+                        .atStartOfDay(zone)
+                        .toInstant()
+                    ,
+                    OPERATION_DATE
+                        .atZone(zone)
+                        .toLocalDate()
+                        .atStartOfDay(zone)
+                        .toInstant()
+                    ,
                     List.of(),
                     50000L,
                     WalletConstants.INITIATIVE_REWARD_TYPE_REFUND,
@@ -269,11 +298,11 @@ class WalletMapperTest {
     @Test
     void setVoucherStatus_used_whenAccruedPositive() throws Exception {
         setExpiringDay(walletMapper, 3);
-        LocalDate today = LocalDate.now();
+        Instant today = Instant.now();
 
         Wallet w = Wallet.builder()
-                .voucherStartDate(today.minusDays(10))
-                .voucherEndDate(today.plusDays(10))
+                .voucherStartDate(today.minus(10,ChronoUnit.DAYS))
+                .voucherEndDate(today.plus(10,ChronoUnit.DAYS))
                 .accruedCents(1L) // > 0 -> USED
                 .build();
 
@@ -285,11 +314,11 @@ class WalletMapperTest {
     @Test
     void setVoucherStatus_expired_whenAfterEnd_andAccruedZero() throws Exception {
         setExpiringDay(walletMapper, 3);
-        LocalDate today = LocalDate.now();
+        Instant today = Instant.now();
 
         Wallet w = Wallet.builder()
-                .voucherStartDate(today.minusDays(10))
-                .voucherEndDate(today.minusDays(1)) // end < today
+                .voucherStartDate(today.minus(10, ChronoUnit.DAYS))
+                .voucherEndDate(today.minus(1,ChronoUnit.DAYS)) // end < today
                 .accruedCents(0L)
                 .build();
 
@@ -301,11 +330,11 @@ class WalletMapperTest {
     @Test
     void setVoucherStatus_expiring_whenInExpiringWindow_andAccruedZero() throws Exception {
         setExpiringDay(walletMapper, 3);
-        LocalDate today = LocalDate.now();
+        Instant today = Instant.now();
         // endM3 = end - 3; con end = today + 5 => endM3 = today + 2
         Wallet w = Wallet.builder()
-                .voucherStartDate(today.minusDays(6)) // today > start
-                .voucherEndDate(today.plusDays(3))    // today <= end - 3
+                .voucherStartDate(today.minus(6,ChronoUnit.DAYS)) // today > start
+                .voucherEndDate(today.plus(3,ChronoUnit.DAYS))    // today <= end - 3
                 .accruedCents(0L)
                 .build();
 
@@ -317,11 +346,11 @@ class WalletMapperTest {
     @Test
     void setVoucherStatus_active_whenBetweenInclusive_andAccruedZero() throws Exception {
         setExpiringDay(walletMapper, 3);
-        LocalDate today = LocalDate.now();
+        Instant today = Instant.now();
         // today == start evita la finestra EXPIRING
         Wallet w = Wallet.builder()
                 .voucherStartDate(today)
-                .voucherEndDate(today.plusDays(5))
+                .voucherEndDate(today.plus(5,ChronoUnit.DAYS))
                 .accruedCents(0L)
                 .build();
 
@@ -345,11 +374,11 @@ class WalletMapperTest {
     @Test
     void setVoucherStatus_whenVoucherStartDateIsNull() throws Exception {
         setExpiringDay(walletMapper, 3);
-        LocalDate today = LocalDate.now();
+        Instant today = Instant.now();
 
         Wallet w = Wallet.builder()
                 .voucherStartDate(null)
-                .voucherEndDate(today.plusDays(3))
+                .voucherEndDate(today.plus(3,ChronoUnit.DAYS))
                 .accruedCents(0L)
                 .build();
 
@@ -361,7 +390,7 @@ class WalletMapperTest {
     @Test
     void setVoucherStatus_whenVoucherEndDateIsNull() throws Exception {
         setExpiringDay(walletMapper, 3);
-        LocalDate today = LocalDate.now();
+        Instant today = Instant.now();
 
         Wallet w = Wallet.builder()
                 .voucherStartDate(today)

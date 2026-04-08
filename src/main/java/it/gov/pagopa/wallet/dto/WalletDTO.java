@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import it.gov.pagopa.wallet.enums.Channel;
@@ -27,16 +26,16 @@ public class WalletDTO {
     private String status;
     private String voucherStatus;
     private String iban;
-    private LocalDate initiativeEndDate;
-    private LocalDate voucherStartDate;
-    private LocalDate voucherEndDate;
+    private Instant initiativeEndDate;
+    private Instant voucherStartDate;
+    private Instant voucherEndDate;
     @JsonProperty("nInstr")
     private int nInstr;
     private Long initialAmountCents; // total budget assigned
     private Long amountCents;
     private Long accruedCents;
     private Long refundedCents;
-    private LocalDateTime lastCounterUpdate;
+    private Instant lastCounterUpdate;
     private String initiativeRewardType;
     private String logoURL;
     private String organizationName;

@@ -26,7 +26,6 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
-import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.iban4j.IbanUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +34,8 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -83,6 +82,7 @@ public class WalletServiceImpl implements WalletService {
   private final int pageSize;
   private final long delay;
 
+  private final Clock clock;
     public WalletServiceImpl(WalletRepository walletRepository,
                              WalletUpdatesRepository walletUpdatesRepository,
                              PaymentInstrumentRestConnector paymentInstrumentRestConnector,
@@ -106,7 +106,7 @@ public class WalletServiceImpl implements WalletService {
                              @Value("${spring.cloud.stream.bindings.consumerRefund-in-0.destination}") String transactionTopic,
                              @Value("${app.iban.formalControl}") boolean isFormalControlIban,
                              @Value("${app.delete.paginationSize}") int pageSize,
-                             @Value("${app.delete.delayTime}") long delay) {
+                             @Value("${app.delete.delayTime}") long delay, Clock clock) {
     this.walletRepository = walletRepository;
     this.walletUpdatesRepository = walletUpdatesRepository;
     this.paymentInstrumentRestConnector = paymentInstrumentRestConnector;
@@ -132,7 +132,8 @@ public class WalletServiceImpl implements WalletService {
     this.isFormalControlIban = isFormalControlIban;
     this.pageSize = pageSize;
     this.delay = delay;
-  }
+    this.clock = clock;
+    }
 
   @Override
   public EnrollmentStatusDTO getEnrollmentStatus(String initiativeId, String userId) {
@@ -281,7 +282,7 @@ public class WalletServiceImpl implements WalletService {
     }
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
-        new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
+        new IbanQueueDTO(userId, initiativeId, iban, description, channel, Instant.now(clock));
 
     walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
     auditUtilities.logEnrollmentIbanComplete(userId, initiativeId, iban);
@@ -314,11 +315,11 @@ public class WalletServiceImpl implements WalletService {
         throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
       }
 
-      LocalDateTime localDateTime = LocalDateTime.now();
+      Instant instant = Instant.now(clock);
       String backupStatus = wallet.getStatus();
       try {
         walletUpdatesRepository.suspendWallet(
-            initiativeId, userId, WalletStatus.SUSPENDED, localDateTime);
+            initiativeId, userId, WalletStatus.SUSPENDED, instant);
         log.info("[SUSPENSION] Sending event to ONBOARDING");
         onboardingRestConnector.suspendOnboarding(initiativeId, userId);
       } catch (Exception e) {
@@ -327,7 +328,7 @@ public class WalletServiceImpl implements WalletService {
         performanceLog(startTime, WalletConstants.SUSPENSION);
         throw e;
       }
-       sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, localDateTime));
+       sendToTimeline(timelineMapper.suspendToTimeline(initiativeId, userId, instant));
       sendSuspensionReadmissionNotification(
           WalletConstants.SUSPENSION, initiativeId, userId, wallet.getInitiativeName());
 
@@ -350,9 +351,9 @@ public class WalletServiceImpl implements WalletService {
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
-    LocalDateTime localDateTime = LocalDateTime.now();
+    Instant instant = Instant.now(clock);
     String backupStatus = wallet.getStatus();
-    LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
+    Instant backupSuspensionDate = wallet.getSuspensionDate();
     String readmittedStatus;
     if (WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(wallet.getInitiativeRewardType())) {
       readmittedStatus = WalletStatus.getByBooleans(wallet.getIban() != null,
@@ -361,7 +362,7 @@ public class WalletServiceImpl implements WalletService {
       readmittedStatus = WalletStatus.REFUNDABLE.name();
     }
     try {
-      walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, localDateTime);
+      walletUpdatesRepository.readmitWallet(initiativeId, userId, readmittedStatus, instant);
       log.info("[READMISSION] Sending event to ONBOARDING");
       onboardingRestConnector.readmitOnboarding(initiativeId, userId);
     } catch (Exception e) {
@@ -369,12 +370,12 @@ public class WalletServiceImpl implements WalletService {
       log.info("[READMISSION] Wallet readmission to the initiative {} is failed", initiativeId);
       wallet.setStatus(backupStatus);
       wallet.setSuspensionDate(backupSuspensionDate);
-      wallet.setUpdateDate(localDateTime);
+      wallet.setUpdateDate(instant);
       walletRepository.save(wallet);
       performanceLog(startTime, WalletConstants.READMISSION);
       throw e;
     }
-    sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, localDateTime));
+    sendToTimeline(timelineMapper.readmitToTimeline(initiativeId, userId, instant));
     sendSuspensionReadmissionNotification(
         WalletConstants.READMISSION, initiativeId, userId, wallet.getInitiativeName());
 
@@ -450,9 +451,9 @@ public class WalletServiceImpl implements WalletService {
               .initiativeId(evaluationDTO.getInitiativeId())
               .voucherAmountCents(evaluationDTO.getBeneficiaryBudgetCents())
               .build(), evaluationDTO.getUserId());
-      wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
-      wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
-      wallet.setCreatedAt(LocalDateTime.now());
+      wallet.setVoucherStartDate(response.getTrxDate());
+      wallet.setVoucherEndDate(response.getTrxEndDate());
+      wallet.setCreatedAt(Instant.now(clock));
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
 
@@ -478,7 +479,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
-    LocalDateTime now = LocalDateTime.now();
+    Instant now = Instant.now(clock);
     String statusTemp = wallet.getStatus();
     wallet.setRequestUnsubscribeDate(now);
     UnsubscribeCallDTO unsubscribeCallDTO =
@@ -896,7 +897,7 @@ public class WalletServiceImpl implements WalletService {
       }
       userWallet.setAmountCents(0L);
       userWallet.setAccruedCents(userWallet.getAccruedCents() == 0L ? accruedRewardCents : userWallet.getAccruedCents());
-      userWallet.setUpdateDate(LocalDateTime.now());
+      userWallet.setUpdateDate(Instant.now(clock));
       walletRepository.save(userWallet);
   }
   private void updateWalletFromTransaction(
@@ -1046,7 +1047,7 @@ public class WalletServiceImpl implements WalletService {
         .instrumentType(instrumentType)
         .operationType(operationType)
         .channel(channel)
-        .operationDate(LocalDateTime.now())
+        .operationDate(Instant.now(clock))
         .build();
     sendToTimeline(timelineMapper.ackToTimeline(instrumentAckDTO));
   }
@@ -1120,13 +1121,13 @@ public class WalletServiceImpl implements WalletService {
       wallet.setSuspensionDate(null);
     }
     wallet.setStatus(statusToRollback);
-    wallet.setUpdateDate(LocalDateTime.now());
+    wallet.setUpdateDate(Instant.now(clock));
     walletRepository.save(wallet);
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
-  private void checkEndDate(LocalDate endDate, String initiativeId) {
-      LocalDate requestDate = LocalDate.now();
+  private void checkEndDate(Instant endDate, String initiativeId) {
+      Instant requestDate = Instant.now(clock);
 
       if (requestDate.isAfter(endDate)) {
         log.info("[CHECK_END_DATE] The operation is not allowed because the initiative {} has already ended", initiativeId);
@@ -1200,7 +1201,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
       for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
         if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)
-            && !wallet.getInitiativeEndDate().isBefore(LocalDate.now())
+            && !wallet.getInitiativeEndDate().isBefore(Instant.now(clock))
             && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(
             wallet.getInitiativeRewardType())) {
           initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));

@@ -6,13 +6,19 @@ import it.gov.pagopa.wallet.enums.ChannelTransaction;
 import it.gov.pagopa.wallet.enums.WalletStatus;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Clock;
+import java.time.Instant;
 
 @Service
 public class TimelineMapper {
 
-    public QueueOperationDTO transactionToTimeline(
+  private final Clock clock;
+
+  public TimelineMapper(Clock clock) {
+    this.clock = clock;
+  }
+
+  public QueueOperationDTO transactionToTimeline(
             String initiativeId, RewardTransactionDTO rewardTransaction, Long accruedRewardCents) {
     return QueueOperationDTO.builder()
         .eventId(rewardTransaction.getId())
@@ -37,21 +43,17 @@ public class TimelineMapper {
         .build();
     }
 
-    private static LocalDateTime getOperationDate(RewardTransactionDTO rewardTransaction) {
+    private static Instant getOperationDate(RewardTransactionDTO rewardTransaction) {
         if("CANCELLED".equals(rewardTransaction.getStatus())) {
             return rewardTransaction.getElaborationDateTime();
         }
 
         if ("AUTHORIZED".equals(rewardTransaction.getStatus()) || "REWARDED".equals(rewardTransaction.getStatus())
                 && ChannelTransaction.isChannelPresent(rewardTransaction.getChannel())) {
-            return rewardTransaction.getTrxChargeDate()
-                    .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-                    .toLocalDateTime();
+            return rewardTransaction.getTrxChargeDate();
         }
 
-        return rewardTransaction.getTrxDate()
-                .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-                .toLocalDateTime();
+        return rewardTransaction.getTrxDate();
     }
     public QueueOperationDTO deleteInstrumentToTimeline(
             String initiativeId, String userId, String maskedPan, String brandLogo, String brand) {
@@ -63,27 +65,27 @@ public class TimelineMapper {
                 .brandLogo(brandLogo)
                 .brand(brand)
                 .operationType("DELETE_INSTRUMENT")
-                .operationDate(LocalDateTime.now())
+                .operationDate(Instant.now(clock))
                 .build();
     }
 
     public QueueOperationDTO suspendToTimeline(
-            String initiativeId, String userId, LocalDateTime localDateTime) {
+            String initiativeId, String userId, Instant instant) {
         return QueueOperationDTO.builder()
                 .initiativeId(initiativeId)
                 .userId(userId)
                 .operationType(WalletStatus.SUSPENDED)
-                .operationDate(localDateTime)
+                .operationDate(instant)
                 .build();
     }
 
     public QueueOperationDTO readmitToTimeline(
-            String initiativeId, String userId, LocalDateTime localDateTime) {
+            String initiativeId, String userId, Instant instant) {
         return QueueOperationDTO.builder()
                 .initiativeId(initiativeId)
                 .userId(userId)
                 .operationType(WalletConstants.TIMELINE_READMITTED)
-                .operationDate(localDateTime)
+                .operationDate(instant)
                 .build();
     }
 
@@ -117,7 +119,7 @@ public class TimelineMapper {
                 .channel(channel)
                 .iban(iban)
                 .operationType("ADD_IBAN")
-                .operationDate(LocalDateTime.now())
+                .operationDate(Instant.now(clock))
                 .build();
     }
 
@@ -144,12 +146,12 @@ public class TimelineMapper {
                 .build();
     }
     public QueueOperationDTO unsubscribeToTimeline(
-            String initiativeId, String userId, LocalDateTime localDateTime) {
+            String initiativeId, String userId, Instant instant) {
         return QueueOperationDTO.builder()
                 .initiativeId(initiativeId)
                 .userId(userId)
                 .operationType(WalletStatus.UNSUBSCRIBED)
-                .operationDate(localDateTime)
+                .operationDate(instant)
                 .build();
     }
 }

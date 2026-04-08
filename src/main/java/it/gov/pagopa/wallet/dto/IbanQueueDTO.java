@@ -1,6 +1,6 @@
 package it.gov.pagopa.wallet.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -18,5 +18,5 @@ public class IbanQueueDTO {
 
   String channel;
 
-  LocalDateTime queueDate;
+  Instant queueDate;
 }
