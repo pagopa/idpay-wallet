@@ -4,7 +4,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.StackTraceElementProxy;
-import tools.jackson.databind.json.JsonMapper;
 import it.gov.pagopa.common.utils.MemoryAppender;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -29,6 +28,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.regex.Pattern;
 
@@ -43,7 +43,7 @@ class ErrorManagerTest {
   private MockMvc mockMvc;
 
   @Autowired
-  private JsonMapper objectMapper;
+  private ObjectMapper objectMapper;
 
   @MockitoSpyBean
   private TestController testControllerSpy;

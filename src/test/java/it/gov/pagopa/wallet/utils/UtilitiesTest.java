@@ -1,6 +1,5 @@
 package it.gov.pagopa.wallet.utils;
 
-import tools.jackson.databind.json.JsonMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 
@@ -30,7 +30,7 @@ class UtilitiesTest {
     Utilities utilities;
 
     @MockitoBean
-    JsonMapper objectMapper;
+    ObjectMapper objectMapper;
 
     private static final String BAD_REQUEST = "BAD REQUEST";
     private static final String MESSAGE = "test";
@@ -55,7 +55,7 @@ class UtilitiesTest {
         String error = utilities.exceptionConverter(e);
 
         assertEquals(MESSAGE, error);
-        
+
     }
 
     @Test
