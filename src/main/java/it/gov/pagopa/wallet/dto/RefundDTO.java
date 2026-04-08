@@ -1,11 +1,10 @@
 package it.gov.pagopa.wallet.dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.time.Instant;
 
 @Data
 @AllArgsConstructor
@@ -23,14 +22,14 @@ public class RefundDTO {
   private String refundType;
   private Long rewardCents;
   private Long effectiveRewardCents;
-  private LocalDate startDate;
-  private LocalDate endDate;
-  private LocalDateTime feedbackDate;
+  private Instant startDate;
+  private Instant endDate;
+  private Instant feedbackDate;
   private String rejectionCode;
   private String rejectionReason;
   private Long feedbackProgressive;
-  private LocalDate executionDate;
-  private LocalDate transferDate;
-  private LocalDate userNotificationDate;
+  private Instant executionDate;
+  private Instant transferDate;
+  private Instant userNotificationDate;
   private String cro;
 }

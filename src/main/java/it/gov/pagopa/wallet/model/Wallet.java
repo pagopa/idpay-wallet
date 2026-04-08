@@ -1,7 +1,6 @@
 package it.gov.pagopa.wallet.model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import it.gov.pagopa.wallet.enums.Channel;
@@ -30,10 +29,10 @@ public class Wallet {
   private String organizationName;
   private String status;
   private String voucherStatus;
-  private LocalDateTime acceptanceDate;
-  private LocalDate initiativeEndDate;
-  private LocalDate voucherStartDate;
-  private LocalDate voucherEndDate;
+  private Instant acceptanceDate;
+  private Instant initiativeEndDate;
+  private Instant voucherStartDate;
+  private Instant voucherEndDate;
   private String iban;
   private Long initialAmountCents; // total budget assigned
   private Long amountCents;
@@ -42,11 +41,11 @@ public class Wallet {
   private Map<String, RefundHistory> refundHistory;
   private Long nTrx;
   private int nInstr;
-  private LocalDateTime requestUnsubscribeDate;
-  private LocalDateTime updateDate;
-  private LocalDateTime lastCounterUpdate;
-  private LocalDateTime suspensionDate;
-  private LocalDateTime createdAt;
+  private Instant requestUnsubscribeDate;
+  private Instant updateDate;
+  private Instant lastCounterUpdate;
+  private Instant suspensionDate;
+  private Instant createdAt;
   private String initiativeRewardType;
   private Boolean isLogoPresent;
   private Long maxTrx;

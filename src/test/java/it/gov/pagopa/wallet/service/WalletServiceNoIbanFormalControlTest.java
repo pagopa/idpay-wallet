@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
 import it.gov.pagopa.common.config.ObjectMapperConfig;
+import it.gov.pagopa.common.config.TimeConfig;
 import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
@@ -34,9 +35,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.*;
 
 import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionCode.IBAN_NOT_ITALIAN;
@@ -46,7 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = {WalletServiceImpl.class, ObjectMapperConfig.class})
+@ContextConfiguration(classes = {WalletServiceImpl.class, ObjectMapperConfig.class, TimeConfig.class})
 @TestPropertySource(
         locations = "classpath:application.yml",
         properties = {
@@ -96,8 +95,8 @@ class WalletServiceNoIbanFormalControlTest {
     private static final String IBAN_OK = "IT09P0000005138205493205499";
     private static final String IBAN_KO_NOT_IT = "GB29NWBK60161331926819";
     private static final String DESCRIPTION_OK = "conto cointestato";
-    private static final LocalDateTime TEST_DATE = LocalDateTime.now();
-    private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
+    private static final Instant TEST_DATE = Instant.now();
+    private static final Instant TEST_DATE_ONLY_DATE = Instant.now();
     private static final Long TEST_AMOUNT = 200L;
     private static final Long TEST_ACCRUED = 4000L;
     private static final Long TEST_REFUNDED = 0L;
@@ -139,8 +138,8 @@ class WalletServiceNoIbanFormalControlTest {
         r.setResidualBudgetCents(0L);
 
         // Date fisse per stabilità dei test
-        r.setTrxDate(OffsetDateTime.parse("2025-09-24T10:00:00+00:00"));
-        r.setTrxEndDate(OffsetDateTime.parse("2025-10-24T10:00:00+00:00"));
+        r.setTrxDate(Instant.parse("2025-09-24T10:00:00+00:00"));
+        r.setTrxEndDate(Instant.parse("2025-10-24T10:00:00+00:00"));
         return r;
     }
 
@@ -148,7 +147,7 @@ class WalletServiceNoIbanFormalControlTest {
     void enrollIban_ok_only_iban() {
         TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE.name());
         TEST_WALLET.setNInstr(0);
-        TEST_WALLET.setInitiativeEndDate(LocalDate.MAX);
+        TEST_WALLET.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(Mockito.anyString(),Mockito.anyString()))
                 .thenReturn(Optional.of(TEST_WALLET));
@@ -172,7 +171,7 @@ class WalletServiceNoIbanFormalControlTest {
         // Given
         TEST_WALLET.setIban(null);
         TEST_WALLET.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        TEST_WALLET.setInitiativeEndDate(LocalDate.MAX);
+        TEST_WALLET.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(TEST_WALLET));

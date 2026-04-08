@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Data
 @EqualsAndHashCode
@@ -19,8 +19,8 @@ public class TransactionBarCodeEnrichedResponse {
     private String trxCode;
     private String initiativeId;
     private String initiativeName;
-    private OffsetDateTime trxDate;
-    private OffsetDateTime trxEndDate;
+    private Instant trxDate;
+    private Instant trxEndDate;
     private SyncTrxStatus status;
     private Long trxExpirationSeconds;
     private Long residualBudgetCents;

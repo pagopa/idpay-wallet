@@ -2,6 +2,7 @@ package it.gov.pagopa.wallet.dto.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import it.gov.pagopa.common.config.TimeConfig;
 import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.EvaluationDTO;
 import it.gov.pagopa.wallet.dto.InstrumentAckDTO;
@@ -11,10 +12,8 @@ import it.gov.pagopa.wallet.dto.RewardTransactionDTO;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
 import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.enums.WalletStatus;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TimelineMapper.class)
+@ContextConfiguration(classes = {TimelineMapper.class, TimeConfig.class})
 class TimelineMapperTest {
 
   private static final String REFUND_ID = "test_refund_id";
@@ -45,12 +44,12 @@ class TimelineMapperTest {
   private static final String CIRCUIT_TYPE = "test_circuit";
   private static final String ORGANIZATION_NAME = "TEST_ORGANIZATION_NAME";
   private static final Long LONG = 0L;
-  private static final LocalDateTime OPERATION_DATE = LocalDateTime.now();
-  private static final LocalDate OPERATION_DATE_ONLY_DATE = LocalDate.now();
-  private static final LocalDate START_DATE = LocalDate.now();
-  private static final LocalDate END_DATE = LocalDate.now().plusDays(2);
-  private static final LocalDate TRANSFER_DATE = LocalDate.now();
-  private static final LocalDate NOTIFICATION_DATE = LocalDate.now();
+  private static final Instant OPERATION_DATE = Instant.now();
+  private static final Instant OPERATION_DATE_ONLY_DATE = Instant.now();
+  private static final Instant START_DATE = Instant.now();
+  private static final Instant END_DATE = Instant.now().plus(2, ChronoUnit.DAYS);
+  private static final Instant TRANSFER_DATE = Instant.now();
+  private static final Instant NOTIFICATION_DATE = Instant.now();
   private static final String SERVICE_ID = "serviceid";
   private static final String USERMAIL = "USERMAIL";
   private static final String NAME = "NAME";
@@ -96,7 +95,7 @@ class TimelineMapperTest {
           .userId(USER_ID)
           .status("REWARDED")
           .operationType("00")
-          .trxDate(OffsetDateTime.now())
+          .trxDate(Instant.now())
           .instrumentId(INSTRUMENT_ID)
           .maskedPan(MASKED_PAN)
           .brandLogo(BRAND_LOGO)
@@ -115,8 +114,8 @@ class TimelineMapperTest {
           .userId(USER_ID)
           .status("REWARDED")
           .operationType("00")
-          .trxDate(OffsetDateTime.now())
-          .trxChargeDate(OffsetDateTime.now())
+          .trxDate(Instant.now())
+          .trxChargeDate(Instant.now())
           .instrumentId(INSTRUMENT_ID)
           .maskedPan(MASKED_PAN)
           .brandLogo(BRAND_LOGO)
@@ -135,8 +134,8 @@ class TimelineMapperTest {
           .userId(USER_ID)
           .status("AUTHORIZED")
           .operationType("00")
-          .trxDate(OffsetDateTime.now())
-          .trxChargeDate(OffsetDateTime.now())
+          .trxDate(Instant.now())
+          .trxChargeDate(Instant.now())
           .instrumentId(INSTRUMENT_ID)
           .maskedPan(MASKED_PAN)
           .brandLogo(BRAND_LOGO)
@@ -155,8 +154,8 @@ class TimelineMapperTest {
           .userId(USER_ID)
           .status("AUTHORIZED")
           .operationType("00")
-          .trxDate(OffsetDateTime.now())
-          .trxChargeDate(OffsetDateTime.now())
+          .trxDate(Instant.now())
+          .trxChargeDate(Instant.now())
           .instrumentId(INSTRUMENT_ID)
           .maskedPan(MASKED_PAN)
           .brandLogo(BRAND_LOGO)
@@ -175,7 +174,7 @@ class TimelineMapperTest {
           .userId(USER_ID)
           .status("CANCELLED")
           .operationType("00")
-          .trxDate(OffsetDateTime.now())
+          .trxDate(Instant.now())
           .instrumentId(INSTRUMENT_ID)
           .maskedPan(MASKED_PAN)
           .brandLogo(BRAND_LOGO)
@@ -194,7 +193,7 @@ class TimelineMapperTest {
           .userId(USER_ID)
           .status("REWARDED")
           .operationType("01")
-          .trxDate(OffsetDateTime.now())
+          .trxDate(Instant.now())
           .instrumentId(INSTRUMENT_ID)
           .maskedPan(MASKED_PAN)
           .brandLogo(BRAND_LOGO)
@@ -223,11 +222,11 @@ class TimelineMapperTest {
           4000L,
           START_DATE,
           END_DATE,
-          LocalDateTime.now(),
+          Instant.now(),
           null,
           null,
           1L,
-          LocalDate.now(),
+          Instant.now(),
           TRANSFER_DATE,
           NOTIFICATION_DATE,
           CRO);
@@ -249,11 +248,11 @@ class TimelineMapperTest {
           4000L,
           START_DATE,
           END_DATE,
-          LocalDateTime.now(),
+          Instant.now(),
           null,
           null,
           1L,
-          LocalDate.now(),
+          Instant.now(),
           TRANSFER_DATE,
           NOTIFICATION_DATE,
           CRO);
@@ -343,9 +342,7 @@ class TimelineMapperTest {
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("QRCODE", actual.getChannel());
     assertEquals(BUSINESS_NAME, actual.getBusinessName());
-    assertEquals(REWARD_TRX_DTO_REWARDED_QRCODE.getTrxChargeDate()
-        .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-        .toLocalDateTime(), actual.getOperationDate());
+    assertEquals(REWARD_TRX_DTO_REWARDED_QRCODE.getTrxChargeDate(), actual.getOperationDate());
   }
 
   @Test
@@ -367,9 +364,7 @@ class TimelineMapperTest {
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("QRCODE", actual.getChannel());
     assertEquals(BUSINESS_NAME, actual.getBusinessName());
-    assertEquals(REWARD_TRX_DTO_AUTHORIZED_QRCODE.getTrxChargeDate()
-        .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-        .toLocalDateTime(), actual.getOperationDate());
+    assertEquals(REWARD_TRX_DTO_AUTHORIZED_QRCODE.getTrxChargeDate(), actual.getOperationDate());
   }
 
   @Test
@@ -391,9 +386,7 @@ class TimelineMapperTest {
     assertEquals(USER_ID, actual.getIdTrxAcquirer());
     assertEquals("RTD", actual.getChannel());
     assertEquals(BUSINESS_NAME, actual.getBusinessName());
-    assertEquals(REWARD_TRX_DTO_AUTHORIZED_RTD.getTrxChargeDate()
-        .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-        .toLocalDateTime(), actual.getOperationDate());
+    assertEquals(REWARD_TRX_DTO_AUTHORIZED_RTD.getTrxChargeDate(), actual.getOperationDate());
   }
 
   @Test

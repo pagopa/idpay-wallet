@@ -2,7 +2,7 @@ package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import java.time.LocalDate;
+import java.time.Instant;
 
 import it.gov.pagopa.wallet.enums.Channel;
 import lombok.Builder;
@@ -19,7 +19,7 @@ public class NotificationQueueDTO {
   private String status;
   private String rewardNotificationId;
   private String refundCro;
-  private LocalDate refundDate;
+  private Instant refundDate;
   private Long refundReward;
   private String rejectionCode;
   private String rejectionReason;
@@ -30,5 +30,5 @@ public class NotificationQueueDTO {
   private String userMail;
   private Channel channel;
   private String serviceId;
-  private LocalDate voucherEndDate;
+  private Instant voucherEndDate;
 }
