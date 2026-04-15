@@ -3,12 +3,13 @@ package it.gov.pagopa.common.config;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.TimeZone;
 
@@ -16,7 +17,7 @@ import java.util.TimeZone;
 public class ObjectMapperConfig {
 
     @Bean
-    public JsonMapper objectMapper() {
+    public ObjectMapper objectMapper() {
         return JsonMapper.builder()
                 .findAndAddModules()
                 .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)

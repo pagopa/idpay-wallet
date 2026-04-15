@@ -1,11 +1,10 @@
 package it.gov.pagopa.wallet.utils;
 
-import tools.jackson.databind.json.JsonMapper;
 import feign.FeignException;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
-import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -13,13 +12,13 @@ import java.util.TimeZone;
 
 @Component
 public class Utilities {
-    private final JsonMapper objectMapper;
+    private final ObjectMapper objectMapper;
     private final String logoUrl;
 
     public static final String LOGO_PATH_TEMPLATE = "logos/%s/%s/%s";
     public static final String LOGO_NAME = "logo.png";
 
-    public Utilities(JsonMapper objectMapper,
+    public Utilities(ObjectMapper objectMapper,
                      @Value("${app.initiative.logo.url}") String logoUrl) {
         this.objectMapper = objectMapper;
         this.logoUrl = logoUrl;
