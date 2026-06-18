@@ -74,4 +74,6 @@ public class TransactionDTO {
   private String businessName;
 
   private Long voucherAmountCents;
+
+  private Integer trxNumber;
 }

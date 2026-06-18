@@ -68,5 +68,7 @@ public class QueueOperationDTO {
 
   private String businessName;
 
+  private Integer trxNumber;
+
 }
 
