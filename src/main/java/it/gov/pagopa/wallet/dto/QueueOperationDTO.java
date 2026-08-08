@@ -2,8 +2,7 @@ package it.gov.pagopa.wallet.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -40,7 +39,7 @@ public class QueueOperationDTO {
 
   private String cro;
 
-  private LocalDateTime operationDate;
+  private Instant operationDate;
 
   private Long rewardFeedbackProgressive;
 
@@ -58,13 +57,13 @@ public class QueueOperationDTO {
 
   private String refundType;
 
-  private LocalDate startDate;
+  private Instant startDate;
 
-  private LocalDate endDate;
+  private Instant endDate;
 
-  private LocalDate transferDate;
+  private Instant transferDate;
 
-  private LocalDate userNotificationDate;
+  private Instant userNotificationDate;
 
   private String businessName;
 

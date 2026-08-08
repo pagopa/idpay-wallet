@@ -5,7 +5,8 @@ import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.model.Wallet.Fields;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +42,10 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     private static final String FIELD_COUNTER_HISTORY = Fields.counterHistory;
     private final MongoTemplate mongoTemplate;
 
-    public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
+    private final Clock clock;
+    public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate, Clock clock) {
         this.mongoTemplate = mongoTemplate;
+        this.clock = clock;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, Instant.now(clock)),
                 Wallet.class);
     }
 
@@ -65,35 +68,35 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, Instant.now(clock)),
                 Wallet.class);
     }
 
     @Override
-    public void suspendWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime) {
+    public void suspendWallet(String initiativeId, String userId, String status, Instant instant) {
         log.trace("[SUSPEND_WALLET] Suspend wallet with initiativeId: {}", initiativeId);
 
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, localDateTime).set(FIELD_SUSPENSION_DATE, localDateTime),
+                new Update().set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, instant).set(FIELD_SUSPENSION_DATE, instant),
                 Wallet.class);
     }
 
     @Override
-    public void readmitWallet(String initiativeId, String userId, String status, LocalDateTime localDateTime) {
+    public void readmitWallet(String initiativeId, String userId, String status, Instant instant) {
         log.trace("[READMIT_WALLET] Readmit wallet with initiativeId: {}", initiativeId);
 
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, localDateTime).set(FIELD_SUSPENSION_DATE, null),
+                new Update().set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, instant).set(FIELD_SUSPENSION_DATE, null),
                 Wallet.class);
     }
 
     @Override
     public Wallet rewardTransaction(
-            String initiativeId, String userId, LocalDateTime trxElaborationTimestamp, Long amountCents, Long accruedCents, Long counterVersion) {
+            String initiativeId, String userId, Instant trxElaborationTimestamp, Long amountCents, Long accruedCents, Long counterVersion) {
 
         log.trace(
                 "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [amount: {}, accrued: {}]",
@@ -109,8 +112,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 new Update().set(FIELD_AMOUNT_CENTS, amountCents)
                         .set(FIELD_ACCRUED_CENTS, accruedCents)
                         .inc(FIELD_NTRX, 1)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_LAST_COUNTER_UPDATE, Instant.now(clock))
+                        .set(FIELD_UPDATE_DATE, Instant.now(clock))
                         .set(FIELD_COUNTER_VERSION, counterVersion),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
@@ -119,7 +122,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
 
     @Override
     public boolean rewardFamilyTransaction(
-            String initiativeId, String familyId, LocalDateTime trxElaborationTimestamp, Long amountCents, Long counterVersion) {
+            String initiativeId, String familyId, Instant trxElaborationTimestamp, Long amountCents, Long counterVersion) {
 
         log.trace("[UPDATE_WALLET_FROM_TRANSACTION][REWARD_TRANSACTION] Updating Family Wallet [amount: {}]", amountCents);
 
@@ -129,8 +132,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 ),
                 new Update()
                         .set(FIELD_AMOUNT_CENTS, amountCents)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_LAST_COUNTER_UPDATE, Instant.now(clock))
+                        .set(FIELD_UPDATE_DATE, Instant.now(clock))
                         .set(FIELD_COUNTER_VERSION, counterVersion),
                 Wallet.class);
 
@@ -146,7 +149,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_REFUNDED_CENTS, refundedCents).set(FIELD_HISTORY, history).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_REFUNDED_CENTS, refundedCents).set(FIELD_HISTORY, history).set(FIELD_UPDATE_DATE, Instant.now(clock)),
                 Wallet.class);
     }
 
@@ -158,7 +161,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, Instant.now(clock)),
                 Wallet.class);
     }
 
@@ -169,7 +172,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, Instant.now(clock)),
                 Wallet.class);
     }
 
@@ -184,7 +187,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     }
 
     @Override
-    public Wallet rewardFamilyUserTransaction(String initiativeId, String userId, LocalDateTime elaborationDateTime, List<Long> counterHistory, Long accruedCents) {
+    public Wallet rewardFamilyUserTransaction(String initiativeId, String userId, Instant elaborationDateTime, List<Long> counterHistory, Long accruedCents) {
         log.trace(
                 "[UPDATE_WALLET_FROM_TRANSACTION] [REWARD_TRANSACTION] Updating Wallet [accrued: {}]",
                 accruedCents);
@@ -198,8 +201,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 new Update()
                         .set(FIELD_ACCRUED_CENTS, accruedCents)
                         .inc(FIELD_NTRX, 1)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_LAST_COUNTER_UPDATE, Instant.now(clock))
+                        .set(FIELD_UPDATE_DATE, Instant.now(clock))
                         .set(FIELD_COUNTER_HISTORY, counterHistory),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);

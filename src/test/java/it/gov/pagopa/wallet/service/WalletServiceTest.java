@@ -21,6 +21,7 @@ import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 import it.gov.pagopa.wallet.repository.WalletRepository;
 import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import it.gov.pagopa.wallet.utils.AuditUtilities;
+import it.gov.pagopa.wallet.utils.TestClockConfig;
 import it.gov.pagopa.wallet.utils.Utilities;
 import lombok.SneakyThrows;
 import org.iban4j.IbanFormatException;
@@ -46,9 +47,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.*;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -62,7 +63,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = {WalletServiceImpl.class, ObjectMapperConfig.class})
+@ContextConfiguration(classes = {WalletServiceImpl.class, ObjectMapperConfig.class, TestClockConfig.class})
 @TestPropertySource(
         locations = "classpath:application.yml",
         properties = {
@@ -104,6 +105,11 @@ class WalletServiceTest {
     @Autowired
     ObjectMapper objectMapper;
 
+   private static final Clock CLOCK =
+      Clock.fixed(
+          Instant.parse("2024-01-01T10:00:00Z"),
+          ZoneOffset.UTC
+      );
     private static final String USER_ID = "TEST_USER_ID";
     private static final String FAMILY_ID = "TEST_FAMILY_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
@@ -124,7 +130,7 @@ class WalletServiceTest {
     private static final String IBAN_WRONG = "it99C1234567890123456789012222";
     private static final String IBAN_WRONG_DIGIT = "IT09P3608105138205493205496";
     private static final String DESCRIPTION_OK = "conto cointestato";
-    private static final LocalDateTime TEST_DATE = LocalDateTime.now();
+    private static final Instant TEST_DATE = Instant.now(CLOCK);
     private static final String USERMAIL = "USERMAIL";
     private static final String NAME = "NAME";
     private static final String SURNAME = "SURNAME";
@@ -150,9 +156,9 @@ class WalletServiceTest {
             "ADD_INSTRUMENT",
             TEST_DATE,
             1);
-    private static final LocalDateTime TEST_SUSPENSION_DATE = LocalDateTime.now().minusDays(1);
-    private static final LocalDate TEST_DATE_ONLY_DATE = LocalDate.now();
-    private static final LocalDate TEST_END_DATE = LocalDate.now().plusDays(2);
+    private static final Instant TEST_SUSPENSION_DATE = Instant.now(CLOCK);
+    private static final Instant TEST_DATE_ONLY_DATE = Instant.now(CLOCK);
+    private static final Instant TEST_END_DATE = Instant.now(CLOCK).plus(2,ChronoUnit.DAYS);
     private static final Long TEST_AMOUNT = 200L;
     private static final Long TEST_ACCRUED = 4000L;
     private static final Long TEST_REFUNDED = 0L;
@@ -162,10 +168,10 @@ class WalletServiceTest {
     private static final String WALLET_REFUNDABLE = "NOT_REFUNDABLE";
     private static final String WALLET_NOT_REFUNDABLE_ONLY_INSTRUMENT = "NOT_REFUNDABLE_ONLY_INSTRUMENT";
     private static final String WALLET_NOT_REFUNDABLE_ONLY_IBAN = "NOT_REFUNDABLE_ONLY_IBAN";
-    private static final LocalDate START_DATE = LocalDate.now();
-    private static final LocalDate END_DATE = LocalDate.now().plusDays(2);
-    private static final LocalDate TRANSFER_DATE = LocalDate.now();
-    private static final LocalDate NOTIFICATION_DATE = LocalDate.now();
+    private static final Instant START_DATE = Instant.now(CLOCK);
+    private static final Instant END_DATE = Instant.now(CLOCK).plus(2,ChronoUnit.DAYS);
+    private static final Instant TRANSFER_DATE = Instant.now(CLOCK);
+    private static final Instant NOTIFICATION_DATE = Instant.now(CLOCK);
     private static final String REWARD_STATUS = "reward_status";
     private static final String REFUND_TYPE = "refund_type";
     private static final String LOGO_URL = "https://test" + String.format(Utilities.LOGO_PATH_TEMPLATE,
@@ -177,6 +183,7 @@ class WalletServiceTest {
     private static final List<Long> COUNTER_HISTORY = new ArrayList<>();
     private static final Long TEST_VERSION = 1L;
     private static final String SERVICE_ID = "serviceid";
+
     private static Wallet testWallet =
             Wallet.builder()
                     .build();
@@ -644,8 +651,8 @@ class WalletServiceTest {
         r.setResidualBudgetCents(0L);
 
         // Date fisse per stabilità dei test
-        r.setTrxDate(OffsetDateTime.parse("2025-09-24T10:00:00+00:00"));
-        r.setTrxEndDate(OffsetDateTime.parse("2025-10-24T10:00:00+00:00"));
+        r.setTrxDate(Instant.parse("2025-09-24T10:00:00+00:00"));
+        r.setTrxEndDate(Instant.parse("2025-10-24T10:00:00+00:00"));
         return r;
     }
 
@@ -660,7 +667,7 @@ class WalletServiceTest {
         testWallet.setIban(null);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
         testWallet.setNInstr(0);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -676,7 +683,7 @@ class WalletServiceTest {
     @Test
     void enrollInstrument_ko_paymentInstrumentConnectorException() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -792,7 +799,7 @@ class WalletServiceTest {
     @Test
     void enrollInstrument_ko_initiative_ended() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MIN);
+        testWallet.setInitiativeEndDate(Instant.MIN);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -858,7 +865,7 @@ class WalletServiceTest {
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         testWallet.setNInstr(1);
         testWallet.setIban(null);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -875,7 +882,7 @@ class WalletServiceTest {
     @Test
     void deleteInstrument_ko_initiative_ended() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MIN);
+        testWallet.setInitiativeEndDate(Instant.MIN);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -897,7 +904,7 @@ class WalletServiceTest {
     @Test
     void deleteInstrument_ko_feignexception() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -976,7 +983,7 @@ class WalletServiceTest {
     void enrollIban_ok_only_iban() {
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
         testWallet.setNInstr(0);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1001,7 +1008,7 @@ class WalletServiceTest {
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
         testWallet.setNInstr(0);
         testWallet.setIban(null);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1029,7 +1036,7 @@ class WalletServiceTest {
     void enrollIban_ok_with_instrument() {
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
         testWallet.setNInstr(1);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.doNothing().when(ibanProducer).sendIban(any(IbanQueueDTO.class));
 
@@ -1061,7 +1068,7 @@ class WalletServiceTest {
         testWallet.setIban(IBAN_OK);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
         testWallet.setNInstr(0);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1078,7 +1085,7 @@ class WalletServiceTest {
         // Given
         testWallet.setIban(null);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1100,7 +1107,7 @@ class WalletServiceTest {
     void enrollIban_ko_iban_wrong() {
         testWallet.setIban(null);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1117,7 +1124,7 @@ class WalletServiceTest {
     void enrollIban_ko_iban_digit_control() {
         testWallet.setIban(null);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_INSTRUMENT.name());
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1152,7 +1159,7 @@ class WalletServiceTest {
     @Test
     void enrollIban_ko_unsubscribe() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(TEST_WALLET_UNSUBSCRIBED));
@@ -1173,7 +1180,7 @@ class WalletServiceTest {
     @Test
     void enrollIban_ko_initiative_ended() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MIN);
+        testWallet.setInitiativeEndDate(Instant.MIN);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1198,7 +1205,7 @@ class WalletServiceTest {
         testWallet.setIban(IBAN_OK_OTHER);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE_ONLY_IBAN.name());
         testWallet.setNInstr(0);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -1379,7 +1386,7 @@ class WalletServiceTest {
         testWallet.setIban(IBAN_OK);
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
-                        USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
+                        USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, Instant.now(CLOCK).toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -1401,7 +1408,7 @@ class WalletServiceTest {
         testWallet.setIban(IBAN_OK);
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
-                        USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
+                        USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, Instant.now(CLOCK).toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -1419,7 +1426,7 @@ class WalletServiceTest {
     void processIbanOutcome_not_found() {
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
-                        USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
+                        USER_ID, INITIATIVE_ID, IBAN_OK, STATUS_KO, Instant.now(CLOCK).toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.empty());
 
@@ -1433,7 +1440,7 @@ class WalletServiceTest {
     void processIbanOutcome_duplicate() {
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
-                        USER_ID, INITIATIVE_ID, IBAN_OK_OTHER, STATUS_KO, LocalDateTime.now().toString(), CHANNEL);
+                        USER_ID, INITIATIVE_ID, IBAN_OK_OTHER, STATUS_KO, Instant.now(CLOCK).toString(), CHANNEL);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
 
@@ -1448,7 +1455,7 @@ class WalletServiceTest {
     void processIbanOutcome_status_ok() {
         IbanQueueWalletDTO iban =
                 new IbanQueueWalletDTO(
-                        USER_ID, INITIATIVE_ID, IBAN_OK, "OK", LocalDateTime.now().toString(), CHANNEL);
+                        USER_ID, INITIATIVE_ID, IBAN_OK, "OK", Instant.now(CLOCK).toString(), CHANNEL);
 
         walletService.processIbanOutcome(iban);
 
@@ -1468,7 +1475,7 @@ class WalletServiceTest {
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setRequestUnsubscribeDate(Instant.now());
                             testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
                             return null;
                         })
@@ -2004,11 +2011,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         1L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2050,11 +2057,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         1L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2099,11 +2106,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         2L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2148,11 +2155,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         1L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2195,11 +2202,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         1L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2234,11 +2241,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         2L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2279,11 +2286,11 @@ class WalletServiceTest {
                         4000L,
                         START_DATE,
                         END_DATE,
-                        LocalDateTime.now(),
+                        Instant.now(CLOCK),
                         null,
                         null,
                         2L,
-                        LocalDate.now(),
+                        Instant.now(CLOCK),
                         TRANSFER_DATE,
                         NOTIFICATION_DATE,
                         "CRO");
@@ -2313,7 +2320,7 @@ class WalletServiceTest {
         testWallet.setIban(null);
         testWallet.setStatus(WalletStatus.NOT_REFUNDABLE.name());
         testWallet.setNInstr(0);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -2377,7 +2384,7 @@ class WalletServiceTest {
     @Test
     void enrollInstrumentIssuer_ko_exception() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         final InstrumentIssuerDTO instrument =
                 new InstrumentIssuerDTO("hpan", CHANNEL, "VISA", "VISA", "***");
@@ -2473,7 +2480,7 @@ class WalletServiceTest {
         walletList.add(TEST_WALLET_UNSUBSCRIBED);
 
         WalletDTO walletDtoRef = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(), VoucherStatus.ACTIVE.name(),
-                IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2), 0, TEST_AMOUNT, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
+                IBAN_OK, TEST_DATE_ONLY_DATE.minus(1, ChronoUnit.DAYS), TEST_DATE_ONLY_DATE.minus(3, ChronoUnit.DAYS), TEST_DATE_ONLY_DATE.minus(2, ChronoUnit.DAYS), 0, TEST_AMOUNT, TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
                 0L,
                 List.of(),
@@ -2483,7 +2490,7 @@ class WalletServiceTest {
                 NAME,
                 SURNAME);
         WalletDTO walletDtoUnsub = new WalletDTO(FAMILY_ID, INITIATIVE_ID_REFUNDABLE, INITIATIVE_NAME, WalletStatus.REFUNDABLE.name(),
-                VoucherStatus.ACTIVE.name(), IBAN_OK, TEST_DATE_ONLY_DATE.minusDays(1), TEST_DATE_ONLY_DATE.minusDays(3), TEST_DATE_ONLY_DATE.minusDays(2),
+                VoucherStatus.ACTIVE.name(), IBAN_OK, TEST_DATE_ONLY_DATE.minus(1, ChronoUnit.DAYS), TEST_DATE_ONLY_DATE.minus(3, ChronoUnit.DAYS), TEST_DATE_ONLY_DATE.minus(2, ChronoUnit.DAYS),
                 0, TEST_AMOUNT,TEST_AMOUNT, TEST_ACCRUED, TEST_REFUNDED,
                 TEST_DATE, WalletConstants.INITIATIVE_REWARD_TYPE_REFUND, LOGO_URL, ORGANIZATION_NAME, 0L, 100L,
                 0L,
@@ -2792,7 +2799,7 @@ class WalletServiceTest {
         final QueueCommandOperationDTO queueCommandOperationDTO = QueueCommandOperationDTO.builder()
                 .entityId(INITIATIVE_ID)
                 .operationType(operationType)
-                .operationTime(LocalDateTime.now().minusMinutes(5))
+                .operationTime(Instant.now(CLOCK).minus(5, ChronoUnit.MINUTES))
                 .build();
         final List<Wallet> deletedPage = createWalletPage(20);
 
@@ -2845,7 +2852,7 @@ class WalletServiceTest {
 
         testWallet.setIban(null);
         testWallet.setNInstr(0);
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
 
         Mockito.doNothing()
                 .when(paymentInstrumentRestConnector)
@@ -2861,7 +2868,7 @@ class WalletServiceTest {
     @Test
     void enrollInstrumentCode_ko_exception() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
         testWallet.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
                 .thenReturn(Optional.of(testWallet));
@@ -2912,7 +2919,7 @@ class WalletServiceTest {
     @Test
     void enrollInstrumentCode_ko_unsubscribed() {
         // Given
-        testWallet.setInitiativeEndDate(LocalDate.MAX);
+        testWallet.setInitiativeEndDate(Instant.MAX);
         testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
         testWallet.setInitiativeRewardType(WalletConstants.INITIATIVE_REWARD_TYPE_DISCOUNT);
         Mockito.when(walletRepositoryMock.findByUserIdAndInitiativeId(USER_ID,INITIATIVE_ID))
@@ -2941,7 +2948,7 @@ class WalletServiceTest {
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setRequestUnsubscribeDate(Instant.now());
                             testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
                             return null;
                         })
@@ -2965,7 +2972,7 @@ class WalletServiceTest {
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setRequestUnsubscribeDate(Instant.now());
                             testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
                             return null;
                         })
@@ -2989,7 +2996,7 @@ class WalletServiceTest {
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setRequestUnsubscribeDate(Instant.now());
                             testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
                             return null;
                         })
@@ -3018,7 +3025,7 @@ class WalletServiceTest {
 
         Mockito.doAnswer(
                         invocationOnMock -> {
-                            testWallet.setRequestUnsubscribeDate(LocalDateTime.now());
+                            testWallet.setRequestUnsubscribeDate(Instant.now());
                             testWallet.setStatus(WalletStatus.UNSUBSCRIBED);
                             return null;
                         })

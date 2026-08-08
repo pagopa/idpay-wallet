@@ -2,7 +2,7 @@ package it.gov.pagopa.wallet.dto.initiative;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import lombok.Data;
 
 @Data
@@ -21,15 +21,15 @@ public class InitiativeGeneralDTO   {
   private Long beneficiaryBudgetCents;
 
   @JsonProperty("startDate")
-  private LocalDate startDate;
+  private Instant startDate;
 
   @JsonProperty("endDate")
-  private LocalDate endDate;
+  private Instant endDate;
 
   @JsonProperty("rankingStartDate")
-  private LocalDate rankingStartDate;
+  private Instant rankingStartDate;
 
   @JsonProperty("rankingEndDate")
-  private LocalDate rankingEndDate;
+  private Instant rankingEndDate;
 
 }
