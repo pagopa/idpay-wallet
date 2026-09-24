@@ -66,6 +66,7 @@ public class WalletConstants {
     public static final String ERROR_PAYMENT_INSTRUMENT_INVOCATION_MSG = "An error occurred in the microservice payment instrument";
     public static final String ERROR_PAYMENT_INVOCATION_MSG = "An error occurred in the microservice payment";
     public static final String ERROR_REWARD_CALCULATOR_INVOCATION_MSG = "An error occurred in the microservice reward calculator";
+    public static final String ERROR_REMINDER_BATCH_MSG = "The reminder batch failed for the following initiatives: %s";
   }
 
   public static final class ExceptionCode {
@@ -87,6 +88,8 @@ public class WalletConstants {
     public static final String IDPAYCODE_NOT_FOUND = "WALLET_INSTRUMENT_IDPAYCODE_NOT_FOUND";
 
     public static final String TOO_MANY_REQUESTS = "WALLET_TOO_MANY_REQUESTS";
+
+    public static final String REMINDER_BATCH_FAILED = "WALLET_REMINDER_BATCH_FAILED";
 
     public static final String GENERIC_ERROR = "WALLET_GENERIC_ERROR";
   }
