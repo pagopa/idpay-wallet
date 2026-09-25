@@ -39,6 +39,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
     private static final String FIELD_UPDATE_DATE = Fields.updateDate;
     private static final String FIELD_COUNTER_VERSION = Fields.counterVersion;
     private static final String FIELD_COUNTER_HISTORY = Fields.counterHistory;
+    private static final String FIELD_REMINDER_NOTIFIED_DATE = Fields.reminderNotifiedDate;
     private final MongoTemplate mongoTemplate;
 
     public WalletUpdatesRepositoryImpl(MongoTemplate mongoTemplate) {
@@ -202,6 +203,19 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         .set(FIELD_UPDATE_DATE, LocalDateTime.now())
                         .set(FIELD_COUNTER_HISTORY, counterHistory),
                 FindAndModifyOptions.options().returnNew(true),
+                Wallet.class);
+    }
+
+    @Override
+    public void updateReminderNotifiedDate(String initiativeId, String userId, LocalDateTime reminderNotifiedDate) {
+        log.trace("[REMINDER_BATCH] Marking wallet as reminded for initiativeId: {}", initiativeId);
+
+        mongoTemplate.updateFirst(
+                Query.query(
+                        Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
+                new Update()
+                        .set(FIELD_REMINDER_NOTIFIED_DATE, reminderNotifiedDate)
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
                 Wallet.class);
     }
 }

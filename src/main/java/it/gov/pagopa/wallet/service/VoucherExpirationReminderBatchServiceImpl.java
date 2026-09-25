@@ -4,8 +4,10 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
+import it.gov.pagopa.wallet.exception.custom.ReminderBatchException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
+import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -16,7 +18,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +31,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
 
     private final WalletRepository walletRepository;
+    private final WalletUpdatesRepository walletUpdatesRepository;
     private final NotificationProducer notificationProducer;
     private final ErrorProducer errorProducer;
     private final int blockReminderBatch;
@@ -34,6 +39,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     private final String notificationServer;
 
     public VoucherExpirationReminderBatchServiceImpl(WalletRepository walletRepository,
+                                                     WalletUpdatesRepository walletUpdatesRepository,
                                                      NotificationProducer notificationProducer,
                                                      ErrorProducer errorProducer,
                                                      @Value("${app.wallet.blockReminderBatch}") int blockReminderBatch,
@@ -41,6 +47,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                                                      @Value("${spring.cloud.stream.bindings.walletQueue-out-2.destination}") String notificationTopic
     ) {
         this.walletRepository = walletRepository;
+        this.walletUpdatesRepository = walletUpdatesRepository;
         this.notificationProducer = notificationProducer;
         this.errorProducer = errorProducer;
         this.blockReminderBatch = blockReminderBatch;
@@ -55,11 +62,35 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
         performanceLog(startTime, WalletConstants.REMINDER);
     }
 
+    @Override
+    public void runReminderBatch(List<String> initiativeIds, int expiringDay) {
+        List<String> failedInitiatives = new ArrayList<>();
+        for (String initiativeId : initiativeIds) {
+            long startTime = System.currentTimeMillis();
+            try {
+                executeBatchLogic(initiativeId, expiringDay);
+            } catch (Exception e) {
+                failedInitiatives.add(sanitizeString(initiativeId));
+                log.error("[REMINDER_BATCH] An error occurred while processing the initiative {}. Continuing with the remaining initiatives",
+                        sanitizeString(initiativeId), e);
+            } finally {
+                performanceLog(startTime, WalletConstants.REMINDER);
+            }
+        }
+        if (!failedInitiatives.isEmpty()) {
+            // surface a 5xx so the cronjob OnFailure restart policy retries; other initiatives were still processed
+            throw new ReminderBatchException(
+                    String.format(WalletConstants.ExceptionMessage.ERROR_REMINDER_BATCH_MSG, failedInitiatives));
+        }
+    }
+
     private void executeBatchLogic(String initiativeId, int expiringDay) {
         String sanitizedInitiativeId = sanitizeString(initiativeId);
 
         LocalDate now = LocalDate.now();
         LocalDate expirationDate = now.plusDays((long)expiringDay-1);
+        // idempotency window: skip wallets already reminded in the current run day so job retries do not duplicate notifications
+        LocalDateTime cycleStart = LocalDate.now(ZONE_ID).atStartOfDay();
 
         int page = 0;
         Pageable pageable = PageRequest.of(page, blockReminderBatch);
@@ -78,6 +109,11 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
             if (!walletList.isEmpty()) {
                 log.info("[REMINDER_BATCH] Start sending notifications for expiring vouchers - Page {}", page);
                 for (Wallet wallet : walletList) {
+                    if (alreadyReminded(wallet, cycleStart)) {
+                        log.info("[REMINDER_BATCH] Skipping wallet already reminded in this cycle for initiative {}", sanitizedInitiativeId);
+                        continue;
+                    }
+
                     NotificationQueueDTO notificationQueueDTO = NotificationQueueDTO.builder()
                             .operationType(WalletConstants.REMINDER)
                             .userId(wallet.getUserId())
@@ -91,7 +127,11 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                             .voucherEndDate(wallet.getVoucherEndDate())
                             .build();
 
-                    sendNotification(notificationQueueDTO);
+                    if (sendNotification(notificationQueueDTO)) {
+                        // mark only on successful send so a failed one is retried, not skipped
+                        walletUpdatesRepository.updateReminderNotifiedDate(
+                                wallet.getInitiativeId(), wallet.getUserId(), LocalDateTime.now());
+                    }
                 }
                 log.info("[REMINDER_BATCH] End sending notifications for expiring vouchers - Page {}", page);
             }
@@ -101,14 +141,21 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
 
     }
 
-    private void sendNotification(NotificationQueueDTO notificationQueueDTO) {
+    private boolean alreadyReminded(Wallet wallet, LocalDateTime cycleStart) {
+        return wallet.getReminderNotifiedDate() != null
+                && !wallet.getReminderNotifiedDate().isBefore(cycleStart);
+    }
+
+    private boolean sendNotification(NotificationQueueDTO notificationQueueDTO) {
         try {
             log.info("[SEND_NOTIFICATION] Sending event to Notification");
             notificationProducer.sendNotification(notificationQueueDTO);
+            return true;
         } catch (Exception e) {
             log.error("[SEND_NOTIFICATION] An error has occurred. Sending message to Error queue");
             final MessageBuilder<?> errorMessage = MessageBuilder.withPayload(notificationQueueDTO);
             this.sendToQueueError(e, errorMessage, notificationServer, notificationTopic);
+            return false;
         }
     }
 
