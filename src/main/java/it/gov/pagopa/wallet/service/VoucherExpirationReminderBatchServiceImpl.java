@@ -23,12 +23,18 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
 public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirationReminderBatchService {
 
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
+
+    // [TEMP-SIMULATION] REMOVE BEFORE MERGE: forces a single failure on the 2nd initiative to trigger the
+    // cronjob OnFailure retry. The flag is static/in-memory: it survives across retries because the wallet
+    // service stays up (only the curl cronjob container restarts), so the retry bypasses the forced failure.
+    private static final AtomicBoolean SIMULATED_FAILURE_DONE = new AtomicBoolean(false);
 
     private final WalletRepository walletRepository;
     private final WalletUpdatesRepository walletUpdatesRepository;
@@ -65,9 +71,16 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     @Override
     public void runReminderBatch(List<String> initiativeIds, int expiringDay) {
         List<String> failedInitiatives = new ArrayList<>();
+        int iteration = 0;
         for (String initiativeId : initiativeIds) {
+            iteration++;
             long startTime = System.currentTimeMillis();
             try {
+                // [TEMP-SIMULATION] REMOVE BEFORE MERGE: throw only on the 2nd iteration and only on the first
+                // overall run; on retry compareAndSet returns false so the initiative is processed normally.
+                if (iteration == 2 && SIMULATED_FAILURE_DONE.compareAndSet(false, true)) {
+                    throw new ReminderBatchException("[SIMULATION] forced failure on iteration 2 to trigger the cronjob retry");
+                }
                 executeBatchLogic(initiativeId, expiringDay);
             } catch (Exception e) {
                 failedInitiatives.add(sanitizeString(initiativeId));
