@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.controller;
 
+import it.gov.pagopa.wallet.dto.ReminderBatchRequestDTO;
 import it.gov.pagopa.wallet.service.VoucherExpirationReminderBatchService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,14 @@ public class VoucherExpirationReminderBatchControllerImpl implements VoucherExpi
         this.batchService = batchService;
     }
 
+    @Override
+    public ResponseEntity<Void> runReminderBatch(ReminderBatchRequestDTO request) {
+        batchService.runReminderBatch(request.getInitiativeIds(), expiringDay);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @Override
+    @Deprecated(since = "multi-initiative-migration")
     public ResponseEntity<Void> runReminderBatch(String initiativeId) {
         batchService.runReminderBatch(initiativeId, expiringDay);
         return new ResponseEntity<>(HttpStatus.OK);
