@@ -57,6 +57,8 @@ public class Wallet {
   private Channel channel;
   private String name;
   private String surname;
+  //idempotency marker for the expiration reminder batch: last time a reminder was sent for this wallet
+  private LocalDateTime reminderNotifiedDate;
   @Data
   @NoArgsConstructor
   @AllArgsConstructor

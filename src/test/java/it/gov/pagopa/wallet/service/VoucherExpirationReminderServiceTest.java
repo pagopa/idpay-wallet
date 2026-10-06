@@ -4,8 +4,10 @@ import it.gov.pagopa.wallet.dto.NotificationQueueDTO;
 import it.gov.pagopa.wallet.enums.Channel;
 import it.gov.pagopa.wallet.event.producer.ErrorProducer;
 import it.gov.pagopa.wallet.event.producer.NotificationProducer;
+import it.gov.pagopa.wallet.exception.custom.ReminderBatchException;
 import it.gov.pagopa.wallet.model.Wallet;
 import it.gov.pagopa.wallet.repository.WalletRepository;
+import it.gov.pagopa.wallet.repository.WalletUpdatesRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +23,7 @@ import org.springframework.messaging.Message;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +43,8 @@ class VoucherExpirationReminderServiceTest {
     NotificationProducer notificationProducerMock;
     @Mock
     WalletRepository walletRepositoryMock;
+    @Mock
+    WalletUpdatesRepository walletUpdatesRepositoryMock;
     VoucherExpirationReminderBatchServiceImpl voucherExpirationReminderBatchService;
 
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
@@ -47,6 +53,7 @@ class VoucherExpirationReminderServiceTest {
     private static final int BLOCK_REMINDER_BATCH = 100;
     private static final String USER_ID = "TEST_USER_ID";
     private static final String INITIATIVE_ID = "TEST_INITIATIVE_ID";
+    private static final String INITIATIVE_ID_2 = "TEST_INITIATIVE_ID_2";
     private static final String INITIATIVE_NAME = "TEST_INITIATIVE_NAME";
     private static final String USER_MAIL = "USERMAIL";
     private static final String NAME = "NAME";
@@ -85,6 +92,7 @@ class VoucherExpirationReminderServiceTest {
     void setup() {
         voucherExpirationReminderBatchService = new VoucherExpirationReminderBatchServiceImpl(
                 walletRepositoryMock,
+                walletUpdatesRepositoryMock,
                 notificationProducerMock,
                 errorProducerMock,
                 BLOCK_REMINDER_BATCH,
@@ -120,6 +128,8 @@ class VoucherExpirationReminderServiceTest {
         verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
         //Verify that the NotificationProducer was called 2 time
         verify(notificationProducerMock, times(2)).sendNotification(any(NotificationQueueDTO.class));
+        //Verify that each successfully notified wallet is marked to stay idempotent on retries
+        verify(walletUpdatesRepositoryMock, times(2)).updateReminderNotifiedDate(any(), any(), any());
         //Verify that the ErrorProducer has NEVER been called
         verify(errorProducerMock, never()).sendEvent(any());
     }
@@ -181,6 +191,9 @@ class VoucherExpirationReminderServiceTest {
 
         // Verify that the ErrorProducer has been called 1 time
         verify(errorProducerMock, times(1)).sendEvent(any(Message.class));
+
+        // A failed send must NOT be marked, so a retry can resend it
+        verify(walletUpdatesRepositoryMock, never()).updateReminderNotifiedDate(any(), any(), any());
     }
 
 
@@ -213,6 +226,158 @@ class VoucherExpirationReminderServiceTest {
 
         // Verify that the ErrorProducer has been called 1 time
         verify(errorProducerMock, times(1)).sendEvent(any(Message.class));
+    }
+
+    @Test
+    void runReminderBatch_multipleInitiatives_success() {
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(TEST_WALLET_1);
+        Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
+
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(any(String.class), eq(Date.from(startUtc)), eq(Date.from(endUtc)), eq(pageable)))
+                .thenReturn(walletPage);
+
+        // Act
+        voucherExpirationReminderBatchService.runReminderBatch(List.of(INITIATIVE_ID, INITIATIVE_ID_2), expiringDay);
+
+        // Assert: one query per initiative
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(eq(INITIATIVE_ID), eq(Date.from(startUtc)), eq(Date.from(endUtc)), eq(pageable));
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(eq(INITIATIVE_ID_2), eq(Date.from(startUtc)), eq(Date.from(endUtc)), eq(pageable));
+        // one notification per initiative
+        verify(notificationProducerMock, times(2)).sendNotification(any(NotificationQueueDTO.class));
+        verify(errorProducerMock, never()).sendEvent(any());
+    }
+
+    @Test
+    void runReminderBatch_singleInitiativeList_prodScenario_success() {
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(TEST_WALLET_1);
+        Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
+
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
+                .thenReturn(walletPage);
+
+        // Act
+        voucherExpirationReminderBatchService.runReminderBatch(List.of(INITIATIVE_ID), expiringDay);
+
+        // Assert
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
+        verify(notificationProducerMock, times(1)).sendNotification(any(NotificationQueueDTO.class));
+        verify(errorProducerMock, never()).sendEvent(any());
+    }
+
+    @Test
+    void runReminderBatch_multipleInitiatives_errorOnOneDoesNotBlockOthers() {
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(TEST_WALLET_2);
+        Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
+
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+
+        // The first initiative query fails, the second returns wallets
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
+                .thenThrow(new RuntimeException("Mongo failure for first initiative"));
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID_2, Date.from(startUtc), Date.from(endUtc), pageable))
+                .thenReturn(walletPage);
+
+        // Act + Assert: a ReminderBatchException is thrown so the cronjob OnFailure policy can retry
+        List<String> initiatives = List.of(INITIATIVE_ID, INITIATIVE_ID_2);
+        ReminderBatchException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                ReminderBatchException.class,
+                () -> voucherExpirationReminderBatchService.runReminderBatch(initiatives, expiringDay));
+
+        // the failing initiative is reported in the exception message
+        org.junit.jupiter.api.Assertions.assertTrue(exception.getMessage().contains(INITIATIVE_ID));
+
+        // the second initiative was still processed despite the first failing
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID_2, Date.from(startUtc), Date.from(endUtc), pageable);
+        verify(notificationProducerMock, times(1)).sendNotification(any(NotificationQueueDTO.class));
+    }
+
+    @Test
+    void runReminderBatch_multipleInitiatives_allFailing_throwsException() {
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+
+        // Both initiative queries fail
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(any(String.class), eq(Date.from(startUtc)), eq(Date.from(endUtc)), eq(pageable)))
+                .thenThrow(new RuntimeException("Mongo failure"));
+
+        // Act + Assert: still throws so the job is notified and can retry
+        List<String> initiatives = List.of(INITIATIVE_ID, INITIATIVE_ID_2);
+        ReminderBatchException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                ReminderBatchException.class,
+                () -> voucherExpirationReminderBatchService.runReminderBatch(initiatives, expiringDay));
+
+        // both failing initiatives are reported
+        org.junit.jupiter.api.Assertions.assertTrue(exception.getMessage().contains(INITIATIVE_ID));
+        org.junit.jupiter.api.Assertions.assertTrue(exception.getMessage().contains(INITIATIVE_ID_2));
+
+        // both initiatives were attempted (none blocked the loop)
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable);
+        verify(walletRepositoryMock, times(1)).findVoucherExpiredIntoRange(INITIATIVE_ID_2, Date.from(startUtc), Date.from(endUtc), pageable);
+        verify(notificationProducerMock, never()).sendNotification(any(NotificationQueueDTO.class));
+    }
+
+    @Test
+    void runReminderBatch_walletAlreadyRemindedToday_isSkipped() {
+        // Wallet already reminded earlier today: a retry must NOT resend nor re-mark it
+        Wallet alreadyReminded = TEST_WALLET_1.toBuilder()
+                .reminderNotifiedDate(LocalDateTime.now())
+                .build();
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(alreadyReminded);
+        Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
+
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
+                .thenReturn(walletPage);
+
+        // Act
+        voucherExpirationReminderBatchService.runReminderBatch(List.of(INITIATIVE_ID), expiringDay);
+
+        // Assert: idempotent skip -> no notification, no marking, no error
+        verify(notificationProducerMock, never()).sendNotification(any(NotificationQueueDTO.class));
+        verify(walletUpdatesRepositoryMock, never()).updateReminderNotifiedDate(any(), any(), any());
+        verify(errorProducerMock, never()).sendEvent(any());
+    }
+
+    @Test
+    void runReminderBatch_walletRemindedOnPreviousDay_isStillSent() {
+        // A reminder sent on a previous day must NOT block a legitimate reminder for a new expiration window.
+        // This locks the daily sliding-window semantics: idempotency guards same-day retries only.
+        Wallet remindedYesterday = TEST_WALLET_1.toBuilder()
+                .reminderNotifiedDate(LocalDate.now(ZONE_ID).atStartOfDay().minusDays(1))
+                .build();
+        List<Wallet> walletList = new ArrayList<>();
+        walletList.add(remindedYesterday);
+        Page<Wallet> walletPage = new PageImpl<>(walletList, PageRequest.of(0, walletList.size()), walletList.size());
+
+        LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
+        Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
+        Instant endUtc = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        when(walletRepositoryMock.findVoucherExpiredIntoRange(INITIATIVE_ID, Date.from(startUtc), Date.from(endUtc), pageable))
+                .thenReturn(walletPage);
+
+        // Act
+        voucherExpirationReminderBatchService.runReminderBatch(List.of(INITIATIVE_ID), expiringDay);
+
+        // Assert: the reminder is sent and marked for the new cycle
+        verify(notificationProducerMock, times(1)).sendNotification(any(NotificationQueueDTO.class));
+        verify(walletUpdatesRepositoryMock, times(1)).updateReminderNotifiedDate(any(), any(), any());
+        verify(errorProducerMock, never()).sendEvent(any());
     }
 
 

@@ -19,4 +19,5 @@ public interface WalletUpdatesRepository {
   void decreaseInstrumentNumber(String initiativeId, String userId, String status);
   List<Wallet> deletePaged(String initiativeId, int pageSize);
   Wallet rewardFamilyUserTransaction(String initiativeId, String userId, LocalDateTime elaborationDateTime, List<Long> counterHistory, Long accruedCents);
+  void updateReminderNotifiedDate(String initiativeId, String userId, LocalDateTime reminderNotifiedDate);
 }

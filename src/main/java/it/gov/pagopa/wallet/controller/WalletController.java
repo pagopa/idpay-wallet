@@ -87,5 +87,4 @@ public interface WalletController {
   @PutMapping("/createWallet")
   ResponseEntity<Void> createWallet(
           @RequestBody EvaluationDTO evaluationDTO);
-
 }
