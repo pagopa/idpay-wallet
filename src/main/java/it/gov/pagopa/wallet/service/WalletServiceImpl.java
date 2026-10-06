@@ -392,12 +392,21 @@ public class WalletServiceImpl implements WalletService {
     List<WalletDTO> walletDTOList = new ArrayList<>();
 
     for (Wallet wallet : walletList) {
-      walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
+      if (!areInitiativeAndVoucherExpired(wallet, LocalDate.now())) {
+        walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
+      }
     }
     initiativeListDTO.setInitiativeList(walletDTOList);
 
     performanceLog(startTime, "GET_INITIATIVE_LIST");
     return initiativeListDTO;
+  }
+
+  private boolean areInitiativeAndVoucherExpired(Wallet wallet, LocalDate requestDate) {
+    return wallet.getInitiativeEndDate() != null
+        && wallet.getInitiativeEndDate().isBefore(requestDate)
+        && wallet.getVoucherEndDate() != null
+        && wallet.getVoucherEndDate().isBefore(requestDate);
   }
 
   @Override
