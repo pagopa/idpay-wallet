@@ -25,9 +25,14 @@ public class VoucherExpirationReminderBatchControllerImpl implements VoucherExpi
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * @deprecated retained for backward compatibility during multi-initiative migration.
+     *             Use {@link #runReminderBatch(ReminderBatchRequestDTO)}.
+     */
     @Override
     @Deprecated(since = "multi-initiative-migration")
     public ResponseEntity<Void> runReminderBatch(String initiativeId) {
+        // TODO remove after all callers migrate to /batch/run with ReminderBatchRequestDTO.
         batchService.runReminderBatch(initiativeId, expiringDay);
         return new ResponseEntity<>(HttpStatus.OK);
     }
