@@ -37,6 +37,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -48,6 +49,7 @@ import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 @Service
 public class WalletServiceImpl implements WalletService {
 
+  private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
   public static final String SERVICE_ENROLL_IBAN = "ENROLL_IBAN";
   public static final String SERVICE_UNSUBSCRIBE = "UNSUBSCRIBE";
   public static final String SERVICE_CHECK_IBAN_OUTCOME = "CHECK_IBAN_OUTCOME";
@@ -389,15 +391,22 @@ public class WalletServiceImpl implements WalletService {
     List<Wallet> walletList = walletRepository.findByUserId(userId);
     walletList.sort(Comparator.comparing(Wallet::getAcceptanceDate).reversed());
     InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
-    List<WalletDTO> walletDTOList = new ArrayList<>();
-
-    for (Wallet wallet : walletList) {
-      walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
-    }
+    LocalDate requestDate = LocalDate.now(ZONE_ID);
+    List<WalletDTO> walletDTOList = walletList.stream()
+        .filter(wallet -> !areInitiativeAndVoucherExpired(wallet, requestDate))
+        .map(walletMapper::toInitiativeDTO)
+        .toList();
     initiativeListDTO.setInitiativeList(walletDTOList);
 
     performanceLog(startTime, "GET_INITIATIVE_LIST");
     return initiativeListDTO;
+  }
+
+  private boolean areInitiativeAndVoucherExpired(Wallet wallet, LocalDate requestDate) {
+    return wallet.getInitiativeEndDate() != null
+        && wallet.getInitiativeEndDate().isBefore(requestDate)
+        && wallet.getVoucherEndDate() != null
+        && wallet.getVoucherEndDate().isBefore(requestDate);
   }
 
   @Override

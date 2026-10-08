@@ -1315,6 +1315,51 @@ class WalletServiceTest {
     }
 
     @Test
+    void getInitiativeList_excludesWalletWhenInitiativeAndVoucherAreExpired() {
+        Wallet expiredWallet = testWallet.toBuilder()
+                .initiativeEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .voucherEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .build();
+        when(walletRepositoryMock.findByUserId(USER_ID))
+                .thenReturn(new ArrayList<>(List.of(expiredWallet)));
+
+        InitiativeListDTO result = walletService.getInitiativeList(USER_ID);
+
+        assertTrue(result.getInitiativeList().isEmpty());
+        verify(walletMapper, never()).toInitiativeDTO(any());
+    }
+
+    @Test
+    void getInitiativeList_keepsWalletWhenOnlyVoucherIsExpired() {
+        Wallet walletWithActiveInitiative = testWallet.toBuilder()
+                .initiativeEndDate(TEST_DATE_ONLY_DATE.plusDays(1))
+                .voucherEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .build();
+        when(walletRepositoryMock.findByUserId(USER_ID))
+                .thenReturn(new ArrayList<>(List.of(walletWithActiveInitiative)));
+        when(walletMapper.toInitiativeDTO(walletWithActiveInitiative)).thenReturn(WALLET_DTO);
+
+        InitiativeListDTO result = walletService.getInitiativeList(USER_ID);
+
+        assertEquals(List.of(WALLET_DTO), result.getInitiativeList());
+    }
+
+    @Test
+    void getInitiativeList_keepsWalletWhenOnlyInitiativeIsExpired() {
+        Wallet walletWithActiveVoucher = testWallet.toBuilder()
+                .initiativeEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .voucherEndDate(TEST_DATE_ONLY_DATE.plusDays(1))
+                .build();
+        when(walletRepositoryMock.findByUserId(USER_ID))
+                .thenReturn(new ArrayList<>(List.of(walletWithActiveVoucher)));
+        when(walletMapper.toInitiativeDTO(walletWithActiveVoucher)).thenReturn(WALLET_DTO);
+
+        InitiativeListDTO result = walletService.getInitiativeList(USER_ID);
+
+        assertEquals(List.of(WALLET_DTO), result.getInitiativeList());
+    }
+
+    @Test
     void createWalletOnbOk() {
         Mockito.when(walletMapper.map(any())).thenReturn(testWallet);
         walletService.createWallet(EVALUATION_ONBOARDING_OK);
