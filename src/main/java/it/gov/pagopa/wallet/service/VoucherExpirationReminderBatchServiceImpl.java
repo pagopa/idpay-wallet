@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -59,7 +58,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     public void runReminderBatch(String initiativeId, int expiringDay) {
         long startTime = System.currentTimeMillis();
         executeBatchLogic(initiativeId, expiringDay);
-        performanceLog(startTime, WalletConstants.REMINDER);
+        performanceLog(startTime);
     }
 
     @Override
@@ -74,7 +73,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                 log.error("[REMINDER_BATCH] An error occurred while processing the initiative {}. Continuing with the remaining initiatives",
                         sanitizeString(initiativeId), e);
             } finally {
-                performanceLog(startTime, WalletConstants.REMINDER);
+                performanceLog(startTime);
             }
         }
         if (!failedInitiatives.isEmpty()) {
@@ -87,7 +86,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
     private void executeBatchLogic(String initiativeId, int expiringDay) {
         String sanitizedInitiativeId = sanitizeString(initiativeId);
 
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(ZONE_ID);
         LocalDate expirationDate = now.plusDays((long)expiringDay-1);
         // idempotency window: skip wallets already reminded in the current run day so job retries do not duplicate notifications
         LocalDateTime cycleStart = LocalDate.now(ZONE_ID).atStartOfDay();
@@ -102,7 +101,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
             LocalDate target = LocalDate.now(ZONE_ID).plusDays(expiringDay);
             Instant startUtc = target.atStartOfDay(ZONE_ID).toInstant();
             Instant endUtc   = target.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
-            walletPage = walletRepository.findVoucherExpiredIntoRange(initiativeId, Date.from(startUtc), Date.from(endUtc), pageable);
+            walletPage = walletRepository.findVoucherExpiredIntoRange(initiativeId, startUtc, endUtc, pageable);
             List<Wallet> walletList = walletPage.getContent();
             log.info("[REMINDER_BATCH] Page {} - {} expiring vouchers found", page, walletList.size());
 
@@ -130,7 +129,7 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
                     if (sendNotification(notificationQueueDTO)) {
                         // mark only on successful send so a failed one is retried, not skipped
                         walletUpdatesRepository.updateReminderNotifiedDate(
-                                wallet.getInitiativeId(), wallet.getUserId(), LocalDateTime.now());
+                                wallet.getInitiativeId(), wallet.getUserId(), LocalDateTime.now(ZONE_ID));
                     }
                 }
                 log.info("[REMINDER_BATCH] End sending notifications for expiring vouchers - Page {}", page);
@@ -173,10 +172,10 @@ public class VoucherExpirationReminderBatchServiceImpl implements VoucherExpirat
         errorProducer.sendEvent(errorMessage.build());
     }
 
-    private void performanceLog(long startTime, String service) {
+    private void performanceLog(long startTime) {
         log.info(
                 "[PERFORMANCE_LOG] [{}] Time occurred to perform business logic: {} ms",
-                service,
+                WalletConstants.REMINDER,
                 System.currentTimeMillis() - startTime);
     }
 
