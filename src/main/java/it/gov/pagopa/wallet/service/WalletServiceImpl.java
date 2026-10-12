@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
 import it.gov.pagopa.common.web.exception.ServiceException;
+import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentRestConnector;
@@ -9,6 +10,8 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeGeneralDTO;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
@@ -65,6 +68,7 @@ public class WalletServiceImpl implements WalletService {
   private final RewardCalculatorRestConnector rewardCalculatorRestConnector;
   private final PaymentRestConnector paymentRestConnector;
   private final OnboardingRestConnector onboardingRestConnector;
+  private final InitiativeRestConnector initiativeRestConnector;
   private final IbanProducer ibanProducer;
   private final TimelineProducer timelineProducer;
   private final WalletMapper walletMapper;
@@ -91,6 +95,7 @@ public class WalletServiceImpl implements WalletService {
                              RewardCalculatorRestConnector rewardCalculatorRestConnector,
                              PaymentRestConnector  paymentRestConnector,
                              OnboardingRestConnector onboardingRestConnector,
+                             InitiativeRestConnector initiativeRestConnector,
                              IbanProducer ibanProducer,
                              TimelineProducer timelineProducer,
                              WalletMapper walletMapper,
@@ -115,6 +120,7 @@ public class WalletServiceImpl implements WalletService {
     this.rewardCalculatorRestConnector = rewardCalculatorRestConnector;
     this.paymentRestConnector = paymentRestConnector;
     this.onboardingRestConnector = onboardingRestConnector;
+    this.initiativeRestConnector = initiativeRestConnector;
     this.ibanProducer = ibanProducer;
     this.timelineProducer = timelineProducer;
     this.walletMapper = walletMapper;
@@ -403,8 +409,15 @@ public class WalletServiceImpl implements WalletService {
   }
 
   private boolean areInitiativeAndVoucherExpired(Wallet wallet, LocalDate requestDate) {
-    return wallet.getInitiativeEndDate() != null
-        && wallet.getInitiativeEndDate().isBefore(requestDate)
+    InitiativeDTO initiative =
+        initiativeRestConnector.getInitiativeBeneficiaryView(wallet.getInitiativeId());
+    LocalDate initiativeEndDate = Optional.ofNullable(initiative)
+        .map(InitiativeDTO::getGeneral)
+        .map(InitiativeGeneralDTO::getEndDate)
+        .orElse(null);
+
+    return initiativeEndDate != null
+        && initiativeEndDate.isBefore(requestDate)
         && wallet.getVoucherEndDate() != null
         && wallet.getVoucherEndDate().isBefore(requestDate);
   }
