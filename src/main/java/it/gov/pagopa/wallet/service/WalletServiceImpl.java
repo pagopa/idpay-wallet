@@ -283,7 +283,7 @@ public class WalletServiceImpl implements WalletService {
     }
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
-        new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
+        new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now(ZONE_ID));
 
     walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
     auditUtilities.logEnrollmentIbanComplete(userId, initiativeId, iban);
@@ -316,7 +316,7 @@ public class WalletServiceImpl implements WalletService {
         throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
       }
 
-      LocalDateTime localDateTime = LocalDateTime.now();
+      LocalDateTime localDateTime = LocalDateTime.now(ZONE_ID);
       String backupStatus = wallet.getStatus();
       try {
         walletUpdatesRepository.suspendWallet(
@@ -352,7 +352,7 @@ public class WalletServiceImpl implements WalletService {
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
-    LocalDateTime localDateTime = LocalDateTime.now();
+    LocalDateTime localDateTime = LocalDateTime.now(ZONE_ID);
     String backupStatus = wallet.getStatus();
     LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
     String readmittedStatus;
@@ -461,7 +461,7 @@ public class WalletServiceImpl implements WalletService {
               .build(), evaluationDTO.getUserId());
       wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
       wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
-      wallet.setCreatedAt(LocalDateTime.now());
+      wallet.setCreatedAt(LocalDateTime.now(ZONE_ID));
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
 
@@ -487,7 +487,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
-    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now(ZONE_ID);
     String statusTemp = wallet.getStatus();
     wallet.setRequestUnsubscribeDate(now);
     UnsubscribeCallDTO unsubscribeCallDTO =
@@ -905,7 +905,7 @@ public class WalletServiceImpl implements WalletService {
       }
       userWallet.setAmountCents(0L);
       userWallet.setAccruedCents(userWallet.getAccruedCents() == 0L ? accruedRewardCents : userWallet.getAccruedCents());
-      userWallet.setUpdateDate(LocalDateTime.now());
+      userWallet.setUpdateDate(LocalDateTime.now(ZONE_ID));
       walletRepository.save(userWallet);
   }
   private void updateWalletFromTransaction(
@@ -1055,7 +1055,7 @@ public class WalletServiceImpl implements WalletService {
         .instrumentType(instrumentType)
         .operationType(operationType)
         .channel(channel)
-        .operationDate(LocalDateTime.now())
+        .operationDate(LocalDateTime.now(ZONE_ID))
         .build();
     sendToTimeline(timelineMapper.ackToTimeline(instrumentAckDTO));
   }
@@ -1129,13 +1129,13 @@ public class WalletServiceImpl implements WalletService {
       wallet.setSuspensionDate(null);
     }
     wallet.setStatus(statusToRollback);
-    wallet.setUpdateDate(LocalDateTime.now());
+    wallet.setUpdateDate(LocalDateTime.now(ZONE_ID));
     walletRepository.save(wallet);
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
   private void checkEndDate(LocalDate endDate, String initiativeId) {
-      LocalDate requestDate = LocalDate.now();
+      LocalDate requestDate = LocalDate.now(ZONE_ID);
 
       if (requestDate.isAfter(endDate)) {
         log.info("[CHECK_END_DATE] The operation is not allowed because the initiative {} has already ended", initiativeId);
@@ -1209,7 +1209,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
       for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
         if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)
-            && !wallet.getInitiativeEndDate().isBefore(LocalDate.now())
+            && !wallet.getInitiativeEndDate().isBefore(LocalDate.now(ZONE_ID))
             && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(
             wallet.getInitiativeRewardType())) {
           initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));
