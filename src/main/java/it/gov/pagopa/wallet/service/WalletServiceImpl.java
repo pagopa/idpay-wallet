@@ -461,7 +461,9 @@ public class WalletServiceImpl implements WalletService {
               .build(), evaluationDTO.getUserId());
       wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
       wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
-      wallet.setCreatedAt(LocalDateTime.now(ZONE_ID));
+      LocalDateTime now = LocalDateTime.now(ZONE_ID);
+      wallet.setLastCounterUpdate(now);
+      wallet.setCreatedAt(now);
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
 

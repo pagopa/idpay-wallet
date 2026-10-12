@@ -1,5 +1,6 @@
 package it.gov.pagopa.wallet.repository;
 
+import it.gov.pagopa.common.mongo.singleinstance.AutoConfigureSingleInstanceMongodb;
 import it.gov.pagopa.wallet.model.Wallet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -18,10 +19,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataMongoTest(properties = {
-        "spring.data.mongodb.database=test",
-        "spring.data.mongodb.port=0",
+        "spring.mongodb.database=test",
         "de.flapdoodle.mongodb.embedded.version=4.2.24"
 })
+@AutoConfigureSingleInstanceMongodb
 class WalletRepositoryDataMongoTest {
 
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
