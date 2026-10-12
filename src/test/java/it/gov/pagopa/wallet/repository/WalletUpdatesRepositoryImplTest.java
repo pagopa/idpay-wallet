@@ -16,8 +16,10 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -105,7 +107,32 @@ class WalletUpdatesRepositoryImplTest {
         Document set = (Document) updateCaptor.getValue().getUpdateObject().get("$set");
         assertEquals("ENROLLED", set.get("status"));
         assertEquals(now, set.get("updateDate"));
+        assertTrue(set.containsKey("suspensionDate"));
         assertNull(set.get("suspensionDate"));
+    }
+
+    @Test
+    void deleteIban_shouldUseEuropeRomeClockEvenIfJvmDefaultIsUtc() {
+        TimeZone previousDefault = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            LocalDateTime beforeRomeNow = LocalDateTime.now(ZoneId.of("Europe/Rome"));
+
+            walletUpdatesRepository.deleteIban(INITIATIVE_ID, USER_ID, "SUSPENDED");
+
+            LocalDateTime afterRomeNow = LocalDateTime.now(ZoneId.of("Europe/Rome"));
+            ArgumentCaptor<Update> updateCaptor = ArgumentCaptor.forClass(Update.class);
+            verify(mongoTemplate).updateFirst(any(Query.class), updateCaptor.capture(), eq(Wallet.class));
+
+            Document set = (Document) updateCaptor.getValue().getUpdateObject().get("$set");
+            LocalDateTime updateDate = (LocalDateTime) set.get("updateDate");
+
+            assertNotNull(updateDate);
+            assertFalse(updateDate.isBefore(beforeRomeNow));
+            assertFalse(updateDate.isAfter(afterRomeNow));
+        } finally {
+            TimeZone.setDefault(previousDefault);
+        }
     }
 
     @Test
