@@ -459,8 +459,8 @@ public class WalletServiceImpl implements WalletService {
               .initiativeId(evaluationDTO.getInitiativeId())
               .voucherAmountCents(evaluationDTO.getBeneficiaryBudgetCents())
               .build(), evaluationDTO.getUserId());
-      wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
-      wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
+      wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate(), ZONE_ID));
+      wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate(), ZONE_ID));
       LocalDateTime now = LocalDateTime.now(ZONE_ID);
       wallet.setLastCounterUpdate(now);
       wallet.setCreatedAt(now);

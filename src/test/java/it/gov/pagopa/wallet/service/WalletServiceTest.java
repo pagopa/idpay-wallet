@@ -33,6 +33,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -1416,6 +1417,33 @@ class WalletServiceTest {
                 Mockito.verify(rewardCalculatorRestConnector, Mockito.times(1))
                                 .createOnboardingCounters(INITIATIVE_ID, USER_ID);
         assertEquals(testWallet.getStatus(), WalletStatus.REFUNDABLE.name());
+    }
+
+    @Test
+    void createWallet_shouldUseEuropeRomeForVoucherDateConversionNearMidnight() {
+        TimeZone previousDefault = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            Wallet wallet = testWallet.toBuilder().build();
+            Mockito.when(walletMapper.map(any())).thenReturn(wallet);
+
+            TransactionBarCodeEnrichedResponse response = new TransactionBarCodeEnrichedResponse();
+            response.setTrxDate(OffsetDateTime.parse("2025-09-24T22:30:00Z"));
+            response.setTrxEndDate(OffsetDateTime.parse("2025-10-24T22:30:00Z"));
+            Mockito.when(paymentRestConnector.createExtendedTransaction(any(TransactionBarCodeCreationRequest.class), anyString()))
+                    .thenReturn(response);
+
+            walletService.createWallet(EVALUATION_ONBOARDING_OK);
+
+            ArgumentCaptor<Wallet> walletCaptor = ArgumentCaptor.forClass(Wallet.class);
+            Mockito.verify(walletRepositoryMock).save(walletCaptor.capture());
+
+            Wallet savedWallet = walletCaptor.getValue();
+            assertEquals(LocalDate.of(2025, 9, 25), savedWallet.getVoucherStartDate());
+            assertEquals(LocalDate.of(2025, 10, 25), savedWallet.getVoucherEndDate());
+        } finally {
+            TimeZone.setDefault(previousDefault);
+        }
     }
 
 
