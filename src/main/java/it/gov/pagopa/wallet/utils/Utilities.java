@@ -8,6 +8,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.TimeZone;
 
 @Component
@@ -44,8 +45,12 @@ public class Utilities {
     }
 
     public static LocalDate getLocalDate(OffsetDateTime date) {
+        return getLocalDate(date, TimeZone.getDefault().toZoneId());
+    }
+
+    public static LocalDate getLocalDate(OffsetDateTime date, ZoneId zoneId) {
         return date.toInstant()
-                .atZone(TimeZone.getDefault().toZoneId())
+                .atZone(zoneId)
                 .toLocalDate();
     }
 }
