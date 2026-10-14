@@ -6,6 +6,7 @@ import it.gov.pagopa.wallet.model.Wallet.Fields;
 import it.gov.pagopa.wallet.model.Wallet.RefundHistory;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 @Slf4j
 public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
+
+    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
 
     private static final String FIELD_INITIATIVE_ID = Fields.initiativeId;
     private static final String FIELD_USER_ID = Fields.userId;
@@ -55,7 +58,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().unset(FIELD_IBAN).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID)),
                 Wallet.class);
     }
 
@@ -66,7 +69,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_IBAN, iban).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID)),
                 Wallet.class);
     }
 
@@ -110,8 +113,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 new Update().set(FIELD_AMOUNT_CENTS, amountCents)
                         .set(FIELD_ACCRUED_CENTS, accruedCents)
                         .inc(FIELD_NTRX, 1)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now(ZONE_ID))
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID))
                         .set(FIELD_COUNTER_VERSION, counterVersion),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
@@ -130,8 +133,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 ),
                 new Update()
                         .set(FIELD_AMOUNT_CENTS, amountCents)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now(ZONE_ID))
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID))
                         .set(FIELD_COUNTER_VERSION, counterVersion),
                 Wallet.class);
 
@@ -147,7 +150,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_REFUNDED_CENTS, refundedCents).set(FIELD_HISTORY, history).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_REFUNDED_CENTS, refundedCents).set(FIELD_HISTORY, history).set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID)),
                 Wallet.class);
     }
 
@@ -159,7 +162,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().set(FIELD_NINSTR, nInstr).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID)),
                 Wallet.class);
     }
 
@@ -170,7 +173,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
         mongoTemplate.updateFirst(
                 Query.query(
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
-                new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                new Update().inc(FIELD_NINSTR, -1).set(FIELD_STATUS, status).set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID)),
                 Wallet.class);
     }
 
@@ -199,8 +202,8 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                 new Update()
                         .set(FIELD_ACCRUED_CENTS, accruedCents)
                         .inc(FIELD_NTRX, 1)
-                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now())
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now())
+                        .set(FIELD_LAST_COUNTER_UPDATE, LocalDateTime.now(ZONE_ID))
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID))
                         .set(FIELD_COUNTER_HISTORY, counterHistory),
                 FindAndModifyOptions.options().returnNew(true),
                 Wallet.class);
@@ -215,7 +218,7 @@ public class WalletUpdatesRepositoryImpl implements WalletUpdatesRepository {
                         Criteria.where(FIELD_INITIATIVE_ID).is(initiativeId).and(FIELD_USER_ID).is(userId)),
                 new Update()
                         .set(FIELD_REMINDER_NOTIFIED_DATE, reminderNotifiedDate)
-                        .set(FIELD_UPDATE_DATE, LocalDateTime.now()),
+                        .set(FIELD_UPDATE_DATE, LocalDateTime.now(ZONE_ID)),
                 Wallet.class);
     }
 }
