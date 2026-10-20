@@ -7,6 +7,8 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeGeneralDTO;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import it.gov.pagopa.wallet.enums.*;
@@ -1312,6 +1314,65 @@ class WalletServiceTest {
         assertEquals(WALLET_DTO.getInitiativeName(), actual.getInitiativeName());
         assertEquals(WALLET_DTO.getIban(), actual.getIban());
         assertEquals(WALLET_DTO.getStatus(), actual.getStatus());
+    }
+
+    @Test
+    void getInitiativeList_excludesWalletWhenInitiativeAndVoucherAreExpired() {
+        Wallet expiredWallet = testWallet.toBuilder()
+                .initiativeEndDate(TEST_DATE_ONLY_DATE.plusDays(1))
+                .voucherEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .build();
+        when(walletRepositoryMock.findByUserId(USER_ID))
+                .thenReturn(new ArrayList<>(List.of(expiredWallet)));
+        when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+                .thenReturn(initiativeWithEndDate(TEST_DATE_ONLY_DATE.minusDays(1)));
+
+        InitiativeListDTO result = walletService.getInitiativeList(USER_ID);
+
+        assertTrue(result.getInitiativeList().isEmpty());
+        verify(walletMapper, never()).toInitiativeDTO(any());
+    }
+
+    @Test
+    void getInitiativeList_keepsWalletWhenOnlyVoucherIsExpired() {
+        Wallet walletWithActiveInitiative = testWallet.toBuilder()
+                .initiativeEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .voucherEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .build();
+        when(walletRepositoryMock.findByUserId(USER_ID))
+                .thenReturn(new ArrayList<>(List.of(walletWithActiveInitiative)));
+        when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+                .thenReturn(initiativeWithEndDate(TEST_DATE_ONLY_DATE.plusDays(1)));
+        when(walletMapper.toInitiativeDTO(walletWithActiveInitiative)).thenReturn(WALLET_DTO);
+
+        InitiativeListDTO result = walletService.getInitiativeList(USER_ID);
+
+        assertEquals(List.of(WALLET_DTO), result.getInitiativeList());
+    }
+
+    @Test
+    void getInitiativeList_keepsWalletWhenOnlyInitiativeIsExpired() {
+        Wallet walletWithActiveVoucher = testWallet.toBuilder()
+                .initiativeEndDate(TEST_DATE_ONLY_DATE.minusDays(1))
+                .voucherEndDate(TEST_DATE_ONLY_DATE.plusDays(1))
+                .build();
+        when(walletRepositoryMock.findByUserId(USER_ID))
+                .thenReturn(new ArrayList<>(List.of(walletWithActiveVoucher)));
+        when(initiativeRestConnector.getInitiativeBeneficiaryView(INITIATIVE_ID))
+                .thenReturn(initiativeWithEndDate(TEST_DATE_ONLY_DATE.minusDays(1)));
+        when(walletMapper.toInitiativeDTO(walletWithActiveVoucher)).thenReturn(WALLET_DTO);
+
+        InitiativeListDTO result = walletService.getInitiativeList(USER_ID);
+
+        assertEquals(List.of(WALLET_DTO), result.getInitiativeList());
+    }
+
+    private InitiativeDTO initiativeWithEndDate(LocalDate endDate) {
+        InitiativeGeneralDTO general = new InitiativeGeneralDTO();
+        general.setEndDate(endDate);
+        InitiativeDTO initiative = new InitiativeDTO();
+        initiative.setGeneral(general);
+        return initiative;
     }
 
     @Test

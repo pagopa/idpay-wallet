@@ -1,6 +1,7 @@
 package it.gov.pagopa.wallet.service;
 
 import it.gov.pagopa.common.web.exception.ServiceException;
+import it.gov.pagopa.wallet.connector.InitiativeRestConnector;
 import it.gov.pagopa.wallet.connector.OnboardingRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentInstrumentRestConnector;
 import it.gov.pagopa.wallet.connector.PaymentRestConnector;
@@ -9,6 +10,8 @@ import it.gov.pagopa.wallet.constants.WalletConstants;
 import it.gov.pagopa.wallet.dto.*;
 import it.gov.pagopa.wallet.dto.mapper.TimelineMapper;
 import it.gov.pagopa.wallet.dto.mapper.WalletMapper;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeDTO;
+import it.gov.pagopa.wallet.dto.initiative.InitiativeGeneralDTO;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeCreationRequest;
 import it.gov.pagopa.wallet.dto.payment.TransactionBarCodeEnrichedResponse;
 import it.gov.pagopa.wallet.enums.BeneficiaryType;
@@ -37,6 +40,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -48,6 +52,7 @@ import static it.gov.pagopa.wallet.constants.WalletConstants.ExceptionMessage.*;
 @Service
 public class WalletServiceImpl implements WalletService {
 
+  private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
   public static final String SERVICE_ENROLL_IBAN = "ENROLL_IBAN";
   public static final String SERVICE_UNSUBSCRIBE = "UNSUBSCRIBE";
   public static final String SERVICE_CHECK_IBAN_OUTCOME = "CHECK_IBAN_OUTCOME";
@@ -63,6 +68,7 @@ public class WalletServiceImpl implements WalletService {
   private final RewardCalculatorRestConnector rewardCalculatorRestConnector;
   private final PaymentRestConnector paymentRestConnector;
   private final OnboardingRestConnector onboardingRestConnector;
+  private final InitiativeRestConnector initiativeRestConnector;
   private final IbanProducer ibanProducer;
   private final TimelineProducer timelineProducer;
   private final WalletMapper walletMapper;
@@ -89,6 +95,7 @@ public class WalletServiceImpl implements WalletService {
                              RewardCalculatorRestConnector rewardCalculatorRestConnector,
                              PaymentRestConnector  paymentRestConnector,
                              OnboardingRestConnector onboardingRestConnector,
+                             InitiativeRestConnector initiativeRestConnector,
                              IbanProducer ibanProducer,
                              TimelineProducer timelineProducer,
                              WalletMapper walletMapper,
@@ -113,6 +120,7 @@ public class WalletServiceImpl implements WalletService {
     this.rewardCalculatorRestConnector = rewardCalculatorRestConnector;
     this.paymentRestConnector = paymentRestConnector;
     this.onboardingRestConnector = onboardingRestConnector;
+    this.initiativeRestConnector = initiativeRestConnector;
     this.ibanProducer = ibanProducer;
     this.timelineProducer = timelineProducer;
     this.walletMapper = walletMapper;
@@ -281,7 +289,7 @@ public class WalletServiceImpl implements WalletService {
     }
     wallet.setIban(iban);
     IbanQueueDTO ibanQueueDTO =
-        new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now());
+        new IbanQueueDTO(userId, initiativeId, iban, description, channel, LocalDateTime.now(ZONE_ID));
 
     walletUpdatesRepository.enrollIban(initiativeId, userId, iban, setStatus(wallet));
     auditUtilities.logEnrollmentIbanComplete(userId, initiativeId, iban);
@@ -314,7 +322,7 @@ public class WalletServiceImpl implements WalletService {
         throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
       }
 
-      LocalDateTime localDateTime = LocalDateTime.now();
+      LocalDateTime localDateTime = LocalDateTime.now(ZONE_ID);
       String backupStatus = wallet.getStatus();
       try {
         walletUpdatesRepository.suspendWallet(
@@ -350,7 +358,7 @@ public class WalletServiceImpl implements WalletService {
       throw new UserUnsubscribedException(String.format(ERROR_UNSUBSCRIBED_INITIATIVE_MSG, initiativeId));
     }
 
-    LocalDateTime localDateTime = LocalDateTime.now();
+    LocalDateTime localDateTime = LocalDateTime.now(ZONE_ID);
     String backupStatus = wallet.getStatus();
     LocalDateTime backupSuspensionDate = wallet.getSuspensionDate();
     String readmittedStatus;
@@ -389,15 +397,29 @@ public class WalletServiceImpl implements WalletService {
     List<Wallet> walletList = walletRepository.findByUserId(userId);
     walletList.sort(Comparator.comparing(Wallet::getAcceptanceDate).reversed());
     InitiativeListDTO initiativeListDTO = new InitiativeListDTO();
-    List<WalletDTO> walletDTOList = new ArrayList<>();
-
-    for (Wallet wallet : walletList) {
-      walletDTOList.add(walletMapper.toInitiativeDTO(wallet));
-    }
+    LocalDate requestDate = LocalDate.now(ZONE_ID);
+    List<WalletDTO> walletDTOList = walletList.stream()
+        .filter(wallet -> !areInitiativeAndVoucherExpired(wallet, requestDate))
+        .map(walletMapper::toInitiativeDTO)
+        .toList();
     initiativeListDTO.setInitiativeList(walletDTOList);
 
     performanceLog(startTime, "GET_INITIATIVE_LIST");
     return initiativeListDTO;
+  }
+
+  private boolean areInitiativeAndVoucherExpired(Wallet wallet, LocalDate requestDate) {
+    InitiativeDTO initiative =
+        initiativeRestConnector.getInitiativeBeneficiaryView(wallet.getInitiativeId());
+    LocalDate initiativeEndDate = Optional.ofNullable(initiative)
+        .map(InitiativeDTO::getGeneral)
+        .map(InitiativeGeneralDTO::getEndDate)
+        .orElse(null);
+
+    return initiativeEndDate != null
+        && initiativeEndDate.isBefore(requestDate)
+        && wallet.getVoucherEndDate() != null
+        && wallet.getVoucherEndDate().isBefore(requestDate);
   }
 
   @Override
@@ -450,9 +472,11 @@ public class WalletServiceImpl implements WalletService {
               .initiativeId(evaluationDTO.getInitiativeId())
               .voucherAmountCents(evaluationDTO.getBeneficiaryBudgetCents())
               .build(), evaluationDTO.getUserId());
-      wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate()));
-      wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate()));
-      wallet.setCreatedAt(LocalDateTime.now());
+      wallet.setVoucherStartDate(Utilities.getLocalDate(response.getTrxDate(), ZONE_ID));
+      wallet.setVoucherEndDate(Utilities.getLocalDate(response.getTrxEndDate(), ZONE_ID));
+      LocalDateTime now = LocalDateTime.now(ZONE_ID);
+      wallet.setLastCounterUpdate(now);
+      wallet.setCreatedAt(now);
       walletRepository.save(wallet);
       sendToTimeline(timelineMapper.onboardingToTimeline(evaluationDTO));
 
@@ -478,7 +502,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     log.info("[UNSUBSCRIBE] Unsubscribing user {} on initiative {}", userId, initiativeId);
-    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now(ZONE_ID);
     String statusTemp = wallet.getStatus();
     wallet.setRequestUnsubscribeDate(now);
     UnsubscribeCallDTO unsubscribeCallDTO =
@@ -896,7 +920,7 @@ public class WalletServiceImpl implements WalletService {
       }
       userWallet.setAmountCents(0L);
       userWallet.setAccruedCents(userWallet.getAccruedCents() == 0L ? accruedRewardCents : userWallet.getAccruedCents());
-      userWallet.setUpdateDate(LocalDateTime.now());
+      userWallet.setUpdateDate(LocalDateTime.now(ZONE_ID));
       walletRepository.save(userWallet);
   }
   private void updateWalletFromTransaction(
@@ -1046,7 +1070,7 @@ public class WalletServiceImpl implements WalletService {
         .instrumentType(instrumentType)
         .operationType(operationType)
         .channel(channel)
-        .operationDate(LocalDateTime.now())
+        .operationDate(LocalDateTime.now(ZONE_ID))
         .build();
     sendToTimeline(timelineMapper.ackToTimeline(instrumentAckDTO));
   }
@@ -1120,13 +1144,13 @@ public class WalletServiceImpl implements WalletService {
       wallet.setSuspensionDate(null);
     }
     wallet.setStatus(statusToRollback);
-    wallet.setUpdateDate(LocalDateTime.now());
+    wallet.setUpdateDate(LocalDateTime.now(ZONE_ID));
     walletRepository.save(wallet);
     log.info("[ROLLBACK_WALLET] Rollback wallet, new status: {}", wallet.getStatus());
   }
 
   private void checkEndDate(LocalDate endDate, String initiativeId) {
-      LocalDate requestDate = LocalDate.now();
+      LocalDate requestDate = LocalDate.now(ZONE_ID);
 
       if (requestDate.isAfter(endDate)) {
         log.info("[CHECK_END_DATE] The operation is not allowed because the initiative {} has already ended", initiativeId);
@@ -1200,7 +1224,7 @@ public class WalletServiceImpl implements WalletService {
       log.info("[GET_INSTRUMENT_DETAIL_ON_INITIATIVES] Get all initiatives still active for user");
       for (WalletDTO wallet : initiativeListDTO.getInitiativeList()) {
         if (!wallet.getStatus().equals(WalletStatus.UNSUBSCRIBED)
-            && !wallet.getInitiativeEndDate().isBefore(LocalDate.now())
+            && !wallet.getInitiativeEndDate().isBefore(LocalDate.now(ZONE_ID))
             && WalletConstants.INITIATIVE_REWARD_TYPE_REFUND.equals(
             wallet.getInitiativeRewardType())) {
           initiativesStatusDTO.add(walletMapper.toInstrStatusOnInitiativeDTO(wallet));

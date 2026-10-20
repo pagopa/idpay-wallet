@@ -11,11 +11,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class WalletMapper {
+    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
+
     @Value("${app.wallet.expiringDay}")
     private int expiringDay;
     private final Utilities utilities;
@@ -40,7 +43,7 @@ public class WalletMapper {
                 .amountCents(evaluationDTO.getBeneficiaryBudgetCents())
                 .accruedCents(0L)
                 .refundedCents(0L)
-                .lastCounterUpdate(LocalDateTime.now())
+                .lastCounterUpdate(LocalDateTime.now(ZONE_ID))
                 .initiativeRewardType(evaluationDTO.getInitiativeRewardType())
                 .isLogoPresent(evaluationDTO.getIsLogoPresent())
                 .maxTrx(evaluationDTO.getMaxTrx())
@@ -116,7 +119,7 @@ public class WalletMapper {
             return null;
         }
 
-        LocalDate today         = LocalDate.now();
+        LocalDate today         = LocalDate.now(ZONE_ID);
         LocalDate start         = wallet.getVoucherStartDate();
         LocalDate end           = wallet.getVoucherEndDate();
         LocalDate expiringFrom  = end.minusDays(expiringDay);

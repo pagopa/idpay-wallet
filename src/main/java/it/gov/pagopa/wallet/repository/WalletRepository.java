@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +29,8 @@ public interface WalletRepository extends MongoRepository<Wallet, String> {
     )
     Page<Wallet> findVoucherExpiredIntoRange(
             String initiativeId,
-            Date startUtc,
-            Date endUtc,
+            Instant startUtc,
+            Instant endUtc,
             Pageable pageable
     );
 }
